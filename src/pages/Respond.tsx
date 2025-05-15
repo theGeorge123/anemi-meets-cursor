@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const Respond = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({
     email: '',
@@ -22,18 +21,6 @@ const Respond = () => {
   const [invitation, setInvitation] = useState<any>(null);
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
-
-  const callSendMeetingConfirmation = async (token: string) => {
-    try {
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
-      });
-    } catch (e) {
-      console.error('Kon bevestigingsmail niet versturen:', e);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
