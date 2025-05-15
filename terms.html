@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Anemi Meets</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <button class="language-toggle" onclick="toggleLanguage()">NL / EN</button>
+    
+    <div class="container">
+        <h1 data-i18n="terms_title">Terms of Service</h1>
+
+        <div class="content-section">
+            <h2 data-i18n="terms_acceptance">Acceptance of Terms</h2>
+            <p data-i18n="terms_acceptance_text">By accessing and using Anemi Meets, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using this service.</p>
+        </div>
+
+        <div class="content-section">
+            <h2 data-i18n="terms_use">Use License</h2>
+            <p data-i18n="terms_use_text">Permission is granted to temporarily use Anemi Meets for personal, non-commercial purposes. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+            <ul>
+                <li data-i18n="terms_use_modify">Modify or copy the materials</li>
+                <li data-i18n="terms_use_commercial">Use the materials for any commercial purpose</li>
+                <li data-i18n="terms_use_reverse">Attempt to reverse engineer any software contained in Anemi Meets</li>
+                <li data-i18n="terms_use_remove">Remove any copyright or other proprietary notations from the materials</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2 data-i18n="terms_accuracy">Accuracy of Materials</h2>
+            <p data-i18n="terms_accuracy_text">The materials appearing on Anemi Meets could include technical, typographical, or photographic errors. We do not warrant that any of the materials are accurate, complete, or current. We may make changes to the materials at any time without notice.</p>
+        </div>
+
+        <div class="content-section">
+            <h2 data-i18n="terms_links">Links</h2>
+            <p data-i18n="terms_links_text">We have not reviewed all of the sites linked to our service and are not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by Anemi Meets. Use of any such linked website is at the user's own risk.</p>
+        </div>
+
+        <div class="content-section">
+            <h2 data-i18n="terms_modifications">Modifications</h2>
+            <p data-i18n="terms_modifications_text">We may revise these terms of service at any time without notice. By using this service, you are agreeing to be bound by the then current version of these terms of service.</p>
+        </div>
+
+        <div class="content-section">
+            <h2 data-i18n="terms_governing">Governing Law</h2>
+            <p data-i18n="terms_governing_text">These terms and conditions are governed by and construed in accordance with the laws of the Netherlands and you irrevocably submit to the exclusive jurisdiction of the courts in that location.</p>
+        </div>
+
+        <div class="content-section">
+            <h2 data-i18n="terms_contact">Contact Us</h2>
+            <p data-i18n="terms_contact_text">If you have any questions about these Terms of Service, please contact us at:</p>
+            <p><a href="mailto:terms@anemimeets.com">terms@anemimeets.com</a></p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="index.html" class="button secondary" data-i18n="terms_home">Back to Home</a>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <div class="cookie-banner">
+        <p data-i18n="cookie_message">We use essential cookies to make this site work. Would you like to accept them?</p>
+        <div class="cookie-buttons">
+            <button class="button secondary" onclick="acceptCookies()" data-i18n="cookie_accept">Accept</button>
+            <button class="button" onclick="declineCookies()" data-i18n="cookie_decline">Decline</button>
+        </div>
+    </div>
+</body>
+</html> 
