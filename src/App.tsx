@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import CreateMeetup from './pages/CreateMeetup';
 import Invite from './pages/Invite';
@@ -9,7 +9,11 @@ import Login from './pages/Login';
 
 function App() {
   const { i18n } = useTranslation();
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('nl');
+
+  useEffect(() => {
+    i18n.changeLanguage('nl');
+  }, [i18n]);
 
   const toggleLanguage = () => {
     const newLang = language === 'en' ? 'nl' : 'en';
@@ -33,7 +37,9 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold text-primary-600">anemi meets</h1>
+                <Link to="/">
+                  <h1 className="text-2xl font-bold text-primary-600 cursor-pointer">anemi meets</h1>
+                </Link>
               </div>
               <button
                 onClick={toggleLanguage}
