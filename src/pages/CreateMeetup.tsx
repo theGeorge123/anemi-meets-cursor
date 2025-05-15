@@ -311,7 +311,18 @@ const CreateMeetup = () => {
           <div className="text-red-500 text-sm">{formError}</div>
         )}
 
-        <button type="submit" className="btn-primary w-full">
+        <button
+          type="submit"
+          className="btn-primary w-full"
+          disabled={
+            !formData.name ||
+            !formData.email ||
+            !formData.city ||
+            formData.dates.length === 0 ||
+            !selectedCafe ||
+            !dateTimeOptions.some(opt => opt.times.length > 0)
+          }
+        >
           {t('common.continue')}
         </button>
       </form>

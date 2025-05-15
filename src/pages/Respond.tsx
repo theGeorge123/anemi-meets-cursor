@@ -88,6 +88,7 @@ const Respond = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null); // Reset error state
     // Sla email op als updates gewenst
     if (wantsUpdates) {
       localStorage.setItem(UPDATES_EMAIL_KEY, formData.email);
@@ -97,22 +98,38 @@ const Respond = () => {
     // Update invitation met gekozen tijd en status
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
-    if (!token) return;
+    if (!token) {
+      setError(t('respond.errorNoToken') || 'Geen geldige uitnodiging gevonden.');
+      return;
+    }
+    if (!formData.selectedTime) {
+      setError(t('respond.errorNoTime') || 'Kies een tijd.');
+      return;
+    }
+    if (!formData.email) {
+      setError(t('respond.errorNoEmail') || 'Vul je e-mailadres in.');
+      return;
+    }
     const [selectedDate, selectedTime] = formData.selectedTime.split('-');
-    await supabase.from('invitations').update({
+    const { error: updateError } = await supabase.from('invitations').update({
       status: 'accepted',
       selected_date: selectedDate,
       selected_time: selectedTime,
       email: formData.email,
     }).eq('token', token);
+    if (updateError) {
+      setError(t('respond.errorUpdateInvite') || 'Kon uitnodiging niet bijwerken.');
+      return;
+    }
     // Fetch invitation to get meeting_id
     const { data: invitation, error: invitationError } = await supabase
       .from('invitations')
       .select('*')
       .eq('token', token)
       .single();
-    if (invitationError) {
-      console.error('Failed to fetch invitation:', invitationError);
+    if (invitationError || !invitation) {
+      setError(t('respond.errorFetchInvite') || 'Uitnodiging niet gevonden.');
+      return;
     }
     if (invitation && invitation.meeting_id) {
       const { error: meetingError } = await supabase
@@ -120,15 +137,22 @@ const Respond = () => {
         .update({ status: 'confirmed' })
         .eq('id', invitation.meeting_id);
       if (meetingError) {
-        console.error('Failed to update meeting status:', meetingError);
-      } else {
-        console.log('Meeting status updated to confirmed');
+        setError(t('respond.errorUpdateMeeting') || 'Kon afspraak niet bijwerken.');
+        return;
       }
+    } else {
+      setError(t('respond.errorNoMeeting') || 'Geen geldige afspraak gevonden.');
+      return;
     }
     // Debug: log token
     console.log('Token voor edge function:', token);
     if (token) {
-      callSendMeetingConfirmation(token);
+      try {
+        await callSendMeetingConfirmation(token);
+      } catch (e) {
+        setError(t('respond.errorSendMail') || 'Kon bevestigingsmail niet versturen.');
+        return;
+      }
     }
     navigate('/confirmed');
   };

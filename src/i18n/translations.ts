@@ -66,6 +66,14 @@ export const translations = {
     respond: {
       title: 'Respond to Invite',
       subtitle: 'Choose your preferred time and confirm your attendance',
+      errorNoToken: 'No valid invitation found.',
+      errorNoTime: 'Please select a time.',
+      errorNoEmail: 'Please enter your email address.',
+      errorUpdateInvite: 'Could not update invitation.',
+      errorFetchInvite: 'Invitation not found.',
+      errorUpdateMeeting: 'Could not update meeting.',
+      errorNoMeeting: 'No valid meeting found.',
+      errorSendMail: 'Could not send confirmation email.',
     },
     confirmed: {
       title: 'Confirmed!',
@@ -139,6 +147,14 @@ export const translations = {
     respond: {
       title: 'Reageer op Uitnodiging',
       subtitle: 'Kies je voorkeurstijd en bevestig je aanwezigheid',
+      errorNoToken: 'Geen geldige uitnodiging gevonden.',
+      errorNoTime: 'Kies een tijd.',
+      errorNoEmail: 'Vul je e-mailadres in.',
+      errorUpdateInvite: 'Kon uitnodiging niet bijwerken.',
+      errorFetchInvite: 'Uitnodiging niet gevonden.',
+      errorUpdateMeeting: 'Kon afspraak niet bijwerken.',
+      errorNoMeeting: 'Geen geldige afspraak gevonden.',
+      errorSendMail: 'Kon bevestigingsmail niet versturen.',
     },
     confirmed: {
       title: 'Bevestigd!',
