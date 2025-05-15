@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import { cities, cafes } from '../data/mockData';
+import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 
 const CreateMeetup = () => {
@@ -16,6 +17,19 @@ const CreateMeetup = () => {
     city: '',
   });
   const [selectedCafe, setSelectedCafe] = useState<typeof cafes[keyof typeof cafes][0] | null>(null);
+  const [emailDisabled, setEmailDisabled] = useState(false);
+
+  useEffect(() => {
+    // Prefill email with logged-in user's email
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.user && session.user.email) {
+        setFormData((prev) => ({ ...prev, email: session.user.email! }));
+        setEmailDisabled(true);
+      }
+    };
+    getUser();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +95,7 @@ const CreateMeetup = () => {
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
+            disabled={emailDisabled}
           />
         </div>
 
