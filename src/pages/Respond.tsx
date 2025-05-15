@@ -48,11 +48,11 @@ const Respond = () => {
         setLoading(false);
         return;
       }
-      // Haal cafe op
-      if (invitation.cafe_id) {
-        const { data: cafeData } = await supabase.from('cafes').select('*').eq('id', invitation.cafe_id).single();
-        setCafe(cafeData);
-      }
+      // Toon cafe direct uit invitation
+      setCafe({
+        name: invitation.cafe_name,
+        address: invitation.cafe_address
+      });
       // Zet beschikbare tijden
       let times: {date: string, time: string}[] = [];
       if (invitation.date_time_options && Array.isArray(invitation.date_time_options)) {
