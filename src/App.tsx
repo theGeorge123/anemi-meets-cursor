@@ -6,6 +6,11 @@ import CreateMeetup from './pages/CreateMeetup';
 import Invite from './pages/Invite';
 import Respond from './pages/Respond';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Footer from './components/Footer';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import CookiePolicy from './pages/CookiePolicy';
+import Terms from './pages/Terms';
 
 function App() {
   const { i18n } = useTranslation();
@@ -59,8 +64,13 @@ function App() {
             <Route path="/invite" element={<Invite />} />
             <Route path="/respond" element={<Respond />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/cookies" element={<CookiePolicy />} />
+            <Route path="/terms" element={<Terms />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </Router>
   );
