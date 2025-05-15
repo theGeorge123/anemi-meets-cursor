@@ -14,7 +14,6 @@ const Respond = () => {
   const [availableTimes, setAvailableTimes] = useState<{date: string, time: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [meeting, setMeeting] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,7 +38,6 @@ const Respond = () => {
         setLoading(false);
         return;
       }
-      setMeeting(meetingData);
       // Zet beschikbare tijden
       const times: {date: string, time: string}[] = [];
       (meetingData.dates || []).forEach((date: string) => {

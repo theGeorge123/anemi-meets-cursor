@@ -27,7 +27,7 @@ const CreateMeetup = () => {
   // Fetch cities (only Rotterdam)
   useEffect(() => {
     const fetchCities = async () => {
-      const { data, error } = await supabase.from('cities').select('*').eq('name', 'Rotterdam');
+      const { data } = await supabase.from('cities').select('*').eq('name', 'Rotterdam');
       if (data) setCities(data);
     };
     fetchCities();
@@ -37,7 +37,7 @@ const CreateMeetup = () => {
   useEffect(() => {
     const fetchCafes = async () => {
       if (!formData.city) return setCafes([]);
-      const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
+      const { data } = await supabase.from('cafes').select('*').eq('city', formData.city);
       if (data) setCafes(data);
     };
     fetchCafes();
