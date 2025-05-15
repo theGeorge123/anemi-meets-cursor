@@ -72,7 +72,7 @@ const CreateMeetup = () => {
       }
     ]).select().single();
     if (meetingError || !meeting) {
-      alert('Er ging iets mis bij het aanmaken van de afspraak.');
+      alert('Er ging iets mis bij het aanmaken van de afspraak: ' + (meetingError?.message || JSON.stringify(meetingError) || 'onbekende fout'));
       return;
     }
     // 2. Invitation aanmaken
