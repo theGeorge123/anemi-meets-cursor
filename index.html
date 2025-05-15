@@ -12,6 +12,7 @@
             --text: #2d2d2d;
             --border: #e0e0e0;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --error: #ff4444;
         }
 
         * {
@@ -56,12 +57,36 @@
             border-radius: 12px;
             box-shadow: var(--shadow);
             margin-bottom: 20px;
+            position: relative;
         }
 
-        label {
+        .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-wrapper label {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            color: #666;
+            transition: all 0.2s;
+            pointer-events: none;
+            background: white;
+            padding: 0 4px;
+        }
+
+        .input-wrapper input:focus + label,
+        .input-wrapper input:not(:placeholder-shown) + label {
+            top: -8px;
+            font-size: 12px;
+            color: var(--primary);
         }
 
         input[type="text"],
@@ -73,7 +98,13 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 16px;
-            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         textarea {
@@ -89,14 +120,24 @@
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
+            background: #f8f8f8;
+            padding: 12px;
+            border-radius: 8px;
+            align-items: center;
         }
 
         .remove-time {
             background: none;
             border: none;
-            color: #ff4444;
+            color: var(--error);
             cursor: pointer;
-            padding: 0 10px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .remove-time:hover {
+            background-color: rgba(255, 68, 68, 0.1);
         }
 
         .button {
@@ -107,14 +148,20 @@
             border-radius: 12px;
             font-size: 16px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
 
-        .button:hover {
+        .button:hover:not(:disabled) {
             opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .button.secondary {
@@ -130,6 +177,10 @@
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
+            background: #f8f8f8;
+            padding: 12px;
+            border-radius: 8px;
+            align-items: center;
         }
 
         .success-message {
@@ -152,6 +203,49 @@
             cursor: pointer;
         }
 
+        .login-banner {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-banner svg {
+            flex-shrink: 0;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: var(--text);
+            color: white;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 10px;
@@ -172,13 +266,24 @@
             <p class="subtitle" data-nl="Maak het makkelijk om af te spreken" data-en="Make it easy to meet up">Make it easy to meet up</p>
         </div>
 
+        <div id="loginBanner" class="login-banner" style="display: none;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 13.3333V10M10 6.66667H10.0083M18.3333 10C18.3333 14.6024 14.6024 18.3333 10 18.3333C5.39763 18.3333 1.66667 14.6024 1.66667 10C1.66667 5.39763 5.39763 1.66667 10 1.66667C14.6024 1.66667 18.3333 5.39763 18.3333 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span data-nl="Log in om verder te gaan" data-en="Log in to continue">Log in to continue</span>
+        </div>
+
         <form id="meetingForm" onsubmit="handleSubmit(event)">
             <div class="form-group">
-                <label data-nl="Je naam" data-en="Your name">Your name</label>
-                <input type="text" required>
+                <div class="input-wrapper">
+                    <input type="text" id="name" required placeholder=" ">
+                    <label data-nl="Je naam" data-en="Your name">Your name</label>
+                </div>
 
-                <label data-nl="Je e-mail" data-en="Your email">Your email</label>
-                <input type="email" required>
+                <div class="input-wrapper">
+                    <input type="email" id="email" required placeholder=" ">
+                    <label data-nl="Je e-mail" data-en="Your email">Your email</label>
+                </div>
             </div>
 
             <div class="form-group">
@@ -186,7 +291,7 @@
                 <div class="time-slots" id="timeSlots">
                     <div class="time-slot">
                         <input type="datetime-local" required>
-                        <button type="button" class="remove-time" onclick="removeTimeSlot(this)">×</button>
+                        <button type="button" class="remove-time" onclick="removeTimeSlot(this)" title="Remove time slot">×</button>
                     </div>
                 </div>
                 <button type="button" class="button secondary" onclick="addTimeSlot()">
@@ -198,8 +303,10 @@
             </div>
 
             <div class="form-group">
-                <label data-nl="Bericht (optioneel)" data-en="Message (optional)">Message (optional)</label>
-                <textarea data-nl="Schrijf een berichtje..." data-en="Write a message..."></textarea>
+                <div class="input-wrapper">
+                    <textarea id="message" placeholder=" "></textarea>
+                    <label data-nl="Bericht (optioneel)" data-en="Message (optional)">Message (optional)</label>
+                </div>
             </div>
 
             <div class="form-group">
@@ -207,7 +314,7 @@
                 <div class="cafe-list" id="cafeList">
                     <div class="cafe-item">
                         <input type="text" placeholder="Cafe name" required>
-                        <button type="button" class="remove-time" onclick="removeCafe(this)">×</button>
+                        <button type="button" class="remove-time" onclick="removeCafe(this)" title="Remove cafe">×</button>
                     </div>
                 </div>
                 <button type="button" class="button secondary" onclick="addCafe()">
@@ -224,12 +331,15 @@
                 </button>
             </div>
 
-            <button type="submit" class="button" style="width: 100%;">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 1V15M1 8H15" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <span data-nl="Afspraak maken" data-en="Create meeting">Create meeting</span>
-            </button>
+            <div class="tooltip">
+                <button type="submit" class="button" style="width: 100%;" id="submitButton" disabled>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 1V15M1 8H15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span data-nl="Afspraak maken" data-en="Create meeting">Create meeting</span>
+                </button>
+                <span class="tooltip-text" data-nl="Log eerst in" data-en="Please log in first">Please log in first</span>
+            </div>
         </form>
 
         <div class="success-message" id="successMessage">
@@ -250,6 +360,17 @@
         ];
 
         let currentLanguage = 'en';
+        let loggedIn = false;
+
+        // Mock login state toggle
+        function toggleLogin() {
+            loggedIn = !loggedIn;
+            const submitButton = document.getElementById('submitButton');
+            const loginBanner = document.getElementById('loginBanner');
+            
+            submitButton.disabled = !loggedIn;
+            loginBanner.style.display = loggedIn ? 'none' : 'flex';
+        }
 
         function toggleLanguage() {
             currentLanguage = currentLanguage === 'en' ? 'nl' : 'en';
@@ -264,7 +385,7 @@
             timeSlot.className = 'time-slot';
             timeSlot.innerHTML = `
                 <input type="datetime-local" required>
-                <button type="button" class="remove-time" onclick="removeTimeSlot(this)">×</button>
+                <button type="button" class="remove-time" onclick="removeTimeSlot(this)" title="Remove time slot">×</button>
             `;
             timeSlots.appendChild(timeSlot);
         }
@@ -282,7 +403,7 @@
             cafeItem.className = 'cafe-item';
             cafeItem.innerHTML = `
                 <input type="text" placeholder="Cafe name" required>
-                <button type="button" class="remove-time" onclick="removeCafe(this)">×</button>
+                <button type="button" class="remove-time" onclick="removeCafe(this)" title="Remove cafe">×</button>
             `;
             cafeList.appendChild(cafeItem);
         }
@@ -305,6 +426,10 @@
         function handleSubmit(event) {
             event.preventDefault();
             
+            if (!loggedIn) {
+                return;
+            }
+            
             // Generate a random invite code
             const inviteCode = Math.random().toString(36).substring(2, 8);
             const inviteLink = `${window.location.origin}/invite/${inviteCode}`;
@@ -314,6 +439,9 @@
             document.getElementById('successMessage').style.display = 'block';
             document.getElementById('inviteLink').textContent = inviteLink;
         }
+
+        // Initialize login state
+        toggleLogin();
     </script>
 </body>
 </html> 
