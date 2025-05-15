@@ -23,6 +23,7 @@ const CreateMeetup = () => {
   const [cafes, setCafes] = useState<Cafe[]>([]);
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [emailDisabled, setEmailDisabled] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -50,6 +51,7 @@ const CreateMeetup = () => {
       if (session && session.user && session.user.email) {
         setFormData((prev) => ({ ...prev, email: session.user.email! }));
         setEmailDisabled(true);
+        setUserId(session.user.id);
       }
     };
     getUser();
@@ -58,10 +60,14 @@ const CreateMeetup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCafe) return;
+    if (!userId) {
+      alert('Niet ingelogd. Log in om een afspraak te maken.');
+      return;
+    }
     // 1. Coffee meeting aanmaken
     const { data: meeting, error: meetingError } = await supabase.from('coffee_meetings').insert([
       {
-        creator_id: null, // Optioneel: kun je invullen met user id als je die hebt
+        creator_id: userId,
         invitee_name: formData.name,
         invitee_email: formData.email,
         dates: formData.dates.map(d => d.toISOString().split('T')[0]),
