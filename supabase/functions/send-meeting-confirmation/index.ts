@@ -1,7 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// 🔐 Veilige UTF-8 base64 encoding
+function encodeBase64(str: string) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
 Deno.serve(async (req) => {
-  // ✅ CORS preflight fix
+  // 🌍 CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       status: 200,
@@ -23,15 +28,14 @@ Deno.serve(async (req) => {
     }
 
     const { token, email_b, selected_date, selected_time } = await req.json();
-
     if (!token || !email_b || !selected_date || !selected_time) {
-      throw new Error("Missing request body fields.");
+      throw new Error("Missing required fields.");
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // ✅ Update invitation
-    const { data: invitation, error: updateError } = await supabase
+    // ✅ Update uitnodiging
+    const { data: invitation, error } = await supabase
       .from("invitations")
       .update({
         email_b,
@@ -44,17 +48,14 @@ Deno.serve(async (req) => {
       .select()
       .single();
 
-    if (updateError || !invitation) {
-      throw new Error(updateError?.message || "Could not update invitation.");
+    if (error || !invitation) {
+      throw new Error(error?.message || "Could not update invitation.");
     }
 
     const { email_a, cafe_name, cafe_address } = invitation;
+    if (!email_a || !email_b) throw new Error("Missing one or both emails.");
 
-    if (!email_a || !email_b) {
-      throw new Error("Missing one or both emails.");
-    }
-
-    // ✅ Maak ICS kalenderbestand
+    // 📅 ICS-bestand maken
     const datePart = selected_date.replace(/-/g, "");
     const [dtStart, dtEnd] = {
       morning: ["T090000Z", "T110000Z"],
@@ -72,17 +73,16 @@ DTEND:${datePart}${dtEnd}
 DESCRIPTION=Jullie koffie-afspraak!
 LOCATION:${cafe_name || ""} ${cafe_address || ""}
 END:VEVENT
-END:VCALENDAR
-    `.trim();
+END:VCALENDAR`.trim();
 
     const html = `
 <p>Jullie koffie-afspraak is bevestigd! 🎉<br><br>
-<b>Locatie:</b> ${cafe_name}<br>
+<b>Locatie:</b> ${cafe_name || "Onbekend"}<br>
 <b>Datum:</b> ${selected_date}<br>
 <b>Tijd:</b> ${selected_time}<br><br>
-Bekijk de bijlage om de afspraak toe te voegen aan je agenda.</p>`;
+Bekijk de bijlage om het toe te voegen aan je agenda.</p>`;
 
-    // ✅ Verstuur e-mail via Resend (met timeout)
+    // 📧 Versturen via Resend (met timeout)
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
@@ -100,21 +100,21 @@ Bekijk de bijlage om de afspraak toe te voegen aan je agenda.</p>`;
         attachments: [
           {
             filename: "meeting.ics",
-            content: btoa(ics),
+            content: encodeBase64(ics),
             type: "text/calendar"
           }
         ]
       }),
       signal: controller.signal
-    }).catch((err) => {
+    }).catch(err => {
       throw new Error("Resend timeout or error: " + err.message);
     });
 
     clearTimeout(timeout);
 
-    if (!emailRes?.ok) {
-      const errorText = await emailRes.text();
-      throw new Error("Resend error: " + errorText);
+    if (!emailRes.ok) {
+      const text = await emailRes.text();
+      throw new Error("Resend error: " + text);
     }
 
     return new Response(JSON.stringify({ success: true }), {

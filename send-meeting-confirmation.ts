@@ -56,10 +56,19 @@ Deno.serve(async (req) => {
     const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY=Koffie Meetup\nDTSTART:${dtStart}\nDTEND:${dtEnd}\nDESCRIPTION=Jullie koffie-afspraak!\nLOCATION:${cafe_name} ${cafe_address}\nEND:VEVENT\nEND:VCALENDAR`;
     const icsBase64 = btoa(ics);
 
+    // Voeg veilige base64 encoder toe
+    function encodeBase64(str: string) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+
     // 4. Send email to both participants
     const html = `<p>Jullie koffie-afspraak is bevestigd!<br><b>Locatie:</b> ${cafe_name} ${cafe_address}<br><b>Datum:</b> ${selected_date}<br><b>Tijd:</b> ${selected_time}</p><p>Zie de bijlage voor een kalenderuitnodiging.</p>`;
     const fromEmail = "noreply@yourdomain.com"; // TODO: Replace with your verified sender
     const to = [email_a, email_b];
+
+    // Timeout-veiligheid
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8 sec timeout
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -75,14 +84,19 @@ Deno.serve(async (req) => {
         attachments: [
           {
             filename: "meetup.ics",
-            content: icsBase64,
+            content: encodeBase64(ics),
             type: "text/calendar"
           }
         ]
-      })
+      }),
+      signal: controller.signal
+    }).catch((err) => {
+      throw new Error("Resend timeout or error: " + err.message);
     });
 
-    if (!res.ok) {
+    clearTimeout(timeout);
+
+    if (!res?.ok) {
       const error = await res.text();
       throw new Error(`Failed to send email: ${error}`);
     }
