@@ -99,17 +99,31 @@ const Respond = () => {
     const token = params.get('token');
     if (!token) return;
     const [selectedDate, selectedTime] = formData.selectedTime.split('-');
-    // Haal invitation op om meeting_id te krijgen
-    const { data: invitation } = await supabase.from('invitations').select('*').eq('token', token).single();
     await supabase.from('invitations').update({
       status: 'accepted',
       selected_date: selectedDate,
       selected_time: selectedTime,
       email: formData.email,
     }).eq('token', token);
-    // Update coffee_meetings status naar 'confirmed'
+    // Fetch invitation to get meeting_id
+    const { data: invitation, error: invitationError } = await supabase
+      .from('invitations')
+      .select('*')
+      .eq('token', token)
+      .single();
+    if (invitationError) {
+      console.error('Failed to fetch invitation:', invitationError);
+    }
     if (invitation && invitation.meeting_id) {
-      await supabase.from('coffee_meetings').update({ status: 'confirmed' }).eq('id', invitation.meeting_id);
+      const { error: meetingError } = await supabase
+        .from('coffee_meetings')
+        .update({ status: 'confirmed' })
+        .eq('id', invitation.meeting_id);
+      if (meetingError) {
+        console.error('Failed to update meeting status:', meetingError);
+      } else {
+        console.log('Meeting status updated to confirmed');
+      }
     }
     // Debug: log token
     console.log('Token voor edge function:', token);
