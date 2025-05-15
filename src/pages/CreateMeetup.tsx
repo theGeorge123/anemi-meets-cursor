@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
-import { cities, cafes } from '../data/mockData';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
+import { v4 as uuidv4 } from 'uuid';
+
+interface City { id: string; name: string; }
+interface Cafe { id: string; name: string; address: string; description?: string; }
 
 const CreateMeetup = () => {
   const { t } = useTranslation();
@@ -16,8 +19,29 @@ const CreateMeetup = () => {
     timePreference: '',
     city: '',
   });
-  const [selectedCafe, setSelectedCafe] = useState<typeof cafes[keyof typeof cafes][0] | null>(null);
+  const [cities, setCities] = useState<City[]>([]);
+  const [cafes, setCafes] = useState<Cafe[]>([]);
+  const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [emailDisabled, setEmailDisabled] = useState(false);
+
+  // Fetch cities (only Rotterdam)
+  useEffect(() => {
+    const fetchCities = async () => {
+      const { data, error } = await supabase.from('cities').select('*').eq('name', 'Rotterdam');
+      if (data) setCities(data);
+    };
+    fetchCities();
+  }, []);
+
+  // Fetch cafes for selected city
+  useEffect(() => {
+    const fetchCafes = async () => {
+      if (!formData.city) return setCafes([]);
+      const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
+      if (data) setCafes(data);
+    };
+    fetchCafes();
+  }, [formData.city]);
 
   useEffect(() => {
     // Prefill email with logged-in user's email
@@ -31,34 +55,68 @@ const CreateMeetup = () => {
     getUser();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, we would save the data here
+    if (!selectedCafe) return;
+    // 1. Coffee meeting aanmaken
+    const { data: meeting, error: meetingError } = await supabase.from('coffee_meetings').insert([
+      {
+        creator_id: null, // Optioneel: kun je invullen met user id als je die hebt
+        invitee_name: formData.name,
+        invitee_email: formData.email,
+        dates: formData.dates.map(d => d.toISOString().split('T')[0]),
+        times: [formData.timePreference],
+        city_id: cities.find(c => c.name === formData.city)?.id,
+        cafe_id: selectedCafe.id,
+        status: 'pending',
+      }
+    ]).select().single();
+    if (meetingError || !meeting) {
+      alert('Er ging iets mis bij het aanmaken van de afspraak.');
+      return;
+    }
+    // 2. Invitation aanmaken
+    const token = uuidv4();
+    const { data: invitation, error: invitationError } = await supabase.from('invitations').insert([
+      {
+        meeting_id: meeting.id,
+        email: formData.email,
+        token,
+        status: 'pending',
+      }
+    ]).select().single();
+    if (invitationError || !invitation) {
+      alert('Er ging iets mis bij het aanmaken van de uitnodiging.');
+      return;
+    }
+    // 3. Token opslaan voor Invite-pagina
+    sessionStorage.setItem('inviteToken', token);
+    sessionStorage.setItem('meetingId', meeting.id);
     navigate('/invite');
   };
 
   const handleCityChange = (city: string) => {
     setFormData(prev => ({ ...prev, city }));
-    if (city && cafes[city as keyof typeof cafes]) {
-      const cityCafes = cafes[city as keyof typeof cafes];
-      const randomCafe = cityCafes[Math.floor(Math.random() * cityCafes.length)];
-      setSelectedCafe(randomCafe);
-    } else {
-      setSelectedCafe(null);
-    }
+    setSelectedCafe(null);
   };
 
   const shuffleCafe = () => {
-    if (formData.city && cafes[formData.city as keyof typeof cafes]) {
-      const cityCafes = cafes[formData.city as keyof typeof cafes];
-      if (cityCafes.length <= 1) return;
-      let newCafe = selectedCafe;
-      while (newCafe === selectedCafe) {
-        newCafe = cityCafes[Math.floor(Math.random() * cityCafes.length)];
-      }
-      setSelectedCafe(newCafe);
+    if (cafes.length <= 1) return;
+    let newCafe = selectedCafe;
+    while (newCafe === selectedCafe) {
+      newCafe = cafes[Math.floor(Math.random() * cafes.length)];
     }
+    setSelectedCafe(newCafe);
   };
+
+  // Pick a random cafe when cafes are loaded or city changes
+  useEffect(() => {
+    if (cafes.length > 0) {
+      setSelectedCafe(cafes[Math.floor(Math.random() * cafes.length)]);
+    } else {
+      setSelectedCafe(null);
+    }
+  }, [cafes]);
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -146,7 +204,7 @@ const CreateMeetup = () => {
             onChange={(e) => handleCityChange(e.target.value)}
             required
           >
-            <option value="">Select a city</option>
+            <option value="">Selecteer een stad</option>
             {cities.map((city) => (
               <option key={city.id} value={city.name}>
                 {city.name}
@@ -162,7 +220,7 @@ const CreateMeetup = () => {
             </h3>
             <p className="text-gray-700">{selectedCafe.name}</p>
             <p className="text-gray-500">{selectedCafe.address}</p>
-            {formData.city && cafes[formData.city as keyof typeof cafes] && cafes[formData.city as keyof typeof cafes].length > 1 && (
+            {cafes.length > 1 && (
               <button
                 type="button"
                 className="btn-secondary mt-2"

@@ -1,27 +1,80 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 const Respond = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     email: '',
     selectedTime: '',
   });
+  const [availableTimes, setAvailableTimes] = useState<{date: string, time: string}[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [meeting, setMeeting] = useState<any>(null);
 
-  // Dummy data - in a real app, this would come from the backend
-  const availableTimes = [
-    { id: 1, date: '2024-05-20', time: 'morning' },
-    { id: 2, date: '2024-05-20', time: 'afternoon' },
-    { id: 3, date: '2024-05-21', time: 'morning' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      const params = new URLSearchParams(location.search);
+      const token = params.get('token');
+      if (!token) {
+        setError('Geen geldige uitnodiging gevonden.');
+        setLoading(false);
+        return;
+      }
+      // Haal invitation op
+      const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).single();
+      if (invitationError || !invitation) {
+        setError('Uitnodiging niet gevonden of verlopen.');
+        setLoading(false);
+        return;
+      }
+      // Haal meeting op
+      const { data: meetingData, error: meetingError } = await supabase.from('coffee_meetings').select('*').eq('id', invitation.meeting_id).single();
+      if (meetingError || !meetingData) {
+        setError('Afspraak niet gevonden.');
+        setLoading(false);
+        return;
+      }
+      setMeeting(meetingData);
+      // Zet beschikbare tijden
+      const times: {date: string, time: string}[] = [];
+      (meetingData.dates || []).forEach((date: string) => {
+        (meetingData.times || []).forEach((time: string) => {
+          times.push({ date, time });
+        });
+      });
+      setAvailableTimes(times);
+      setFormData((prev) => ({ ...prev, email: invitation.email }));
+      setLoading(false);
+    };
+    fetchData();
+  }, [location.search]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, we would send the response to the backend
+    // Update invitation met gekozen tijd en status
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    if (!token) return;
+    const [selectedDate, selectedTime] = formData.selectedTime.split('-');
+    await supabase.from('invitations').update({
+      status: 'accepted',
+      selected_date: selectedDate,
+      selected_time: selectedTime,
+    }).eq('token', token);
     navigate('/');
   };
+
+  if (loading) {
+    return <div className="max-w-2xl mx-auto text-center py-12">Loading...</div>;
+  }
+  if (error) {
+    return <div className="max-w-2xl mx-auto text-center py-12 text-red-500">{error}</div>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -38,8 +91,8 @@ const Respond = () => {
             Available Times
           </label>
           <div className="space-y-3">
-            {availableTimes.map((time) => (
-              <label key={time.id} className="flex items-center">
+            {availableTimes.map((time, idx) => (
+              <label key={idx} className="flex items-center">
                 <input
                   type="radio"
                   name="selectedTime"
@@ -67,6 +120,7 @@ const Respond = () => {
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
+            disabled
           />
         </div>
 

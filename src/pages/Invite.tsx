@@ -1,8 +1,16 @@
 import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 
 const Invite = () => {
   const { t } = useTranslation();
-  const inviteLink = 'https://anemi-meets.com/respond/abc123'; // Dummy link
+  const [inviteLink, setInviteLink] = useState('');
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('inviteToken');
+    if (token) {
+      setInviteLink(`${window.location.origin}/respond?token=${token}`);
+    }
+  }, []);
 
   return (
     <div className="max-w-2xl mx-auto text-center">
@@ -17,14 +25,15 @@ const Invite = () => {
         
         <div className="bg-white p-4 rounded-lg border border-primary-200">
           <code className="text-primary-600 break-all">
-            {inviteLink}
+            {inviteLink || '...'}
           </code>
         </div>
       </div>
 
       <button
-        onClick={() => navigator.clipboard.writeText(inviteLink)}
+        onClick={() => inviteLink && navigator.clipboard.writeText(inviteLink)}
         className="btn-secondary"
+        disabled={!inviteLink}
       >
         Copy Link
       </button>
