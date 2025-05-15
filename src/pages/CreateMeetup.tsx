@@ -5,7 +5,6 @@ import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import { v4 as uuidv4 } from 'uuid';
-import { ReactDatePickerProps } from 'react-datepicker';
 import { forwardRef } from 'react';
 
 interface City { id: string; name: string; }
