@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
-import { v4 as uuidv4 } from 'uuid';
 import { forwardRef } from 'react';
 
 interface City { id: string; name: string; }
@@ -94,7 +93,7 @@ const CreateMeetup = () => {
     const selected_time = firstDateOpt.times[0];
     let invitation, invitationError;
     try {
-      const res = await fetch('https://<your-project-ref>.functions.supabase.co/create-invitation', {
+      const res = await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/create-invitation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

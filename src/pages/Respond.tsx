@@ -107,7 +107,7 @@ const Respond = () => {
     // Call Edge Function to update invitation
     let updateRes;
     try {
-      updateRes = await fetch('https://<your-project-ref>.functions.supabase.co/update-invitation', {
+      updateRes = await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/update-invitation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
