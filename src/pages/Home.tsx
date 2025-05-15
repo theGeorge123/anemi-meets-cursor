@@ -1,8 +1,19 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 const Home = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const handleStartMeetup = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session && session.user) {
+      navigate('/create-meetup');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <div className="space-y-12">
@@ -17,12 +28,12 @@ const Home = () => {
       </div>
 
       <div className="flex justify-center">
-        <Link
-          to="/create-meetup"
+        <button
+          onClick={handleStartMeetup}
           className="btn-primary text-lg px-8 py-3"
         >
           {t('common.startMeetup')}
-        </Link>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">

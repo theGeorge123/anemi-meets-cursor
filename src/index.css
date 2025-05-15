@@ -1,29 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-blue-50 via-pink-50 to-purple-100 text-gray-900 min-h-screen font-["Quicksand","Inter","system-ui","Avenir","Helvetica","Arial",sans-serif];
+    @apply bg-gradient-to-br from-[#f5f7fa] via-[#e8eaf6] to-[#e0f2f1] text-gray-800 min-h-screen font-["Quicksand","Inter","system-ui","Avenir","Helvetica","Arial",sans-serif];
     letter-spacing: 0.01em;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 bg-primary-300 text-primary-900 rounded-2xl shadow-md hover:bg-primary-400 transition-colors duration-300 font-semibold;
+    @apply px-6 py-3 bg-[#b2dfdb] text-[#37474f] rounded-2xl shadow-2xl shadow-[#b2dfdb]/30 hover:bg-[#80cbc4] transition-colors duration-300 font-semibold;
   }
   
   .btn-secondary {
-    @apply px-6 py-3 bg-secondary-100 text-primary-700 rounded-2xl shadow hover:bg-secondary-200 transition-colors duration-300 font-semibold;
+    @apply px-6 py-3 bg-[#e0e0e0] text-[#37474f] rounded-2xl shadow hover:bg-[#bdbdbd] transition-colors duration-300 font-semibold;
   }
 
   .input-field {
-    @apply w-full px-5 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary-200 focus:border-transparent outline-none bg-white/80 shadow-sm;
+    @apply w-full px-5 py-3 border border-[#e0e0e0] rounded-2xl focus:ring-2 focus:ring-[#b2dfdb] focus:border-transparent outline-none bg-white/70 shadow-md backdrop-blur-md;
   }
 
   .card {
-    @apply bg-white/70 rounded-3xl shadow-lg p-8 mb-4 backdrop-blur-sm;
+    @apply bg-white/60 rounded-3xl shadow-2xl shadow-[#b2dfdb]/20 p-8 mb-4 backdrop-blur-lg border border-[#e0e0e0]/60;
   }
 
   .abstract-bg {
@@ -33,4 +35,19 @@
     pointer-events: none;
     overflow: hidden;
   }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(30px); }
+}
+.animate-float-slow {
+  animation: float-slow 16s ease-in-out infinite;
+}
+@keyframes float-slower {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+.animate-float-slower {
+  animation: float-slower 22s ease-in-out infinite;
 } 

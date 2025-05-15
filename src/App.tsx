@@ -27,10 +27,11 @@ function App() {
         {/* Abstract SVG Background */}
         <div className="abstract-bg">
           <svg width="100%" height="100%" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="200" cy="200" rx="300" ry="120" fill="#a7c7e7" fillOpacity="0.25"/>
-            <ellipse cx="1200" cy="700" rx="260" ry="100" fill="#f7cac9" fillOpacity="0.22"/>
-            <ellipse cx="900" cy="200" rx="180" ry="80" fill="#b39ddb" fillOpacity="0.18"/>
-            <ellipse cx="400" cy="800" rx="200" ry="60" fill="#ffe0b2" fillOpacity="0.18"/>
+            <ellipse cx="220" cy="180" rx="320" ry="120" fill="#b2dfdb" fillOpacity="0.22" className="animate-float-slow"/>
+            <ellipse cx="1200" cy="700" rx="260" ry="100" fill="#e0e0e0" fillOpacity="0.18" className="animate-float-slower"/>
+            <ellipse cx="900" cy="220" rx="180" ry="80" fill="#c5cae9" fillOpacity="0.16" className="animate-float-slow"/>
+            <ellipse cx="400" cy="800" rx="200" ry="60" fill="#ffe0b2" fillOpacity="0.13" className="animate-float-slower"/>
+            <ellipse cx="1100" cy="200" rx="120" ry="60" fill="#f5f7fa" fillOpacity="0.18" className="animate-float-slow"/>
           </svg>
         </div>
         <nav className="bg-white shadow-sm">
