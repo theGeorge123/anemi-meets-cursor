@@ -83,26 +83,40 @@ const CreateMeetup = () => {
       setFormError(t('common.requiredTime'));
       return;
     }
-    // 1. Invitation aanmaken (nu alles in invitations)
-    const token = uuidv4();
-    const { data: invitation, error: invitationError } = await supabase.from('invitations').insert([
-      {
-        creator_id: userId,
-        invitee_name: formData.name,
-        email: formData.email,
-        city_id: cities.find(c => c.name === formData.city)?.id,
-        cafe_id: selectedCafe.id,
-        status: 'pending',
-        date_time_options: dateTimeOptions,
-        token,
-      }
-    ]).select().single();
+    // 1. Invitation aanmaken via Edge Function
+    // For now, use the first selected date and time (can be expanded for multi-date)
+    const firstDateOpt = dateTimeOptions.find(opt => opt.times.length > 0);
+    if (!firstDateOpt) {
+      setFormError(t('common.requiredTime'));
+      return;
+    }
+    const selected_date = firstDateOpt.date;
+    const selected_time = firstDateOpt.times[0];
+    let invitation, invitationError;
+    try {
+      const res = await fetch('https://<your-project-ref>.functions.supabase.co/create-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email_a: formData.email,
+          selected_date,
+          selected_time,
+          cafe_name: selectedCafe.name,
+          cafe_address: selectedCafe.address,
+        }),
+      });
+      const result = await res.json();
+      invitation = result.invitation;
+      invitationError = result.error;
+    } catch (err) {
+      invitationError = err;
+    }
     if (invitationError || !invitation) {
       alert(t('common.errorCreatingInvite'));
       return;
     }
     // 2. Token opslaan voor Invite-pagina
-    sessionStorage.setItem('inviteToken', token);
+    sessionStorage.setItem('inviteToken', invitation.token);
     sessionStorage.setItem('invitationId', invitation.id);
     navigate('/invite');
   };
