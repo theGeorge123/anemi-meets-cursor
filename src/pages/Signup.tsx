@@ -31,7 +31,16 @@ const Signup = () => {
       password: form.password,
     });
     if (signUpError) {
-      setError(signUpError.message);
+      if (
+        signUpError.message.toLowerCase().includes("already registered") ||
+        signUpError.message.toLowerCase().includes("user already registered") ||
+        signUpError.message.toLowerCase().includes("user already exists") ||
+        signUpError.message.toLowerCase().includes("email address is already in use")
+      ) {
+        setError("Dit e-mailadres is al in gebruik. Probeer in te loggen of gebruik een ander e-mailadres.");
+      } else {
+        setError(signUpError.message);
+      }
       return;
     }
     // Save gender in profiles table (if possible)
