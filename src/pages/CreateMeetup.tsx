@@ -93,7 +93,7 @@ const CreateMeetup = () => {
     const selected_time = firstDateOpt.times[0];
     let invitation, invitationError;
     try {
-      const res = await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/create-invitation', {
+      const res = await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/create-invitation-ts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
