@@ -14,6 +14,11 @@ const Respond = () => {
   const [availableTimes, setAvailableTimes] = useState<{date: string, time: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cafe, setCafe] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [wantsUpdates, setWantsUpdates] = useState(false);
+
+  const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,22 +43,45 @@ const Respond = () => {
         setLoading(false);
         return;
       }
+      // Haal cafe op
+      if (meetingData.cafe_id) {
+        const { data: cafeData } = await supabase.from('cafes').select('*').eq('id', meetingData.cafe_id).single();
+        setCafe(cafeData);
+      }
       // Zet beschikbare tijden
-      const times: {date: string, time: string}[] = [];
-      (meetingData.dates || []).forEach((date: string) => {
-        (meetingData.times || []).forEach((time: string) => {
-          times.push({ date, time });
+      let times: {date: string, time: string}[] = [];
+      if (meetingData.date_time_options && Array.isArray(meetingData.date_time_options)) {
+        meetingData.date_time_options.forEach((opt: {date: string, times: string[]}) => {
+          (opt.times || []).forEach((time: string) => {
+            times.push({ date: opt.date, time });
+          });
         });
-      });
+      }
       setAvailableTimes(times);
       setFormData((prev) => ({ ...prev, email: invitation.email }));
       setLoading(false);
     };
     fetchData();
+    // Check login status
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session?.user);
+    });
+    // Prefill email if saved
+    const savedEmail = localStorage.getItem(UPDATES_EMAIL_KEY);
+    if (savedEmail) {
+      setFormData((prev) => ({ ...prev, email: savedEmail }));
+      setWantsUpdates(true);
+    }
   }, [location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Sla email op als updates gewenst
+    if (wantsUpdates) {
+      localStorage.setItem(UPDATES_EMAIL_KEY, formData.email);
+    } else {
+      localStorage.removeItem(UPDATES_EMAIL_KEY);
+    }
     // Update invitation met gekozen tijd en status
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
@@ -63,6 +91,7 @@ const Respond = () => {
       status: 'accepted',
       selected_date: selectedDate,
       selected_time: selectedTime,
+      email: formData.email,
     }).eq('token', token);
     navigate('/');
   };
@@ -76,6 +105,13 @@ const Respond = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {cafe && (
+        <div className="card bg-primary-50 mb-6">
+          <h2 className="text-xl font-semibold text-primary-600">Café</h2>
+          <p className="text-gray-700 font-medium">{cafe.name}</p>
+          <p className="text-gray-500">{cafe.address}</p>
+        </div>
+      )}
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
         {t('respond.title')}
       </h1>
@@ -118,14 +154,32 @@ const Respond = () => {
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
-            disabled
           />
+        </div>
+
+        <div className="flex items-center">
+          <input
+            id="updates"
+            type="checkbox"
+            checked={wantsUpdates}
+            onChange={() => setWantsUpdates(v => !v)}
+            className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+          />
+          <label htmlFor="updates" className="ml-2 text-gray-700">
+            Wil je updates ontvangen?
+          </label>
         </div>
 
         <button type="submit" className="btn-primary w-full">
           {t('common.submit')}
         </button>
       </form>
+      {!isLoggedIn && (
+        <div className="mt-8 text-center">
+          <p className="mb-2 text-gray-600">Wil je zelf ook een meeting aanmaken?</p>
+          <a href="/login" className="btn-secondary">Log in</a>
+        </div>
+      )}
     </div>
   );
 };

@@ -24,6 +24,7 @@ const CreateMeetup = () => {
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [dateTimeOptions, setDateTimeOptions] = useState<{ date: string; times: string[] }[]>([]);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -70,11 +71,10 @@ const CreateMeetup = () => {
         creator_id: userId,
         invitee_name: formData.name,
         invitee_email: formData.email,
-        dates: formData.dates.map(d => d.toISOString().split('T')[0]),
-        times: [formData.timePreference],
         city_id: cities.find(c => c.name === formData.city)?.id,
         cafe_id: selectedCafe.id,
         status: 'pending',
+        date_time_options: dateTimeOptions,
       }
     ]).select().single();
     if (meetingError || !meeting) {
@@ -124,6 +124,34 @@ const CreateMeetup = () => {
     }
   }, [cafes]);
 
+  // DatePicker onChange aanpassen
+  const handleDatesChange = (dates: Date[]) => {
+    setFormData(prev => ({ ...prev, dates }));
+    // Sync dateTimeOptions met nieuwe datums
+    setDateTimeOptions((prevOptions) => {
+      const newDates = dates.map(d => d.toISOString().split('T')[0]);
+      // Voeg nieuwe datums toe
+      let updated = [...prevOptions];
+      newDates.forEach(date => {
+        if (!updated.find(opt => opt.date === date)) {
+          updated.push({ date, times: [] });
+        }
+      });
+      // Verwijder datums die niet meer geselecteerd zijn
+      updated = updated.filter(opt => newDates.includes(opt.date));
+      return updated;
+    });
+  };
+
+  // Tijdvak checkbox toggle
+  const handleTimeToggle = (date: string, time: string) => {
+    setDateTimeOptions(prev => prev.map(opt =>
+      opt.date === date
+        ? { ...opt, times: opt.times.includes(time) ? opt.times.filter(t => t !== time) : [...opt.times, time] }
+        : opt
+    ));
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
@@ -169,7 +197,7 @@ const CreateMeetup = () => {
           </label>
           <DatePicker
             selected={formData.dates[0]}
-            onChange={(dates: Date[]) => setFormData(prev => ({ ...prev, dates }))}
+            onChange={handleDatesChange}
             selectsMultiple
             inline
             minDate={new Date()}
@@ -178,26 +206,31 @@ const CreateMeetup = () => {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            {t('common.time')}
-          </label>
-          <div className="mt-2 space-y-2">
-            {['morning', 'afternoon', 'evening'].map((time) => (
-              <label key={time} className="flex items-center">
-                <input
-                  type="radio"
-                  name="timePreference"
-                  value={time}
-                  checked={formData.timePreference === time}
-                  onChange={(e) => setFormData(prev => ({ ...prev, timePreference: e.target.value }))}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="ml-2 text-gray-700">{t(`common.${time}`)}</span>
-              </label>
-            ))}
+        {dateTimeOptions.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Kies tijden per datum</label>
+            <div className="space-y-4">
+              {dateTimeOptions.map(opt => (
+                <div key={opt.date} className="border rounded-lg p-3 bg-primary-50">
+                  <div className="font-medium text-primary-600 mb-2">{new Date(opt.date).toLocaleDateString()}</div>
+                  <div className="flex gap-6">
+                    {['morning', 'afternoon', 'evening'].map(time => (
+                      <label key={time} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={opt.times.includes(time)}
+                          onChange={() => handleTimeToggle(opt.date, time)}
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                        />
+                        <span className="ml-2 text-gray-700">{t(`common.${time}`)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <label htmlFor="city" className="block text-sm font-medium text-gray-700">
