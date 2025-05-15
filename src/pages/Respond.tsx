@@ -103,25 +103,26 @@ const Respond = () => {
       setError(t('respond.errorNoEmail') || 'Vul je e-mailadres in.');
       return;
     }
-    const [selectedDate, selectedTime] = formData.selectedTime.split('-');
-    const { data: updatedInvitation, error: updateError } = await supabase
-      .from('invitations')
-      .update({
-        status: 'accepted',
-        selected_date: selectedDate,
-        selected_time: selectedTime,
-        email: formData.email,
-      })
-      .eq('token', token)
-      .neq('status', 'accepted')
-      .select()
-      .single();
-    if (updateError) {
+    const [selected_date, selected_time] = formData.selectedTime.split('-');
+    // Call Edge Function to update invitation
+    let updateRes;
+    try {
+      updateRes = await fetch('https://<your-project-ref>.functions.supabase.co/update-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          email_b: formData.email,
+          selected_date,
+          selected_time,
+        }),
+      });
+    } catch (err) {
       setError(t('respond.errorUpdateInvite') || 'Kon uitnodiging niet bijwerken.');
       return;
     }
-    if (!updatedInvitation) {
-      setError(t('respond.errorUpdateInvite') || 'Uitnodiging is al geaccepteerd of niet gevonden.');
+    if (!updateRes.ok) {
+      setError(t('respond.errorUpdateInvite') || 'Kon uitnodiging niet bijwerken.');
       return;
     }
     // Debug: log token
