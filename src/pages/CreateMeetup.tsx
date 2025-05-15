@@ -5,6 +5,8 @@ import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import { v4 as uuidv4 } from 'uuid';
+import { ReactDatePickerProps } from 'react-datepicker';
+import { forwardRef } from 'react';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; }
@@ -124,23 +126,16 @@ const CreateMeetup = () => {
     }
   }, [cafes]);
 
-  // DatePicker onChange aanpassen
-  const handleDatesChange = (dates: Date[]) => {
-    setFormData(prev => ({ ...prev, dates }));
-    // Sync dateTimeOptions met nieuwe datums
-    setDateTimeOptions((prevOptions) => {
-      const newDates = dates.map(d => d.toISOString().split('T')[0]);
-      // Voeg nieuwe datums toe
-      let updated = [...prevOptions];
-      newDates.forEach(date => {
-        if (!updated.find(opt => opt.date === date)) {
-          updated.push({ date, times: [] });
-        }
-      });
-      // Verwijder datums die niet meer geselecteerd zijn
-      updated = updated.filter(opt => newDates.includes(opt.date));
-      return updated;
-    });
+  // Multi-date select: toggle datum bij klik
+  const handleDatePickerChange = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    const exists = formData.dates.some(d => d.toISOString().split('T')[0] === dateStr);
+    if (exists) {
+      handleRemoveDate(dateStr);
+    } else {
+      setFormData(prev => ({ ...prev, dates: [...prev.dates, date] }));
+      setDateTimeOptions(prev => ([...prev, { date: dateStr, times: [] }]));
+    }
   };
 
   // Tijdvak checkbox toggle
@@ -160,6 +155,11 @@ const CreateMeetup = () => {
     }));
     setDateTimeOptions(prev => prev.filter(opt => opt.date !== dateStr));
   };
+
+  // Custom input voor DatePicker (verbergt standaard input)
+  const CustomInput = forwardRef<HTMLInputElement>((props, ref) => (
+    <input type="text" style={{ position: 'absolute', left: '-9999px', width: 0, height: 0, opacity: 0 }} ref={ref} {...props} />
+  ));
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -205,13 +205,13 @@ const CreateMeetup = () => {
             {t('common.date')}
           </label>
           <DatePicker
-            selected={formData.dates[0]}
-            onChange={handleDatesChange}
-            selectsMultiple
             inline
             minDate={new Date()}
             maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
-            className="mt-1"
+            highlightDates={formData.dates}
+            onChange={handleDatePickerChange}
+            customInput={<CustomInput />}
+            calendarClassName="cursor-pointer"
           />
           {formData.dates.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
