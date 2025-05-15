@@ -4,24 +4,33 @@
 
 @layer base {
   body {
-    @apply bg-secondary-50 text-gray-900;
+    @apply bg-gradient-to-br from-blue-50 via-pink-50 to-purple-100 text-gray-900 min-h-screen font-["Quicksand","Inter","system-ui","Avenir","Helvetica","Arial",sans-serif];
+    letter-spacing: 0.01em;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200;
+    @apply px-6 py-3 bg-primary-300 text-primary-900 rounded-2xl shadow-md hover:bg-primary-400 transition-colors duration-300 font-semibold;
   }
   
   .btn-secondary {
-    @apply px-4 py-2 bg-secondary-200 text-gray-800 rounded-lg hover:bg-secondary-300 transition-colors duration-200;
+    @apply px-6 py-3 bg-secondary-100 text-primary-700 rounded-2xl shadow hover:bg-secondary-200 transition-colors duration-300 font-semibold;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none;
+    @apply w-full px-5 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary-200 focus:border-transparent outline-none bg-white/80 shadow-sm;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-md p-6;
+    @apply bg-white/70 rounded-3xl shadow-lg p-8 mb-4 backdrop-blur-sm;
+  }
+
+  .abstract-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
   }
 } 

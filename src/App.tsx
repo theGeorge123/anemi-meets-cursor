@@ -19,7 +19,16 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-secondary-50">
+      <div className="min-h-screen bg-secondary-50 relative">
+        {/* Abstract SVG Background */}
+        <div className="abstract-bg">
+          <svg width="100%" height="100%" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="200" cy="200" rx="300" ry="120" fill="#a7c7e7" fillOpacity="0.25"/>
+            <ellipse cx="1200" cy="700" rx="260" ry="100" fill="#f7cac9" fillOpacity="0.22"/>
+            <ellipse cx="900" cy="200" rx="180" ry="80" fill="#b39ddb" fillOpacity="0.18"/>
+            <ellipse cx="400" cy="800" rx="200" ry="60" fill="#ffe0b2" fillOpacity="0.18"/>
+          </svg>
+        </div>
         <nav className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">

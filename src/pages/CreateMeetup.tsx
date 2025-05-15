@@ -34,6 +34,18 @@ const CreateMeetup = () => {
     }
   };
 
+  const shuffleCafe = () => {
+    if (formData.city && cafes[formData.city as keyof typeof cafes]) {
+      const cityCafes = cafes[formData.city as keyof typeof cafes];
+      if (cityCafes.length <= 1) return;
+      let newCafe = selectedCafe;
+      while (newCafe === selectedCafe) {
+        newCafe = cityCafes[Math.floor(Math.random() * cityCafes.length)];
+      }
+      setSelectedCafe(newCafe);
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
@@ -135,6 +147,15 @@ const CreateMeetup = () => {
             </h3>
             <p className="text-gray-700">{selectedCafe.name}</p>
             <p className="text-gray-500">{selectedCafe.address}</p>
+            {formData.city && cafes[formData.city as keyof typeof cafes] && cafes[formData.city as keyof typeof cafes].length > 1 && (
+              <button
+                type="button"
+                className="btn-secondary mt-2"
+                onClick={shuffleCafe}
+              >
+                Shuffle Cafe
+              </button>
+            )}
           </div>
         )}
 
