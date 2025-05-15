@@ -17,6 +17,9 @@ const Respond = () => {
   const [cafe, setCafe] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [wantsUpdates, setWantsUpdates] = useState(false);
+  const [status, setStatus] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [invitation, setInvitation] = useState<any>(null);
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -48,6 +51,7 @@ const Respond = () => {
         setLoading(false);
         return;
       }
+      setInvitation(invitation);
       // Toon cafe direct uit invitation
       setCafe({
         name: invitation.cafe_name,
@@ -81,61 +85,51 @@ const Respond = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // Reset error state
+    if (!formData.selectedTime || !formData.email) {
+      setErrorMsg("Vul je e-mailadres in en kies een tijd.");
+      return;
+    }
+    setStatus("sending");
+    setErrorMsg("");
+    if (!invitation) {
+      setErrorMsg("Uitnodiging niet gevonden.");
+      setStatus("error");
+      return;
+    }
     // Sla email op als updates gewenst
     if (wantsUpdates) {
       localStorage.setItem(UPDATES_EMAIL_KEY, formData.email);
     } else {
       localStorage.removeItem(UPDATES_EMAIL_KEY);
     }
-    // Update invitation met gekozen tijd en status, alleen als nog niet geaccepteerd
-    const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-    if (!token) {
-      setError(t('respond.errorNoToken') || 'Geen geldige uitnodiging gevonden.');
-      return;
-    }
-    if (!formData.selectedTime) {
-      setError(t('respond.errorNoTime') || 'Kies een tijd.');
-      return;
-    }
-    if (!formData.email) {
-      setError(t('respond.errorNoEmail') || 'Vul je e-mailadres in.');
-      return;
-    }
-    const [selected_date, selected_time] = formData.selectedTime.split('-');
-    // Call Edge Function to update invitation and send confirmation
-    let updateRes;
+    console.log("Submit:", { token: invitation.token, email_b: formData.email, selected_date: formData.selectedTime.split('-')[0], selected_time: formData.selectedTime.split('-')[1] });
     try {
-      updateRes = await fetch('https://bijyercgpgaheeoeumtv.supabase.co/functions/v1/send-meeting-confirmation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/functions/v1/send-meeting-confirmation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
         body: JSON.stringify({
-          token,
+          token: invitation.token,
           email_b: formData.email,
-          selected_date,
-          selected_time,
-        }),
+          selected_date: formData.selectedTime.split('-')[0],
+          selected_time: formData.selectedTime.split('-')[1]
+        })
       });
-    } catch (err) {
-      setError(t('respond.errorUpdateInvite') || 'Kon uitnodiging niet bijwerken.');
-      return;
-    }
-    if (!updateRes.ok) {
-      setError(t('respond.errorUpdateInvite') || 'Kon uitnodiging niet bijwerken.');
-      return;
-    }
-    // Debug: log token
-    console.log('Token voor edge function:', token);
-    if (token) {
-      try {
-        await callSendMeetingConfirmation(token);
-      } catch (e) {
-        setError(t('respond.errorSendMail') || 'Kon bevestigingsmail niet versturen.');
-        return;
+      const data = await res.json();
+      console.log("Function response:", data);
+      if (!res.ok || !data.success) {
+        setStatus("error");
+        setErrorMsg(data.error || "Er ging iets mis. Probeer het opnieuw.");
+      } else {
+        setStatus("done");
       }
+    } catch (err) {
+      console.error("Function error:", err);
+      setStatus("error");
+      setErrorMsg("Er ging iets mis. Probeer het opnieuw.");
     }
-    navigate('/confirmed');
   };
 
   if (loading) {
@@ -176,6 +170,7 @@ const Respond = () => {
                   checked={formData.selectedTime === `${time.date}-${time.time}`}
                   onChange={(e) => setFormData(prev => ({ ...prev, selectedTime: e.target.value }))}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                  required
                 />
                 <span className="ml-2 text-gray-700">
                   {new Date(time.date).toLocaleDateString()} - {t(`common.${time.time}`)}
@@ -212,9 +207,11 @@ const Respond = () => {
           </label>
         </div>
 
-        <button type="submit" className="btn-primary w-full">
-          {t('common.submit')}
+        <button type="submit" className="btn-primary w-full" disabled={status === 'sending'}>
+          {status === 'sending' ? 'Versturen...' : t('common.submit')}
         </button>
+        {errorMsg && <div className="text-red-600 mt-2">{errorMsg}</div>}
+        {status === 'done' && <div className="text-green-600 mt-2">Uitnodiging bevestigd en mail verstuurd!</div>}
       </form>
       {!isLoggedIn && (
         <div className="mt-8 text-center">
