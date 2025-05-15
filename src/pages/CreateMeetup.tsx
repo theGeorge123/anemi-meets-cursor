@@ -90,26 +90,35 @@ const CreateMeetup = () => {
     }
     const selected_date = firstDateOpt.date;
     const selected_time = firstDateOpt.times[0];
-    // 1. Invitation aanmaken direct via Supabase
+    // 1. Invitation aanmaken via Supabase REST API
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
-    const { data: invitation, error: invitationError } = await supabase.from('invitations').insert([
-      {
+    const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
+      method: "POST",
+      headers: {
+        "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      },
+      body: JSON.stringify({
+        token,
         email_a: formData.email,
         selected_date,
         selected_time,
         cafe_name: selectedCafe.name,
         cafe_address: selectedCafe.address,
-        token,
-        status: 'pending'
-      }
-    ]).select().single();
-    if (invitationError || !invitation) {
+        status: "pending",
+        date_time_options: dateTimeOptions
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data || !data[0]) {
       alert(t('common.errorCreatingInvite'));
       return;
     }
     // 2. Token opslaan voor Invite-pagina
-    sessionStorage.setItem('inviteToken', invitation.token);
-    sessionStorage.setItem('invitationId', invitation.id);
+    sessionStorage.setItem('inviteToken', data[0].token);
+    sessionStorage.setItem('invitationId', data[0].id);
     navigate('/invite');
   };
 
