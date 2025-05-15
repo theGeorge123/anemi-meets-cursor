@@ -48,22 +48,15 @@ const Respond = () => {
         setLoading(false);
         return;
       }
-      // Haal meeting op
-      const { data: meetingData, error: meetingError } = await supabase.from('coffee_meetings').select('*').eq('id', invitation.meeting_id).single();
-      if (meetingError || !meetingData) {
-        setError('Afspraak niet gevonden.');
-        setLoading(false);
-        return;
-      }
       // Haal cafe op
-      if (meetingData.cafe_id) {
-        const { data: cafeData } = await supabase.from('cafes').select('*').eq('id', meetingData.cafe_id).single();
+      if (invitation.cafe_id) {
+        const { data: cafeData } = await supabase.from('cafes').select('*').eq('id', invitation.cafe_id).single();
         setCafe(cafeData);
       }
       // Zet beschikbare tijden
       let times: {date: string, time: string}[] = [];
-      if (meetingData.date_time_options && Array.isArray(meetingData.date_time_options)) {
-        meetingData.date_time_options.forEach((opt: {date: string, times: string[]}) => {
+      if (invitation.date_time_options && Array.isArray(invitation.date_time_options)) {
+        invitation.date_time_options.forEach((opt: {date: string, times: string[]}) => {
           (opt.times || []).forEach((time: string) => {
             times.push({ date: opt.date, time });
           });
@@ -129,29 +122,6 @@ const Respond = () => {
     }
     if (!updatedInvitation) {
       setError(t('respond.errorUpdateInvite') || 'Uitnodiging is al geaccepteerd of niet gevonden.');
-      return;
-    }
-    // Fetch invitation to get meeting_id
-    const { data: invitation, error: invitationError } = await supabase
-      .from('invitations')
-      .select('*')
-      .eq('token', token)
-      .single();
-    if (invitationError || !invitation) {
-      setError(t('respond.errorFetchInvite') || 'Uitnodiging niet gevonden.');
-      return;
-    }
-    if (invitation && invitation.meeting_id) {
-      const { error: meetingError } = await supabase
-        .from('coffee_meetings')
-        .update({ status: 'confirmed' })
-        .eq('id', invitation.meeting_id);
-      if (meetingError) {
-        setError(t('respond.errorUpdateMeeting') || 'Kon afspraak niet bijwerken.');
-        return;
-      }
-    } else {
-      setError(t('respond.errorNoMeeting') || 'Geen geldige afspraak gevonden.');
       return;
     }
     // Debug: log token

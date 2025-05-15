@@ -83,39 +83,27 @@ const CreateMeetup = () => {
       setFormError(t('common.requiredTime'));
       return;
     }
-    // 1. Coffee meeting aanmaken
-    const { data: meeting, error: meetingError } = await supabase.from('coffee_meetings').insert([
+    // 1. Invitation aanmaken (nu alles in invitations)
+    const token = uuidv4();
+    const { data: invitation, error: invitationError } = await supabase.from('invitations').insert([
       {
         creator_id: userId,
         invitee_name: formData.name,
-        invitee_email: formData.email,
+        email: formData.email,
         city_id: cities.find(c => c.name === formData.city)?.id,
         cafe_id: selectedCafe.id,
         status: 'pending',
         date_time_options: dateTimeOptions,
-      }
-    ]).select().single();
-    if (meetingError || !meeting) {
-      alert(t('common.errorCreatingMeeting') + ' ' + (meetingError?.message || JSON.stringify(meetingError) || ''));
-      return;
-    }
-    // 2. Invitation aanmaken
-    const token = uuidv4();
-    const { data: invitation, error: invitationError } = await supabase.from('invitations').insert([
-      {
-        meeting_id: meeting.id,
-        email: formData.email,
         token,
-        status: 'pending',
       }
     ]).select().single();
     if (invitationError || !invitation) {
       alert(t('common.errorCreatingInvite'));
       return;
     }
-    // 3. Token opslaan voor Invite-pagina
+    // 2. Token opslaan voor Invite-pagina
     sessionStorage.setItem('inviteToken', token);
-    sessionStorage.setItem('meetingId', meeting.id);
+    sessionStorage.setItem('invitationId', invitation.id);
     navigate('/invite');
   };
 
