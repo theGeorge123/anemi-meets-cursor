@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Confirmed = () => (
   <div className="max-w-2xl mx-auto text-center py-16">
     <h1 className="text-3xl font-bold text-primary-600 mb-4">
