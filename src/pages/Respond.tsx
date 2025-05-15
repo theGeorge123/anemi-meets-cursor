@@ -105,8 +105,11 @@ const Respond = () => {
       selected_time: selectedTime,
       email: formData.email,
     }).eq('token', token);
-    // Roep de edge function aan (asynchroon, UX niet blokkeren)
-    callSendMeetingConfirmation(token);
+    // Debug: log token
+    console.log('Token voor edge function:', token);
+    if (token) {
+      callSendMeetingConfirmation(token);
+    }
     navigate('/confirmed');
   };
 
