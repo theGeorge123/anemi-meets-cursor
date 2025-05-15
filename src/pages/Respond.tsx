@@ -104,10 +104,10 @@ const Respond = () => {
       return;
     }
     const [selected_date, selected_time] = formData.selectedTime.split('-');
-    // Call Edge Function to update invitation
+    // Call Edge Function to update invitation and send confirmation
     let updateRes;
     try {
-      updateRes = await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/update-invitation', {
+      updateRes = await fetch('https://bijyercgpgaheeoeumtv.supabase.co/functions/v1/send-meeting-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
