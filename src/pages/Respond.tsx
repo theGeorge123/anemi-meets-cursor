@@ -20,6 +20,18 @@ const Respond = () => {
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
+  const callSendMeetingConfirmation = async (token: string) => {
+    try {
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+    } catch (e) {
+      console.error('Kon bevestigingsmail niet versturen:', e);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const params = new URLSearchParams(location.search);
@@ -93,7 +105,9 @@ const Respond = () => {
       selected_time: selectedTime,
       email: formData.email,
     }).eq('token', token);
-    navigate('/');
+    // Roep de edge function aan (asynchroon, UX niet blokkeren)
+    callSendMeetingConfirmation(token);
+    navigate('/confirmed');
   };
 
   if (loading) {

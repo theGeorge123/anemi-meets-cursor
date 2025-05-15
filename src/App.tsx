@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
 import Terms from './pages/Terms';
+import Confirmed from './pages/Confirmed';
 
 function App() {
   const { i18n } = useTranslation();
@@ -68,6 +69,7 @@ function App() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/confirmed" element={<Confirmed />} />
           </Routes>
         </main>
         <Footer />
