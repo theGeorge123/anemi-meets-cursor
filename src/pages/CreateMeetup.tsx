@@ -152,6 +152,15 @@ const CreateMeetup = () => {
     ));
   };
 
+  // Datum verwijderen
+  const handleRemoveDate = (dateStr: string) => {
+    setFormData(prev => ({
+      ...prev,
+      dates: prev.dates.filter(d => d.toISOString().split('T')[0] !== dateStr)
+    }));
+    setDateTimeOptions(prev => prev.filter(opt => opt.date !== dateStr));
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
@@ -204,6 +213,26 @@ const CreateMeetup = () => {
             maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
             className="mt-1"
           />
+          {formData.dates.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {formData.dates.map((d) => {
+                const dateStr = d.toISOString().split('T')[0];
+                return (
+                  <span key={dateStr} className="inline-flex items-center bg-primary-100 text-primary-700 rounded-full px-3 py-1 text-sm font-medium">
+                    {new Date(dateStr).toLocaleDateString()}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveDate(dateStr)}
+                      className="ml-2 text-primary-500 hover:text-red-500 focus:outline-none"
+                      aria-label="Verwijder datum"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {dateTimeOptions.length > 0 && (
