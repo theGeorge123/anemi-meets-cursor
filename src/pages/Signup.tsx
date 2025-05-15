@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 const GENDER_OPTIONS = [
   { value: 'man', label: 'Man' },
@@ -13,6 +14,7 @@ const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -26,47 +28,35 @@ const Signup = () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    // Probeer altijd te registreren, maar geef altijd dezelfde feedback
+    await supabase.auth.signUp({
       email: form.email,
       password: form.password,
     });
-    if (signUpError) {
-      if (
-        signUpError.message.toLowerCase().includes("already registered") ||
-        signUpError.message.toLowerCase().includes("user already registered") ||
-        signUpError.message.toLowerCase().includes("user already exists") ||
-        signUpError.message.toLowerCase().includes("email address is already in use")
-      ) {
-        setError("Dit e-mailadres is al in gebruik. Probeer in te loggen of gebruik een ander e-mailadres.");
-      } else {
-        setError(signUpError.message);
-      }
-      return;
-    }
-    // Save gender in profiles table (if possible)
-    if (data.user) {
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
-        email: form.email,
-        full_name: '',
-        bio: '',
-        gender: form.gender,
-      });
-    }
+    // Profiel alleen aanmaken als registratie succesvol is (optioneel, kan ook weggelaten worden)
+    // if (data.user) {
+    //   await supabase.from('profiles').upsert({
+    //     id: data.user.id,
+    //     email: form.email,
+    //     full_name: '',
+    //     bio: '',
+    //     gender: form.gender,
+    //   });
+    // }
     if (wantsUpdates) {
       localStorage.setItem(UPDATES_EMAIL_KEY, form.email);
     }
-    setSuccess('Account aangemaakt! Check je e-mail om te bevestigen.');
-    setTimeout(() => navigate('/login'), 2000);
+    setSuccess('Als je al een account hebt, controleer je e-mail voor een bevestigingslink of probeer in te loggen.');
+    setTimeout(() => navigate('/login'), 3000);
   };
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">Account aanmaken</h1>
+      <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('common.createAccount')}</h1>
       <form onSubmit={handleSubmit} className="space-y-6 bg-white/70 p-6 rounded-2xl shadow">
         <div>
           <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700">
-            E-mail
+            {t('common.email')}
           </label>
           <input
             type="email"
@@ -79,7 +69,7 @@ const Signup = () => {
         </div>
         <div>
           <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700">
-            Wachtwoord
+            {t('common.password')}
           </label>
           <input
             type="password"
@@ -92,7 +82,7 @@ const Signup = () => {
         </div>
         <div>
           <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
-            Geslacht
+            {t('common.gender')}
           </label>
           <select
             id="gender"
@@ -101,7 +91,7 @@ const Signup = () => {
             onChange={(e) => setForm((prev) => ({ ...prev, gender: e.target.value }))}
             required
           >
-            <option value="">Maak een keuze</option>
+            <option value="">{t('common.selectOption')}</option>
             {GENDER_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -116,19 +106,19 @@ const Signup = () => {
             className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
           />
           <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
-            Houd mij op de hoogte van updates
+            {t('common.updatesOptIn')}
           </label>
         </div>
         {error && <div className="text-red-500 text-sm">{error}</div>}
         {success && <div className="text-green-600 text-sm">{success}</div>}
-        <button type="submit" className="btn-primary w-full">Account aanmaken</button>
+        <button type="submit" className="btn-primary w-full">{t('common.createAccount')}</button>
       </form>
       <div className="text-center mt-6">
         <button
           className="text-primary-600 underline hover:text-primary-800 text-sm"
           onClick={() => navigate('/login')}
         >
-          Al een account? Inloggen
+          {t('common.alreadyHaveAccount')}
         </button>
       </div>
     </div>

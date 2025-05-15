@@ -26,6 +26,7 @@ const CreateMeetup = () => {
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [dateTimeOptions, setDateTimeOptions] = useState<{ date: string; times: string[] }[]>([]);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -61,9 +62,16 @@ const CreateMeetup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     if (!selectedCafe) return;
     if (!userId) {
-      alert('Niet ingelogd. Log in om een afspraak te maken.');
+      alert(t('common.notLoggedIn'));
+      return;
+    }
+    // Controle: minimaal één tijd geselecteerd voor een van de datums
+    const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
+    if (!hasAnyTime) {
+      setFormError(t('common.requiredTime'));
       return;
     }
     // 1. Coffee meeting aanmaken
@@ -79,7 +87,7 @@ const CreateMeetup = () => {
       }
     ]).select().single();
     if (meetingError || !meeting) {
-      alert('Er ging iets mis bij het aanmaken van de afspraak: ' + (meetingError?.message || JSON.stringify(meetingError) || 'onbekende fout'));
+      alert(t('common.errorCreatingMeeting') + ' ' + (meetingError?.message || JSON.stringify(meetingError) || ''));
       return;
     }
     // 2. Invitation aanmaken
@@ -93,7 +101,7 @@ const CreateMeetup = () => {
       }
     ]).select().single();
     if (invitationError || !invitation) {
-      alert('Er ging iets mis bij het aanmaken van de uitnodiging.');
+      alert(t('common.errorCreatingInvite'));
       return;
     }
     // 3. Token opslaan voor Invite-pagina
@@ -236,7 +244,7 @@ const CreateMeetup = () => {
 
         {dateTimeOptions.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Kies tijden per datum</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.time')}</label>
             <div className="space-y-4">
               {dateTimeOptions.map(opt => (
                 <div key={opt.date} className="border rounded-lg p-3 bg-primary-50">
@@ -271,7 +279,7 @@ const CreateMeetup = () => {
             onChange={(e) => handleCityChange(e.target.value)}
             required
           >
-            <option value="">Selecteer een stad</option>
+            <option value="">{t('common.selectCity')}</option>
             {cities.map((city) => (
               <option key={city.id} value={city.name}>
                 {city.name}
@@ -297,6 +305,10 @@ const CreateMeetup = () => {
               </button>
             )}
           </div>
+        )}
+
+        {formError && (
+          <div className="text-red-500 text-sm">{formError}</div>
         )}
 
         <button type="submit" className="btn-primary w-full">

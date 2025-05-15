@@ -70,7 +70,7 @@ const Respond = () => {
         });
       }
       setAvailableTimes(times);
-      setFormData((prev) => ({ ...prev, email: invitation.email }));
+      setFormData((prev) => ({ ...prev, email: "" }));
       setLoading(false);
     };
     fetchData();
