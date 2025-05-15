@@ -14,7 +14,7 @@ const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     email: '',
     password: '',
