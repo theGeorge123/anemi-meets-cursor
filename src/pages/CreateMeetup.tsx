@@ -82,8 +82,7 @@ const CreateMeetup = () => {
       setFormError(t('common.requiredTime'));
       return;
     }
-    // 1. Invitation aanmaken via Edge Function
-    // For now, use the first selected date and time (can be expanded for multi-date)
+    // Extract the first selected date and time
     const firstDateOpt = dateTimeOptions.find(opt => opt.times.length > 0);
     if (!firstDateOpt) {
       setFormError(t('common.requiredTime'));
@@ -91,25 +90,19 @@ const CreateMeetup = () => {
     }
     const selected_date = firstDateOpt.date;
     const selected_time = firstDateOpt.times[0];
-    let invitation, invitationError;
-    try {
-      const res = await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/create-invitation-ts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email_a: formData.email,
-          selected_date,
-          selected_time,
-          cafe_name: selectedCafe.name,
-          cafe_address: selectedCafe.address,
-        }),
-      });
-      const result = await res.json();
-      invitation = result.invitation;
-      invitationError = result.error;
-    } catch (err) {
-      invitationError = err;
-    }
+    // 1. Invitation aanmaken direct via Supabase
+    const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+    const { data: invitation, error: invitationError } = await supabase.from('invitations').insert([
+      {
+        email_a: formData.email,
+        selected_date,
+        selected_time,
+        cafe_name: selectedCafe.name,
+        cafe_address: selectedCafe.address,
+        token,
+        status: 'pending'
+      }
+    ]).select().single();
     if (invitationError || !invitation) {
       alert(t('common.errorCreatingInvite'));
       return;
