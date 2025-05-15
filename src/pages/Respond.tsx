@@ -95,7 +95,7 @@ const Respond = () => {
     } else {
       localStorage.removeItem(UPDATES_EMAIL_KEY);
     }
-    // Update invitation met gekozen tijd en status
+    // Update invitation met gekozen tijd en status, alleen als nog niet geaccepteerd
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
     if (!token) {
@@ -111,14 +111,24 @@ const Respond = () => {
       return;
     }
     const [selectedDate, selectedTime] = formData.selectedTime.split('-');
-    const { error: updateError } = await supabase.from('invitations').update({
-      status: 'accepted',
-      selected_date: selectedDate,
-      selected_time: selectedTime,
-      email: formData.email,
-    }).eq('token', token);
+    const { data: updatedInvitation, error: updateError } = await supabase
+      .from('invitations')
+      .update({
+        status: 'accepted',
+        selected_date: selectedDate,
+        selected_time: selectedTime,
+        email: formData.email,
+      })
+      .eq('token', token)
+      .neq('status', 'accepted')
+      .select()
+      .single();
     if (updateError) {
       setError(t('respond.errorUpdateInvite') || 'Kon uitnodiging niet bijwerken.');
+      return;
+    }
+    if (!updatedInvitation) {
+      setError(t('respond.errorUpdateInvite') || 'Uitnodiging is al geaccepteerd of niet gevonden.');
       return;
     }
     // Fetch invitation to get meeting_id
