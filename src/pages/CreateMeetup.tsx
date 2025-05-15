@@ -68,6 +68,14 @@ const CreateMeetup = () => {
       alert(t('common.notLoggedIn'));
       return;
     }
+    // Check of profiel bestaat, zo niet: aanmaken
+    const { data: profile } = await supabase.from('profiles').select('id').eq('id', userId).single();
+    if (!profile) {
+      await supabase.from('profiles').insert({
+        id: userId,
+        email: formData.email,
+      });
+    }
     // Controle: minimaal één tijd geselecteerd voor een van de datums
     const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
     if (!hasAnyTime) {
