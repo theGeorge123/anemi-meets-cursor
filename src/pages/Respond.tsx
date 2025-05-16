@@ -14,7 +14,6 @@ const Respond = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cafe, setCafe] = useState<any>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [status, setStatus] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
@@ -59,10 +58,6 @@ const Respond = () => {
       setLoading(false);
     };
     fetchData();
-    // Check login status
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session?.user);
-    });
     // Prefill email if saved
     const savedEmail = localStorage.getItem(UPDATES_EMAIL_KEY);
     if (savedEmail) {
@@ -73,12 +68,27 @@ const Respond = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.selectedTime || !formData.email) {
-      setErrorMsg("Vul je e-mailadres in en kies een tijd.");
+    const missing: string[] = [];
+    if (!formData.email) missing.push('email');
+    if (!formData.selectedTime) missing.push('selectedTime');
+    if (missing.length > 0) {
+      setErrorMsg(
+        t('common.errorMissingFields', {
+          fields: missing
+            .map((field) =>
+              field === 'email'
+                ? 'e-mailadres'
+                : field === 'selectedTime'
+                ? 'tijd'
+                : field
+            )
+            .join(', ')
+        })
+      );
       return;
     }
-    setStatus("sending");
     setErrorMsg("");
+    setStatus("sending");
     if (!invitation) {
       setErrorMsg("Uitnodiging niet gevonden.");
       setStatus("error");
@@ -162,6 +172,7 @@ const Respond = () => {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {errorMsg && <div className="text-red-600 mb-2">{errorMsg}</div>}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-4">
             Available Times
@@ -216,15 +227,8 @@ const Respond = () => {
         <button type="submit" className="btn-primary w-full" disabled={status === 'sending'}>
           {status === 'sending' ? 'Versturen...' : t('common.submit')}
         </button>
-        {errorMsg && <div className="text-red-600 mt-2">{errorMsg}</div>}
         {status === 'done' && <div className="text-green-600 mt-2">Uitnodiging bevestigd en mail verstuurd!</div>}
       </form>
-      {!isLoggedIn && (
-        <div className="mt-8 text-center">
-          <p className="mb-2 text-gray-600">Wil je zelf ook een meeting aanmaken?</p>
-          <a href="/login" className="btn-secondary">Log in</a>
-        </div>
-      )}
     </div>
   );
 };

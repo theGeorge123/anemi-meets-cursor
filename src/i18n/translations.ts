@@ -50,6 +50,7 @@ export const translations = {
       contactSend: 'Send',
       contactSuccess: 'Thank you for your message! We will get back to you soon.',
       contactError: 'Something went wrong. Please try again later.',
+      errorMissingFields: 'You are missing: {{fields}}',
     },
     home: {
       mission: 'Help people easily coordinate real-life meetings in a relaxing, low-friction way.',
@@ -78,6 +79,11 @@ export const translations = {
     confirmed: {
       title: 'Confirmed!',
       message: 'You will receive a confirmation by email soon.'
+    },
+    success: {
+      title: 'Success!',
+      description: 'Your action was completed successfully. You will receive a confirmation soon.',
+      button: 'Back to Home',
     },
   },
   nl: {
@@ -131,6 +137,7 @@ export const translations = {
       contactSend: 'Verzenden',
       contactSuccess: 'Bedankt voor je bericht! We nemen zo snel mogelijk contact met je op.',
       contactError: 'Er ging iets mis. Probeer het later opnieuw.',
+      errorMissingFields: 'Je mist nog: {{fields}}',
     },
     home: {
       mission: 'Help mensen eenvoudig afspraken te maken op een ontspannen, laagdrempelige manier.',
@@ -159,6 +166,11 @@ export const translations = {
     confirmed: {
       title: 'Bevestigd!',
       message: 'Je ontvangt binnenkort een bevestiging per e-mail.'
+    },
+    success: {
+      title: 'Gelukt!',
+      description: 'Je actie is succesvol afgerond. Je ontvangt binnenkort een bevestiging.',
+      button: 'Terug naar start',
     },
   },
 }; 
