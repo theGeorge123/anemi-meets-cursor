@@ -1,12 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// 🔐 Veilige UTF-8 base64 encoding
-function encodeBase64(str: string) {
+function encodeBase64(str) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
 Deno.serve(async (req) => {
-  // 🌍 CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       status: 200,
@@ -34,7 +32,6 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // ✅ Update uitnodiging
     const { data: invitation, error } = await supabase
       .from("invitations")
       .update({
@@ -55,7 +52,6 @@ Deno.serve(async (req) => {
     const { email_a, cafe_name, cafe_address } = invitation;
     if (!email_a || !email_b) throw new Error("Missing one or both emails.");
 
-    // 📅 ICS-bestand maken
     const datePart = selected_date.replace(/-/g, "");
     const [dtStart, dtEnd] = {
       morning: ["T090000Z", "T110000Z"],
@@ -63,26 +59,52 @@ Deno.serve(async (req) => {
       evening: ["T190000Z", "T210000Z"]
     }[selected_time] || ["T090000Z", "T110000Z"];
 
+    const readableTime = {
+      morning: "09:00 – 11:00",
+      afternoon: "14:00 – 16:00",
+      evening: "19:00 – 21:00"
+    }[selected_time] || "Onbekend";
+
+    const uid = crypto.randomUUID();
+    const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
     const ics = `
 BEGIN:VCALENDAR
 VERSION:2.0
+PRODID:-//AnemiMeets//EN
+CALSCALE:GREGORIAN
 BEGIN:VEVENT
-SUMMARY=Koffie Meetup
+UID:${uid}
+SUMMARY=Koffie Meetup met ${email_a.split('@')[0]}
+DTSTAMP:${dtStamp}
 DTSTART:${datePart}${dtStart}
 DTEND:${datePart}${dtEnd}
-DESCRIPTION=Jullie koffie-afspraak!
 LOCATION:${cafe_name || ""} ${cafe_address || ""}
+DESCRIPTION=Jullie koffie-afspraak via Anemi Meets
+STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`.trim();
 
-    const html = `
-<p>Jullie koffie-afspraak is bevestigd! 🎉<br><br>
-<b>Locatie:</b> ${cafe_name || "Onbekend"}<br>
-<b>Datum:</b> ${selected_date}<br>
-<b>Tijd:</b> ${selected_time}<br><br>
-Bekijk de bijlage om het toe te voegen aan je agenda.</p>`;
+    const title = encodeURIComponent("Koffie Meetup via Anemi");
+    const description = encodeURIComponent("Jullie afspraak is bevestigd!");
+    const location = encodeURIComponent(`${cafe_name || ""} ${cafe_address || ""}`);
+    const start = `${datePart}${dtStart}`;
+    const end = `${datePart}${dtEnd}`;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cafe_name} ${cafe_address}`)}`;
+    const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
+    const cafeImageUrl = `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe_name)}`;
 
-    // 📧 Versturen via Resend (met timeout)
+    const html = `
+<h2>🎉 Jullie koffie-afspraak is bevestigd!</h2>
+<img src="${cafeImageUrl}" alt="Café foto" width="100%" style="max-width:600px;border-radius:12px;margin-bottom:16px;" />
+<p><b>📍 Locatie:</b> <a href="${mapsUrl}" target="_blank" style="color:#007AFF">${cafe_name}</a><br>
+<b>🗺️ Adres:</b> ${cafe_address}<br>
+<b>📅 Datum:</b> ${selected_date}<br>
+<b>⏰ Tijd:</b> ${readableTime}</p>
+<p>🗓️ <a href="${gcalUrl}" target="_blank">➕ Voeg toe aan Google Calendar</a><br>
+📎 Of gebruik de bijlage hieronder voor Apple of Outlook (.ics)</p>
+<p style="margin-top:24px;">Tot snel!<br>– Het Anemi Meets team</p>`;
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 

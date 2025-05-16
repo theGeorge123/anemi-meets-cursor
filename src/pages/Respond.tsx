@@ -19,6 +19,7 @@ const Respond = () => {
   const [status, setStatus] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [invitation, setInvitation] = useState<any>(null);
+  const [submitted, setSubmitted] = useState(false);
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -111,6 +112,7 @@ const Respond = () => {
         setErrorMsg(data.error || "Er ging iets mis. Probeer het opnieuw.");
       } else {
         setStatus("done");
+        setSubmitted(true);
       }
     } catch (err) {
       console.error("Function error:", err);
@@ -118,6 +120,23 @@ const Respond = () => {
       setErrorMsg("Er ging iets mis. Probeer het opnieuw.");
     }
   };
+
+  if (submitted) {
+    return (
+      <div style={{ textAlign: "center", padding: "2rem" }}>
+        <h2>☕ Jullie gaan binnenkort weer afspreken!</h2>
+        <img src="/fun-coffee.gif" alt="Leuke GIF" style={{ maxWidth: "100%", borderRadius: "16px" }} />
+        <p style={{ marginTop: "1rem" }}>
+          De bevestiging is verstuurd naar beide e-mailadressen.
+        </p>
+        <button className="btn-primary mt-4" onClick={() => window.location.href = "/"}>Terug naar start</button>
+        <div style={{ marginTop: "2rem" }}>
+          <p>Wil je zelf een meeting aanmaken? Maak dan nu een account aan!</p>
+          <a href="/signup" className="btn-secondary mt-2">Account aanmaken</a>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="max-w-2xl mx-auto text-center py-12">Loading...</div>;
