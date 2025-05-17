@@ -72,8 +72,10 @@ const Respond = () => {
     if (!formData.email) missing.push('email');
     if (!formData.selectedTime) missing.push('selectedTime');
     // Extra validatie op formaat selectedTime
-    const timeParts = formData.selectedTime.split('-');
-    if (timeParts.length !== 2 || !/^\d{4}-\d{2}-\d{2}$/.test(timeParts[0])) {
+    const lastDash = formData.selectedTime.lastIndexOf('-');
+    const datePart = formData.selectedTime.substring(0, lastDash);
+    const timePart = formData.selectedTime.substring(lastDash + 1);
+    if (!datePart || !timePart || !/^\d{4}-\d{2}-\d{2}$/.test(datePart) || !['morning','afternoon','evening'].includes(timePart)) {
       setErrorMsg('Ongeldig datumformaat. Selecteer een tijd.');
       return;
     }
@@ -116,8 +118,8 @@ const Respond = () => {
         body: JSON.stringify({
           token: invitation.token,
           email_b: formData.email,
-          selected_date: timeParts[0],
-          selected_time: timeParts[1]
+          selected_date: datePart,
+          selected_time: timePart
         })
       });
       const data = await res.json();

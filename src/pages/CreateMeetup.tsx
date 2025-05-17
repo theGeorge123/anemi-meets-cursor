@@ -83,8 +83,16 @@ const CreateMeetup = () => {
       setFormError(t('common.requiredTime'));
       return;
     }
+    // Filter alleen geldige tijdvakken
+    const validTimes = ['morning', 'afternoon', 'evening'];
+    const filteredDateTimeOptions = dateTimeOptions
+      .map(opt => ({
+        date: opt.date,
+        times: (opt.times || []).filter(time => validTimes.includes(time))
+      }))
+      .filter(opt => opt.times.length > 0);
     // Extract the first selected date and time
-    const firstDateOpt = dateTimeOptions.find(opt => opt.times.length > 0);
+    const firstDateOpt = filteredDateTimeOptions.find(opt => opt.times.length > 0);
     if (!firstDateOpt) {
       setFormError(t('common.requiredTime'));
       return;
@@ -108,7 +116,7 @@ const CreateMeetup = () => {
         selected_time,
         cafe_id: selectedCafe.id,
         status: "pending",
-        date_time_options: dateTimeOptions
+        date_time_options: filteredDateTimeOptions
       })
     });
     const data = await res.json();
