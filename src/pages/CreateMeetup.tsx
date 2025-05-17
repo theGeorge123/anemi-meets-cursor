@@ -5,6 +5,7 @@ import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import { forwardRef } from 'react';
+import { nl } from 'date-fns/locale';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; }
@@ -229,7 +230,8 @@ const CreateMeetup = () => {
             highlightDates={formData.dates}
             onChange={handleDatePickerChange}
             customInput={<CustomInput />}
-            calendarClassName="cursor-pointer"
+            calendarClassName="anemi-datepicker"
+            locale={nl}
           />
           {formData.dates.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">

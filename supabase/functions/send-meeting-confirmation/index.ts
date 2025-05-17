@@ -26,7 +26,6 @@ Deno.serve(async (req) => {
     }
 
     const { token, email_b, selected_date, selected_time } = await req.json();
-
     if (!token || !email_b || !selected_date || !selected_time) {
       throw new Error("Missing required fields.");
     }
@@ -51,8 +50,9 @@ Deno.serve(async (req) => {
     }
 
     const { email_a, cafe_id } = invitation;
-    if (!email_a || !email_b) throw new Error("Missing one or both emails.");
-    if (!cafe_id) throw new Error("Missing cafe_id in invitation.");
+    if (!email_a || !email_b || !cafe_id) {
+      throw new Error("Missing email or cafe_id.");
+    }
 
     const { data: cafe, error: cafeError } = await supabase
       .from("cafes")
@@ -60,8 +60,11 @@ Deno.serve(async (req) => {
       .eq("id", cafe_id)
       .single();
 
-    if (cafeError || !cafe) throw new Error("Café niet gevonden");
+    if (cafeError || !cafe) {
+      throw new Error("Café niet gevonden.");
+    }
 
+    // Tijdslots
     const slots = {
       morning: ["T090000Z", "T120000Z"],
       afternoon: ["T120000Z", "T180000Z"],
@@ -72,13 +75,13 @@ Deno.serve(async (req) => {
       afternoon: "12:00 – 18:00",
       evening: "18:00 – 22:00"
     };
+
     const safeTime = selected_time.toLowerCase();
     const [dtStart, dtEnd] = slots[safeTime] || ["T090000Z", "T120000Z"];
     const readableTime = readableTimes[safeTime] || "Onbekend";
-
     const datePart = selected_date.replace(/-/g, "");
-    const uid = crypto.randomUUID();
     const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const uid = crypto.randomUUID();
 
     const ics = `
 BEGIN:VCALENDAR
@@ -157,6 +160,7 @@ END:VCALENDAR`.trim();
         "Access-Control-Allow-Origin": "*"
       }
     });
+
   } catch (e) {
     console.error("Function error:", e.message);
     return new Response(JSON.stringify({ error: e.message }), {

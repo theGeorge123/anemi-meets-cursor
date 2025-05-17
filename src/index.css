@@ -50,4 +50,77 @@
 }
 .animate-float-slower {
   animation: float-slower 22s ease-in-out infinite;
+}
+
+/* Custom DatePicker styles */
+.anemi-datepicker {
+  background: #fff7f3;
+  border-radius: 28px;
+  box-shadow: 0 8px 32px 0 #ff914d33;
+  border: none;
+  padding: 18px 12px;
+  font-family: 'Quicksand', 'Inter', sans-serif;
+  transition: box-shadow 0.3s, background 0.3s;
+}
+
+.anemi-datepicker .react-datepicker__header {
+  background: #fff7f3;
+  border-bottom: none;
+  border-radius: 24px 24px 0 0;
+  padding-bottom: 12px;
+}
+
+.anemi-datepicker .react-datepicker__current-month,
+.anemi-datepicker .react-datepicker__day-name {
+  color: #1573ff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.anemi-datepicker .react-datepicker__day {
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  font-weight: 500;
+  margin: 2px;
+}
+
+.anemi-datepicker .react-datepicker__day--selected,
+.anemi-datepicker .react-datepicker__day--keyboard-selected {
+  background: #ff914d;
+  color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #ff914d44;
+}
+
+.anemi-datepicker .react-datepicker__day--today {
+  border-radius: 50%;
+  border: 2px solid #1573ff;
+  color: #1573ff;
+  background: #fff;
+  box-shadow: 0 1px 4px #1573ff22;
+}
+
+.anemi-datepicker .react-datepicker__day:hover {
+  background: #ffb184;
+  color: #1a1a1a;
+  box-shadow: 0 2px 8px #ffb18444;
+}
+
+.anemi-datepicker .react-datepicker__day--outside-month {
+  color: #d1cfcf;
+  opacity: 0.5;
+}
+
+.anemi-datepicker .react-datepicker__navigation {
+  top: 18px;
+}
+
+.anemi-datepicker .react-datepicker__navigation-icon::before {
+  border-width: 3px 3px 0 0;
+  border-color: #1573ff;
+}
+
+.anemi-datepicker .react-datepicker__month-container {
+  border-radius: 28px;
+  overflow: hidden;
 } 
