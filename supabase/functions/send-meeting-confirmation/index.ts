@@ -26,12 +26,18 @@ Deno.serve(async (req) => {
     }
 
     const { token, email_b, selected_date, selected_time } = await req.json();
+
     if (!token || !email_b || !selected_date || !selected_time) {
       throw new Error("Missing required fields.");
     }
 
+    if (selected_date.length < 10) {
+      throw new Error("Invalid date format: " + selected_date);
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Update invitation and get cafe_id
     const { data: invitation, error } = await supabase
       .from("invitations")
       .update({
@@ -49,22 +55,38 @@ Deno.serve(async (req) => {
       throw new Error(error?.message || "Could not update invitation.");
     }
 
-    const { email_a, cafe_name, cafe_address } = invitation;
+    const { email_a, cafe_id } = invitation;
     if (!email_a || !email_b) throw new Error("Missing one or both emails.");
+    if (!cafe_id) throw new Error("No cafe_id found in invitation.");
+
+    // Haal cafe info op
+    const { data: cafe, error: cafeError } = await supabase
+      .from("cafes")
+      .select("name, address")
+      .eq("id", cafe_id)
+      .single();
+
+    if (cafeError || !cafe) throw new Error("Café niet gevonden");
+
+    const cafe_name = cafe.name;
+    const cafe_address = cafe.address;
+
+    // Tijdslots en labels
+    const slots = {
+      morning: ["T090000Z", "T120000Z"],
+      afternoon: ["T120000Z", "T180000Z"],
+      evening: ["T180000Z", "T220000Z"]
+    };
+    const readableTimes = {
+      morning: "09:00 – 12:00",
+      afternoon: "12:00 – 18:00",
+      evening: "18:00 – 22:00"
+    };
+    const safeTime = selected_time.toLowerCase();
+    const [dtStart, dtEnd] = slots[safeTime] || ["T090000Z", "T120000Z"];
+    const readableTime = readableTimes[safeTime] || "Onbekend";
 
     const datePart = selected_date.replace(/-/g, "");
-    const [dtStart, dtEnd] = {
-      morning: ["T090000Z", "T110000Z"],
-      afternoon: ["T140000Z", "T160000Z"],
-      evening: ["T190000Z", "T210000Z"]
-    }[selected_time] || ["T090000Z", "T110000Z"];
-
-    const readableTime = {
-      morning: "09:00 – 11:00",
-      afternoon: "14:00 – 16:00",
-      evening: "19:00 – 21:00"
-    }[selected_time] || "Onbekend";
-
     const uid = crypto.randomUUID();
     const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
@@ -85,6 +107,7 @@ STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`.trim();
 
+    // E-mailinhoud opbouwen
     const title = encodeURIComponent("Koffie Meetup via Anemi");
     const description = encodeURIComponent("Jullie afspraak is bevestigd!");
     const location = encodeURIComponent(`${cafe_name || ""} ${cafe_address || ""}`);
@@ -92,14 +115,14 @@ END:VCALENDAR`.trim();
     const end = `${datePart}${dtEnd}`;
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cafe_name} ${cafe_address}`)}`;
     const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
-    const cafeImageUrl = `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe_name)}`;
+    const cafeImageUrl = `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe_name || "cafe")}`;
 
     const html = `
 <h2>🎉 Jullie koffie-afspraak is bevestigd!</h2>
 <img src="${cafeImageUrl}" alt="Café foto" width="100%" style="max-width:600px;border-radius:12px;margin-bottom:16px;" />
-<p><b>📍 Locatie:</b> <a href="${mapsUrl}" target="_blank" style="color:#007AFF">${cafe_name}</a><br>
-<b>🗺️ Adres:</b> ${cafe_address}<br>
-<b>📅 Datum:</b> ${selected_date}<br>
+<p><b>📍 Locatie:</b> <a href="${mapsUrl}" target="_blank" style="color:#007AFF">${cafe_name || "Café"}</a><br>
+<b>🗺️ Adres:</b> ${cafe_address || "Onbekend"}<br>
+<b>📅 Datum:</b> ${selected_date || "Onbekend"}<br>
 <b>⏰ Tijd:</b> ${readableTime}</p>
 <p>🗓️ <a href="${gcalUrl}" target="_blank">➕ Voeg toe aan Google Calendar</a><br>
 📎 Of gebruik de bijlage hieronder voor Apple of Outlook (.ics)</p>

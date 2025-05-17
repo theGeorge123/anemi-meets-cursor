@@ -135,7 +135,7 @@ const Respond = () => {
     return (
       <div style={{ textAlign: "center", padding: "2rem" }}>
         <h2>☕ Jullie gaan binnenkort weer afspreken!</h2>
-        <img src="/fun-coffee.gif" alt="Leuke GIF" style={{ maxWidth: "100%", borderRadius: "16px" }} />
+        <img src="/coffee.svg" alt="Leuke SVG" style={{ maxWidth: "100%", borderRadius: "16px", margin: '1rem auto', display: 'block' }} onError={e => { e.currentTarget.src = '/coffee.svg'; }} />
         <p style={{ marginTop: "1rem" }}>
           De bevestiging is verstuurd naar beide e-mailadressen.
         </p>
