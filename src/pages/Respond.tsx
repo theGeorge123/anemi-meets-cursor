@@ -138,16 +138,22 @@ const Respond = () => {
 
   if (submitted) {
     return (
-      <div style={{ textAlign: "center", padding: "2rem" }}>
-        <h2>☕ Jullie gaan binnenkort weer afspreken!</h2>
-        <img src="/coffee.svg" alt="Leuke SVG" style={{ maxWidth: "100%", borderRadius: "16px", margin: '1rem auto', display: 'block' }} onError={e => { e.currentTarget.src = '/coffee.svg'; }} />
-        <p style={{ marginTop: "1rem" }}>
-          De bevestiging is verstuurd naar beide e-mailadressen.
-        </p>
-        <button className="btn-primary mt-4" onClick={() => window.location.href = "/"}>Terug naar start</button>
-        <div style={{ marginTop: "2rem" }}>
-          <p>Wil je zelf een meeting aanmaken? Maak dan nu een account aan!</p>
-          <a href="/signup" className="btn-secondary mt-2">Account aanmaken</a>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="card bg-[#fff7f3] shadow-2xl p-8 max-w-lg w-full flex flex-col items-center">
+          <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎉</span>
+          <img src="/coffee-fun.gif" alt="Leuke koffie GIF" style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
+          <h2 className="text-2xl font-bold text-[#37474f] mb-2 flex items-center gap-2">
+            <img src="/coffee.svg" alt="Koffie" style={{ width: 32, height: 32 }} />
+            Jullie gaan binnenkort weer afspreken!
+          </h2>
+          <p className="text-lg text-gray-700 mb-6 text-center">
+            De bevestiging is verstuurd naar beide e-mailadressen.
+          </p>
+          <button className="btn-primary w-full mb-3" onClick={() => window.location.href = "/"}>Terug naar start</button>
+          <div className="w-full flex flex-col items-center mt-2">
+            <p className="mb-2">Wil je zelf een meeting aanmaken? Maak dan nu een account aan!</p>
+            <a href="/signup" className="btn-secondary w-full">Account aanmaken</a>
+          </div>
         </div>
       </div>
     );

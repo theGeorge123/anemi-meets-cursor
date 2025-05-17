@@ -188,6 +188,18 @@ const CreateMeetup = () => {
     <input type="text" style={{ position: 'absolute', left: '-9999px', width: 0, height: 0, opacity: 0 }} ref={ref} {...props} />
   ));
 
+  // Helper: bepaal of een tijdvak in het verleden ligt (alleen voor vandaag)
+  const isTimeSlotPast = (dateStr: string, time: string) => {
+    const today = new Date();
+    const date = new Date(dateStr);
+    if (date.toDateString() !== today.toDateString()) return false;
+    const now = today.getHours();
+    if (time === 'morning' && now >= 12) return true;
+    if (time === 'afternoon' && now >= 18) return true;
+    if (time === 'evening' && now >= 22) return true;
+    return false;
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
@@ -278,8 +290,14 @@ const CreateMeetup = () => {
                           checked={opt.times.includes(time)}
                           onChange={() => handleTimeToggle(opt.date, time)}
                           className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                          disabled={isTimeSlotPast(opt.date, time)}
                         />
-                        <span className="ml-2 text-gray-700">{t(`common.${time}`)}</span>
+                        <span className="ml-2 text-gray-700">
+                          {t(`common.${time}`)}
+                          {isTimeSlotPast(opt.date, time) && (
+                            <span className="ml-1 text-xs text-gray-400">(verlopen)</span>
+                          )}
+                        </span>
                       </label>
                     ))}
                   </div>
