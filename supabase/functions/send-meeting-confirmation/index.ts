@@ -31,13 +31,8 @@ Deno.serve(async (req) => {
       throw new Error("Missing required fields.");
     }
 
-    if (selected_date.length < 10) {
-      throw new Error("Invalid date format: " + selected_date);
-    }
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Update invitation and get cafe_id
     const { data: invitation, error } = await supabase
       .from("invitations")
       .update({
@@ -57,21 +52,16 @@ Deno.serve(async (req) => {
 
     const { email_a, cafe_id } = invitation;
     if (!email_a || !email_b) throw new Error("Missing one or both emails.");
-    if (!cafe_id) throw new Error("No cafe_id found in invitation.");
+    if (!cafe_id) throw new Error("Missing cafe_id in invitation.");
 
-    // Haal cafe info op
     const { data: cafe, error: cafeError } = await supabase
       .from("cafes")
-      .select("name, address")
+      .select("name, address, image_url")
       .eq("id", cafe_id)
       .single();
 
     if (cafeError || !cafe) throw new Error("Café niet gevonden");
 
-    const cafe_name = cafe.name;
-    const cafe_address = cafe.address;
-
-    // Tijdslots en labels
     const slots = {
       morning: ["T090000Z", "T120000Z"],
       afternoon: ["T120000Z", "T180000Z"],
@@ -101,28 +91,27 @@ SUMMARY=Koffie Meetup met ${email_a.split('@')[0]}
 DTSTAMP:${dtStamp}
 DTSTART:${datePart}${dtStart}
 DTEND:${datePart}${dtEnd}
-LOCATION:${cafe_name || ""} ${cafe_address || ""}
+LOCATION:${cafe.name} ${cafe.address}
 DESCRIPTION=Jullie koffie-afspraak via Anemi Meets
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`.trim();
 
-    // E-mailinhoud opbouwen
     const title = encodeURIComponent("Koffie Meetup via Anemi");
     const description = encodeURIComponent("Jullie afspraak is bevestigd!");
-    const location = encodeURIComponent(`${cafe_name || ""} ${cafe_address || ""}`);
+    const location = encodeURIComponent(`${cafe.name} ${cafe.address}`);
     const start = `${datePart}${dtStart}`;
     const end = `${datePart}${dtEnd}`;
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cafe_name} ${cafe_address}`)}`;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cafe.name} ${cafe.address}`)}`;
     const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
-    const cafeImageUrl = `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe_name || "cafe")}`;
+    const cafeImageUrl = cafe.image_url || `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
 
     const html = `
 <h2>🎉 Jullie koffie-afspraak is bevestigd!</h2>
 <img src="${cafeImageUrl}" alt="Café foto" width="100%" style="max-width:600px;border-radius:12px;margin-bottom:16px;" />
-<p><b>📍 Locatie:</b> <a href="${mapsUrl}" target="_blank" style="color:#007AFF">${cafe_name || "Café"}</a><br>
-<b>🗺️ Adres:</b> ${cafe_address || "Onbekend"}<br>
-<b>📅 Datum:</b> ${selected_date || "Onbekend"}<br>
+<p><b>📍 Locatie:</b> <a href="${mapsUrl}" target="_blank" style="color:#007AFF">${cafe.name}</a><br>
+<b>🗺️ Adres:</b> ${cafe.address}<br>
+<b>📅 Datum:</b> ${selected_date}<br>
 <b>⏰ Tijd:</b> ${readableTime}</p>
 <p>🗓️ <a href="${gcalUrl}" target="_blank">➕ Voeg toe aan Google Calendar</a><br>
 📎 Of gebruik de bijlage hieronder voor Apple of Outlook (.ics)</p>
@@ -168,7 +157,6 @@ END:VCALENDAR`.trim();
         "Access-Control-Allow-Origin": "*"
       }
     });
-
   } catch (e) {
     console.error("Function error:", e.message);
     return new Response(JSON.stringify({ error: e.message }), {

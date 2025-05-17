@@ -105,8 +105,7 @@ const CreateMeetup = () => {
         email_a: formData.email,
         selected_date,
         selected_time,
-        cafe_name: selectedCafe.name,
-        cafe_address: selectedCafe.address,
+        cafe_id: selectedCafe.id,
         status: "pending",
         date_time_options: dateTimeOptions
       })
