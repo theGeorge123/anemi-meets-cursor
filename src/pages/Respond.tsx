@@ -71,6 +71,12 @@ const Respond = () => {
     const missing: string[] = [];
     if (!formData.email) missing.push('email');
     if (!formData.selectedTime) missing.push('selectedTime');
+    // Extra validatie op formaat selectedTime
+    const timeParts = formData.selectedTime.split('-');
+    if (timeParts.length !== 2 || !/^\d{4}-\d{2}-\d{2}$/.test(timeParts[0])) {
+      setErrorMsg('Ongeldig datumformaat. Selecteer een tijd.');
+      return;
+    }
     if (missing.length > 0) {
       setErrorMsg(
         t('common.errorMissingFields', {
@@ -100,7 +106,6 @@ const Respond = () => {
     } else {
       localStorage.removeItem(UPDATES_EMAIL_KEY);
     }
-    console.log("Submit:", { token: invitation.token, email_b: formData.email, selected_date: formData.selectedTime.split('-')[0], selected_time: formData.selectedTime.split('-')[1] });
     try {
       const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/functions/v1/send-meeting-confirmation", {
         method: "POST",
@@ -111,12 +116,11 @@ const Respond = () => {
         body: JSON.stringify({
           token: invitation.token,
           email_b: formData.email,
-          selected_date: formData.selectedTime.split('-')[0],
-          selected_time: formData.selectedTime.split('-')[1]
+          selected_date: timeParts[0],
+          selected_time: timeParts[1]
         })
       });
       const data = await res.json();
-      console.log("Function response:", data);
       if (!res.ok || !data.success) {
         setStatus("error");
         setErrorMsg(data.error || "Er ging iets mis. Probeer het opnieuw.");
@@ -125,7 +129,6 @@ const Respond = () => {
         setSubmitted(true);
       }
     } catch (err) {
-      console.error("Function error:", err);
       setStatus("error");
       setErrorMsg("Er ging iets mis. Probeer het opnieuw.");
     }
