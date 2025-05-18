@@ -1,9 +1,8 @@
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const Home = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleStartMeetup = async () => {

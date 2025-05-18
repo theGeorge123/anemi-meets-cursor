@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
-import { forwardRef } from 'react';
 import { nl } from 'date-fns/locale';
 
 interface City { id: string; name: string; }
-interface Cafe { id: string; name: string; address: string; description?: string; }
+interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
 
 const CreateMeetup = () => {
   const { t } = useTranslation();
@@ -27,6 +26,8 @@ const CreateMeetup = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [dateTimeOptions, setDateTimeOptions] = useState<{ date: string; times: string[] }[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+  const [shuffleCooldown, setShuffleCooldown] = useState(false);
+  const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -136,12 +137,15 @@ const CreateMeetup = () => {
   };
 
   const shuffleCafe = () => {
-    if (cafes.length <= 1) return;
+    if (shuffleCooldown || cafes.length <= 1) return;
     let newCafe = selectedCafe;
     while (newCafe === selectedCafe) {
       newCafe = cafes[Math.floor(Math.random() * cafes.length)];
     }
     setSelectedCafe(newCafe);
+    setShuffleCooldown(true);
+    if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+    shuffleTimeoutRef.current = setTimeout(() => setShuffleCooldown(false), 1000);
   };
 
   // Pick a random cafe when cafes are loaded or city changes
@@ -319,38 +323,55 @@ const CreateMeetup = () => {
           <label htmlFor="city" className="block text-sm font-medium text-gray-700">
             <span role="img" aria-label="city">🏙️</span> Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!
           </label>
-          <select
-            id="city"
-            className="city-select"
-            value={formData.city}
-            onChange={(e) => handleCityChange(e.target.value)}
-            required
-          >
-            <option value="">{t('common.selectCity')}</option>
-            {cities.map((city) => (
-              <option key={city.id} value={city.name}>
-                {city.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              id="city"
+              className="city-select"
+              value={formData.city}
+              onChange={(e) => handleCityChange(e.target.value)}
+              required
+            >
+              <option value="">{t('common.selectCity')}</option>
+              {cities.map((city) => (
+                <option key={city.id} value={city.name}>
+                  {city.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
+        {/* Cafés kaart na stadkeuze */}
         {selectedCafe && (
-          <div className="card bg-primary-50">
-            <h3 className="text-lg font-medium text-primary-600">
-              Suggested Cafe
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-primary-600 mb-3 flex items-center gap-2 w-full max-w-md mx-auto">
+              Jouw plekje <span role="img" aria-label="coffee">☕️</span>
             </h3>
-            <p className="text-gray-700">{selectedCafe.name}</p>
-            <p className="text-gray-500">{selectedCafe.address}</p>
-            {cafes.length > 1 && (
-              <button
-                type="button"
-                className="btn-secondary mt-2"
-                onClick={shuffleCafe}
-              >
-                Shuffle Cafe
-              </button>
+            {selectedCafe.image_url && (
+              <img
+                src={selectedCafe.image_url}
+                alt={selectedCafe.name}
+                className="w-full max-w-md mx-auto rounded-2xl shadow mb-3 object-cover"
+                style={{ maxHeight: 180 }}
+              />
             )}
+            <div className="bg-white/80 rounded-2xl shadow-md p-4 flex flex-col gap-1 border border-[#b2dfdb]/40 max-w-md mx-auto items-start">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">☕️</span>
+                <span className="font-semibold text-primary-700 text-lg">{selectedCafe.name}</span>
+              </div>
+              <span className="text-gray-500 text-sm mb-2">{selectedCafe.address}</span>
+              {cafes.length > 1 && (
+                <button
+                  type="button"
+                  className={`btn-secondary mt-2 transition-colors duration-200 ${shuffleCooldown ? 'opacity-60 cursor-not-allowed bg-gray-200 text-gray-400' : ''}`}
+                  onClick={shuffleCafe}
+                  disabled={shuffleCooldown}
+                >
+                  {shuffleCooldown ? 'Even wachten...' : 'Shuffle café'}
+                </button>
+              )}
+            </div>
           </div>
         )}
 

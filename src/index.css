@@ -6,7 +6,7 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-[#f5f7fa] via-[#e8eaf6] to-[#e0f2f1] text-gray-800 min-h-screen font-["Quicksand","Inter","system-ui","Avenir","Helvetica","Arial",sans-serif];
+    @apply bg-transparent text-gray-800 min-h-screen font-["Quicksand","Inter","system-ui","Avenir","Helvetica","Arial",sans-serif];
     letter-spacing: 0.01em;
   }
 }
