@@ -84,9 +84,9 @@ const Signup = () => {
     if (wantsUpdates) {
       localStorage.setItem(UPDATES_EMAIL_KEY, form.email);
     }
-    setSuccess('Als je al een account hebt, controleer je e-mail voor een bevestigingslink of probeer in te loggen.');
+    setSuccess('Account aangemaakt! Je wordt doorgestuurd naar je accountpagina...');
     setLoading(false);
-    setTimeout(() => navigate('/login'), 3000);
+    setTimeout(() => navigate('/account'), 2000);
   };
 
   // Validatie per stap

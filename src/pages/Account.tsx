@@ -13,15 +13,17 @@ const Account = () => {
   useEffect(() => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      if (session?.user) {
-        // Haal emoji op uit profiel
-        const { data: profile } = await supabase.from('profiles').select('emoji').eq('id', session.user.id).single();
-        if (profile && profile.emoji) setSelectedEmoji(profile.emoji);
+      if (!session?.user) {
+        navigate('/login');
+        return;
       }
+      setUser(session.user);
+      // Haal emoji op uit profiel
+      const { data: profile } = await supabase.from('profiles').select('emoji').eq('id', session.user.id).single();
+      if (profile && profile.emoji) setSelectedEmoji(profile.emoji);
     };
     getUser();
-  }, []);
+  }, [navigate]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -29,7 +31,10 @@ const Account = () => {
   };
 
   const handleEmojiSelect = async (emoji: string) => {
-    if (!user) return;
+    if (!user || !user.id) {
+      alert('Je bent niet ingelogd. Log opnieuw in om je emoji te wijzigen.');
+      return;
+    }
     setEmojiSaving(true);
     const { error } = await supabase.from('profiles').update({ emoji }).eq('id', user.id);
     if (error) {

@@ -37,9 +37,9 @@ const Home = () => {
         </div>
         <div className="card bg-white/80 max-w-2xl mx-auto mt-4 mb-8">
           <p className="text-lg text-gray-800 text-center">
-            <span className="text-2xl">😅</span> Gek van het heen en weer appen van <b>waar</b>, <b>wanneer</b> en <b>hoelaat</b>?<br/>
-            <span className="text-primary-600 font-semibold">Laat ons jou helpen die stap weg te nemen.</span><br/>
-            Jij wint door sneller te connecten <span className="text-xl">⚡️</span> en wij helpen lokale stadsplekken aan meer bezoekers <span className="text-xl">🏙️</span>.
+            Moe van het eindeloze appen over waar, wanneer en hoe laat?<br/>
+            Met Anemi Meets plan je in één klik een ontmoeting die werkt voor jullie allebei.<br/>
+            Jij verbindt sneller ⚡️ — en lokale plekken bloeien mee 🏙️.
           </p>
         </div>
         <div className="bg-[#b2dfdb]/80 rounded-3xl shadow-xl p-8 flex flex-col items-center gap-2 max-w-xl mx-auto">
