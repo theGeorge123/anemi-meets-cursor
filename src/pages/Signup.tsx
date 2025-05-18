@@ -97,7 +97,11 @@ const Signup = () => {
       case 1:
         return /.+@.+\..+/.test(form.email);
       case 2:
-        return form.password.length >= 6 && form.confirmPassword.length >= 6;
+        return (
+          form.password.length >= 6 &&
+          form.confirmPassword.length >= 6 &&
+          form.password === form.confirmPassword
+        );
       case 3:
         return true; // Geslacht is optioneel
       case 4:
@@ -190,6 +194,9 @@ const Signup = () => {
               required
               placeholder="Bevestig wachtwoord"
             />
+            {form.password && form.confirmPassword && form.password !== form.confirmPassword && (
+              <div className="text-red-500 text-sm mt-2">Oeps, wachtwoorden komen niet overeen!</div>
+            )}
           </div>
         )}
         {step === 3 && (
