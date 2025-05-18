@@ -59,11 +59,18 @@ const CreateMeetup = () => {
       }
     };
     getUser();
+    // Scroll naar boven bij laden
+    window.scrollTo(0, 0);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    // Extra check op verplichte velden
+    if (!formData.name || !formData.email || !formData.city || formData.dates.length === 0 || !selectedCafe || !dateTimeOptions.some(opt => opt.times.length > 0)) {
+      setFormError('Niet alle velden zijn ingevuld.');
+      return;
+    }
     if (!selectedCafe) return;
     if (!userId) {
       alert(t('common.notLoggedIn'));
@@ -382,14 +389,6 @@ const CreateMeetup = () => {
         <button
           type="submit"
           className="btn-primary w-full"
-          disabled={
-            !formData.name ||
-            !formData.email ||
-            !formData.city ||
-            formData.dates.length === 0 ||
-            !selectedCafe ||
-            !dateTimeOptions.some(opt => opt.times.length > 0)
-          }
         >
           {t('common.continue')}
         </button>
