@@ -320,7 +320,7 @@ const CreateMeetup = () => {
           </label>
           <select
             id="city"
-            className="input-field mt-1"
+            className="city-select"
             value={formData.city}
             onChange={(e) => handleCityChange(e.target.value)}
             required

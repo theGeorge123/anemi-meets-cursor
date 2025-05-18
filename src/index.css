@@ -64,7 +64,7 @@
 }
 
 .anemi-datepicker .react-datepicker__header {
-  background: #fff7f3;
+  background: #b2dfdb;
   border-bottom: none;
   border-radius: 24px 24px 0 0;
   padding-bottom: 12px;
@@ -73,7 +73,7 @@
 .anemi-datepicker .react-datepicker__current-month,
 .anemi-datepicker .react-datepicker__day-name {
   color: #1573ff;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
@@ -117,10 +117,31 @@
 
 .anemi-datepicker .react-datepicker__navigation-icon::before {
   border-width: 3px 3px 0 0;
-  border-color: #1573ff;
+  border-color: #ff914d;
 }
 
 .anemi-datepicker .react-datepicker__month-container {
   border-radius: 28px;
   overflow: hidden;
+}
+
+/* City select custom style */
+.city-select {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  border-radius: 1.5rem;
+  border: 1.5px solid #b2dfdb;
+  background: #f5f7fa;
+  color: #37474f;
+  font-size: 1.05rem;
+  font-family: 'Quicksand', 'Inter', sans-serif;
+  box-shadow: 0 2px 8px #b2dfdb22;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+  margin-top: 0.25rem;
+}
+.city-select:focus {
+  border-color: #1573ff;
+  box-shadow: 0 0 0 2px #b2dfdb55;
+  background: #e0f2f1;
 } 
