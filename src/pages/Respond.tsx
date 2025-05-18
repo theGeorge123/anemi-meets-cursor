@@ -39,11 +39,19 @@ const Respond = () => {
         return;
       }
       setInvitation(invitation);
-      // Toon cafe direct uit invitation
-      setCafe({
-        name: invitation.cafe_name,
-        address: invitation.cafe_address
-      });
+      // Haal cafe details op via cafe_id
+      if (invitation.cafe_id) {
+        const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address').eq('id', invitation.cafe_id).single();
+        if (!cafeError && cafeData) {
+          setCafe({ name: cafeData.name, address: cafeData.address });
+        } else {
+          setCafe(null);
+        }
+      } else if (invitation.cafe_name && invitation.cafe_address) {
+        setCafe({ name: invitation.cafe_name, address: invitation.cafe_address });
+      } else {
+        setCafe(null);
+      }
       // Zet beschikbare tijden
       let times: {date: string, time: string}[] = [];
       if (invitation.date_time_options && Array.isArray(invitation.date_time_options)) {
@@ -140,12 +148,11 @@ const Respond = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <div className="card bg-[#fff7f3] shadow-2xl p-8 max-w-lg w-full flex flex-col items-center">
-          <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎉</span>
-          <img src="/coffee-fun.gif" alt="Leuke koffie GIF" style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
+          <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>��</span>
           <h2 className="text-2xl font-bold text-[#37474f] mb-2 flex items-center gap-2">
-            <img src="/coffee.svg" alt="Koffie" style={{ width: 32, height: 32 }} />
             Jullie gaan binnenkort weer afspreken!
           </h2>
+          <img src="/coffee-fun.gif" alt="Leuke koffie GIF" style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
           <p className="text-lg text-gray-700 mb-6 text-center">
             De bevestiging is verstuurd naar beide e-mailadressen.
           </p>
