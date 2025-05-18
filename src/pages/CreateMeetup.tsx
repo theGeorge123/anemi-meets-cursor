@@ -153,10 +153,17 @@ const CreateMeetup = () => {
     }
   }, [cafes]);
 
+  // Helper: get local date string in YYYY-MM-DD
+  const getLocalDateString = (date: Date) => {
+    return date.getFullYear() + '-' +
+      String(date.getMonth() + 1).padStart(2, '0') + '-' +
+      String(date.getDate()).padStart(2, '0');
+  };
+
   // Multi-date select: toggle datum bij klik
   const handleDatePickerChange = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const exists = formData.dates.some(d => d.toISOString().split('T')[0] === dateStr);
+    const dateStr = getLocalDateString(date);
+    const exists = formData.dates.some(d => getLocalDateString(d) === dateStr);
     if (exists) {
       handleRemoveDate(dateStr);
     } else {
@@ -178,7 +185,7 @@ const CreateMeetup = () => {
   const handleRemoveDate = (dateStr: string) => {
     setFormData(prev => ({
       ...prev,
-      dates: prev.dates.filter(d => d.toISOString().split('T')[0] !== dateStr)
+      dates: prev.dates.filter(d => getLocalDateString(d) !== dateStr)
     }));
     setDateTimeOptions(prev => prev.filter(opt => opt.date !== dateStr));
   };
@@ -256,7 +263,7 @@ const CreateMeetup = () => {
           {formData.dates.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
               {formData.dates.map((d) => {
-                const dateStr = d.toISOString().split('T')[0];
+                const dateStr = getLocalDateString(d);
                 return (
                   <span key={dateStr} className="inline-flex items-center bg-primary-100 text-primary-700 rounded-full px-3 py-1 text-sm font-medium">
                     {new Date(dateStr).toLocaleDateString()}

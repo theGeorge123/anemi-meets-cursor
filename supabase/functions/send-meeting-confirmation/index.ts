@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-function encodeBase64(str) {
+function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
@@ -45,14 +45,10 @@ Deno.serve(async (req) => {
       .select()
       .single();
 
-    if (error || !invitation) {
-      throw new Error(error?.message || "Could not update invitation.");
-    }
+    if (error || !invitation) throw new Error(error?.message || "Could not update invitation.");
 
     const { email_a, cafe_id } = invitation;
-    if (!email_a || !email_b || !cafe_id) {
-      throw new Error("Missing email or cafe_id.");
-    }
+    if (!email_a || !cafe_id) throw new Error("Missing email or cafe_id");
 
     const { data: cafe, error: cafeError } = await supabase
       .from("cafes")
@@ -60,28 +56,25 @@ Deno.serve(async (req) => {
       .eq("id", cafe_id)
       .single();
 
-    if (cafeError || !cafe) {
-      throw new Error("Café niet gevonden.");
-    }
+    if (cafeError || !cafe) throw new Error("Café niet gevonden.");
 
-    // Tijdslots
     const slots = {
-      morning: ["T090000Z", "T120000Z"],
-      afternoon: ["T120000Z", "T180000Z"],
-      evening: ["T180000Z", "T220000Z"]
+      morning: ["T090000", "T120000"],
+      afternoon: ["T120000", "T170000"],
+      evening: ["T170000", "T210000"]
     };
     const readableTimes = {
       morning: "09:00 – 12:00",
-      afternoon: "12:00 – 18:00",
-      evening: "18:00 – 22:00"
+      afternoon: "12:00 – 17:00",
+      evening: "17:00 – 21:00"
     };
-
     const safeTime = selected_time.toLowerCase();
-    const [dtStart, dtEnd] = slots[safeTime] || ["T090000Z", "T120000Z"];
+    const [dtStart, dtEnd] = slots[safeTime] || ["T090000", "T120000"];
     const readableTime = readableTimes[safeTime] || "Onbekend";
+
     const datePart = selected_date.replace(/-/g, "");
-    const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     const uid = crypto.randomUUID();
+    const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
     const ics = `
 BEGIN:VCALENDAR
@@ -92,8 +85,8 @@ BEGIN:VEVENT
 UID:${uid}
 SUMMARY=Koffie Meetup met ${email_a.split('@')[0]}
 DTSTAMP:${dtStamp}
-DTSTART:${datePart}${dtStart}
-DTEND:${datePart}${dtEnd}
+DTSTART:${datePart}${dtStart}00Z
+DTEND:${datePart}${dtEnd}00Z
 LOCATION:${cafe.name} ${cafe.address}
 DESCRIPTION=Jullie koffie-afspraak via Anemi Meets
 STATUS:CONFIRMED
@@ -103,8 +96,8 @@ END:VCALENDAR`.trim();
     const title = encodeURIComponent("Koffie Meetup via Anemi");
     const description = encodeURIComponent("Jullie afspraak is bevestigd!");
     const location = encodeURIComponent(`${cafe.name} ${cafe.address}`);
-    const start = `${datePart}${dtStart}`;
-    const end = `${datePart}${dtEnd}`;
+    const start = `${datePart}${dtStart}00Z`;
+    const end = `${datePart}${dtEnd}00Z`;
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cafe.name} ${cafe.address}`)}`;
     const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
     const cafeImageUrl = cafe.image_url || `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
@@ -160,7 +153,6 @@ END:VCALENDAR`.trim();
         "Access-Control-Allow-Origin": "*"
       }
     });
-
   } catch (e) {
     console.error("Function error:", e.message);
     return new Response(JSON.stringify({ error: e.message }), {
