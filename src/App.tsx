@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import Home from './pages/Home';
@@ -12,10 +12,12 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
 import Terms from './pages/Terms';
 import Confirmed from './pages/Confirmed';
+import Account from './pages/Account';
 
 function App() {
   const { i18n } = useTranslation();
   const [language, setLanguage] = useState('nl');
+  const navigate = useNavigate ? useNavigate() : null;
 
   useEffect(() => {
     i18n.changeLanguage('nl');
@@ -62,12 +64,17 @@ function App() {
                   <h1 className="text-2xl font-bold text-primary-600 cursor-pointer">anemi meets</h1>
                 </Link>
               </div>
-              <button
-                onClick={toggleLanguage}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600"
-              >
-                {language === 'en' ? 'NL' : 'EN'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleLanguage}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600"
+                >
+                  {language === 'en' ? 'NL' : 'EN'}
+                </button>
+                <Link to="/account" className="ml-2 text-2xl hover:text-primary-600 transition-colors" title="Account">
+                  <span role="img" aria-label="account">👤</span>
+                </Link>
+              </div>
             </div>
           </div>
         </nav>
@@ -84,6 +91,7 @@ function App() {
             <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/confirmed" element={<Confirmed />} />
+            <Route path="/account" element={<Account />} />
           </Routes>
         </main>
         <Footer />

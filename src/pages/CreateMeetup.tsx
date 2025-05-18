@@ -28,6 +28,7 @@ const CreateMeetup = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [shuffleCooldown, setShuffleCooldown] = useState(false);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [step, setStep] = useState(2);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -218,8 +219,36 @@ const CreateMeetup = () => {
     return false;
   };
 
+  // Automatische progressie
+  useEffect(() => {
+    if (step === 2 && formData.city) setStep(3);
+    if (step === 3 && formData.dates.length > 0) setStep(4);
+    if (step === 4 && dateTimeOptions.some(opt => opt.times.length > 0)) setStep(5);
+  }, [step, formData.city, formData.dates, dateTimeOptions]);
+
+  // Stap-indicator
+  const steps = [
+    'Jij',
+    'Stad',
+    'Datum',
+    'Tijd',
+    'Café',
+  ];
+
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Stap-indicator */}
+      <div className="flex justify-center gap-2 mb-6">
+        {steps.map((label, idx) => (
+          <div
+            key={label}
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200
+              ${step === idx + 1 ? 'bg-[#ff914d] text-white scale-110 shadow-lg' : 'bg-[#b2dfdb] text-primary-700 opacity-60'}`}
+          >
+            {idx + 1}
+          </div>
+        ))}
+      </div>
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
         <span role="img" aria-label="connect">🤝</span> Versterk de connectie
       </h1>
@@ -227,74 +256,71 @@ const CreateMeetup = () => {
         Vul hieronder alle details in en <span role="img" aria-label="rocket">🚀</span> met één druk op de knop ben je een stap dichterbij écht herconnecten op een bijzondere manier.<br/>
         Geen appjes, geen gedoe – gewoon samen afspreken <span role="img" aria-label="coffee">☕️</span> en ondertussen steun je ook nog de leukste lokale plekjes <span role="img" aria-label="cafe">🏠</span>!
       </p>
-
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            {t('common.name')}
-          </label>
-          <input
-            type="text"
-            id="name"
-            className="input-field mt-1"
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            {t('common.email')}
-          </label>
-          <input
-            type="email"
-            id="email"
-            className="input-field mt-1"
-            value={formData.email}
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            required
-            disabled={emailDisabled}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span role="img" aria-label="calendar">📅</span> Kies de 3 datums die voor jou het best uitkomen voor een connectie!
-          </label>
-          <DatePicker
-            inline
-            minDate={new Date()}
-            maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
-            highlightDates={formData.dates}
-            onChange={handleDatePickerChange}
-            customInput={<CustomInput />}
-            calendarClassName="anemi-datepicker"
-            locale={nl}
-          />
-          {formData.dates.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {formData.dates.map((d) => {
-                const dateStr = getLocalDateString(d);
-                return (
-                  <span key={dateStr} className="inline-flex items-center bg-primary-100 text-primary-700 rounded-full px-3 py-1 text-sm font-medium">
-                    {new Date(dateStr).toLocaleDateString()}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveDate(dateStr)}
-                      className="ml-2 text-primary-500 hover:text-red-500 focus:outline-none"
-                      aria-label="Verwijder datum"
-                    >
-                      ×
-                    </button>
-                  </span>
-                );
-              })}
+        {/* Stap 2: Stad */}
+        {step === 2 && (
+          <div>
+            <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+              <span role="img" aria-label="city">🏙️</span> Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!
+            </label>
+            <div className="relative">
+              <select
+                id="city"
+                className="city-select"
+                value={formData.city}
+                onChange={(e) => handleCityChange(e.target.value)}
+                required
+              >
+                <option value="">{t('common.selectCity')}</option>
+                {cities.map((city) => (
+                  <option key={city.id} value={city.name}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
-        </div>
-
-        {dateTimeOptions.length > 0 && (
+          </div>
+        )}
+        {/* Stap 3: Datum */}
+        {step === 3 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <span role="img" aria-label="calendar">📅</span> Kies de 3 datums die voor jou het best uitkomen voor een connectie!
+            </label>
+            <DatePicker
+              inline
+              minDate={new Date()}
+              maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+              highlightDates={formData.dates}
+              onChange={handleDatePickerChange}
+              customInput={<CustomInput />}
+              calendarClassName="anemi-datepicker"
+              locale={nl}
+            />
+            {formData.dates.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {formData.dates.map((d) => {
+                  const dateStr = getLocalDateString(d);
+                  return (
+                    <span key={dateStr} className="inline-flex items-center bg-primary-100 text-primary-700 rounded-full px-3 py-1 text-sm font-medium">
+                      {new Date(dateStr).toLocaleDateString()}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDate(dateStr)}
+                        className="ml-2 text-primary-500 hover:text-red-500 focus:outline-none"
+                        aria-label="Verwijder datum"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        {/* Stap 4: Tijdvakken */}
+        {step === 4 && dateTimeOptions.length > 0 && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.time')}</label>
             <div className="space-y-4">
@@ -325,31 +351,8 @@ const CreateMeetup = () => {
             </div>
           </div>
         )}
-
-        <div>
-          <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-            <span role="img" aria-label="city">🏙️</span> Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!
-          </label>
-          <div className="relative">
-            <select
-              id="city"
-              className="city-select"
-              value={formData.city}
-              onChange={(e) => handleCityChange(e.target.value)}
-              required
-            >
-              <option value="">{t('common.selectCity')}</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.name}>
-                  {city.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Cafés kaart na stadkeuze */}
-        {selectedCafe && (
+        {/* Stap 5: Café + shuffle + bevestigen */}
+        {step === 5 && selectedCafe && (
           <div className="mt-6">
             <h3 className="text-lg font-semibold text-primary-600 mb-3 flex items-center gap-2 w-full max-w-md mx-auto">
               Jouw plekje <span role="img" aria-label="coffee">☕️</span>
@@ -381,17 +384,23 @@ const CreateMeetup = () => {
             </div>
           </div>
         )}
-
+        {/* Foutmelding */}
         {formError && (
           <div className="text-red-500 text-sm">{formError}</div>
         )}
-
-        <button
-          type="submit"
-          className="btn-primary w-full"
-        >
-          {t('common.continue')}
-        </button>
+        {/* Navigatieknoppen */}
+        <div className="flex gap-4 mt-8">
+          {step > 2 && step <= 5 && (
+            <button type="button" className="btn-secondary flex-1" onClick={() => setStep(step - 1)}>
+              Vorige
+            </button>
+          )}
+          {step === 5 && (
+            <button type="submit" className="btn-primary flex-1">
+              {t('common.continue')}
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );
