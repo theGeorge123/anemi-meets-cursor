@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import Home from './pages/Home';
 import CreateMeetup from './pages/CreateMeetup';
 import Invite from './pages/Invite';
@@ -17,11 +18,32 @@ import Account from './pages/Account';
 function App() {
   const { i18n } = useTranslation();
   const [language, setLanguage] = useState('nl');
-  const navigate = useNavigate ? useNavigate() : null;
+  const [profileEmoji, setProfileEmoji] = useState<string | null>(null);
 
   useEffect(() => {
     i18n.changeLanguage('nl');
   }, [i18n]);
+
+  useEffect(() => {
+    const fetchEmoji = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase.from('profiles').select('emoji').eq('id', session.user.id).single();
+        setProfileEmoji(profile?.emoji || null);
+      } else {
+        setProfileEmoji(null);
+      }
+    };
+    fetchEmoji();
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      fetchEmoji();
+    });
+    window.addEventListener('profile-emoji-updated', fetchEmoji);
+    return () => {
+      listener?.subscription.unsubscribe();
+      window.removeEventListener('profile-emoji-updated', fetchEmoji);
+    };
+  }, []);
 
   const toggleLanguage = () => {
     const newLang = language === 'en' ? 'nl' : 'en';
@@ -72,7 +94,7 @@ function App() {
                   {language === 'en' ? 'NL' : 'EN'}
                 </button>
                 <Link to="/account" className="ml-2 text-2xl hover:text-primary-600 transition-colors" title="Account">
-                  <span role="img" aria-label="account">👤</span>
+                  <span role="img" aria-label="account">{profileEmoji || '👤'}</span>
                 </Link>
               </div>
             </div>

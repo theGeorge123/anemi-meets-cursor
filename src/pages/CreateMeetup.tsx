@@ -22,7 +22,6 @@ const CreateMeetup = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [cafes, setCafes] = useState<Cafe[]>([]);
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
-  const [emailDisabled, setEmailDisabled] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [dateTimeOptions, setDateTimeOptions] = useState<{ date: string; times: string[] }[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
@@ -55,7 +54,6 @@ const CreateMeetup = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && session.user && session.user.email) {
         setFormData((prev) => ({ ...prev, email: session.user.email! }));
-        setEmailDisabled(true);
         setUserId(session.user.id);
       }
     };

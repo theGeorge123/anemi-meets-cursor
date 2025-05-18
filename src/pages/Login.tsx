@@ -41,7 +41,11 @@ const Login = () => {
       <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">
         {t('common.login')}
       </h1>
-
+      <div className="bg-[#fff7f3] rounded-2xl shadow p-6 mb-8 text-center">
+        <div className="text-2xl mb-2">👋✨</div>
+        <div className="text-lg font-semibold text-primary-700 mb-1">Welkom terug!</div>
+        <div className="text-gray-700 text-base">We hebben je gemist. Nog even inloggen en je kunt weer makkelijk echte connecties maken.<br/>Pak je favoriete drankje ☕️ en log snel in!</div>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
