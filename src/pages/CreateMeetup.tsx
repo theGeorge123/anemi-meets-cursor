@@ -210,10 +210,11 @@ const CreateMeetup = () => {
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
-        {t('createMeetup.title')}
+        <span role="img" aria-label="connect">🤝</span> Versterk de connectie
       </h1>
-      <p className="text-gray-600 mb-8">
-        {t('createMeetup.subtitle')}
+      <p className="text-gray-600 mb-8 text-lg">
+        Vul hieronder alle details in en <span role="img" aria-label="rocket">🚀</span> met één druk op de knop ben je een stap dichterbij écht herconnecten op een bijzondere manier.<br/>
+        Geen appjes, geen gedoe – gewoon samen afspreken <span role="img" aria-label="coffee">☕️</span> en ondertussen steun je ook nog de leukste lokale plekjes <span role="img" aria-label="cafe">🏠</span>!
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -247,8 +248,8 @@ const CreateMeetup = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            {t('common.date')}
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <span role="img" aria-label="calendar">📅</span> Kies de 3 datums die voor jou het best uitkomen voor een connectie!
           </label>
           <DatePicker
             inline
@@ -316,7 +317,7 @@ const CreateMeetup = () => {
 
         <div>
           <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-            {t('common.city')}
+            <span role="img" aria-label="city">🏙️</span> Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!
           </label>
           <select
             id="city"

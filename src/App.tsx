@@ -38,6 +38,20 @@ function App() {
             <ellipse cx="900" cy="220" rx="180" ry="80" fill="#c5cae9" fillOpacity="0.16" className="animate-float-slow"/>
             <ellipse cx="400" cy="800" rx="200" ry="60" fill="#ffe0b2" fillOpacity="0.13" className="animate-float-slower"/>
             <ellipse cx="1100" cy="200" rx="120" ry="60" fill="#f5f7fa" fillOpacity="0.18" className="animate-float-slow"/>
+            <ellipse cx="200" cy="700" rx="140" ry="60" fill="#ff914d" fillOpacity="0.10" className="animate-float-slower"/>
+            <ellipse cx="1300" cy="150" rx="90" ry="40" fill="#b2dfdb" fillOpacity="0.13" className="animate-float-slow"/>
+            <ellipse cx="700" cy="100" rx="110" ry="50" fill="#c5cae9" fillOpacity="0.10" className="animate-float-slower"/>
+            <ellipse cx="800" cy="850" rx="160" ry="60" fill="#ff914d" fillOpacity="0.08" className="animate-float-slow"/>
+            <g opacity="0.13">
+              <path d="M80 120c0-12 10-22 22-22s22 10 22 22c0 12-22 28-22 28s-22-16-22-28z" fill="#ff914d"/>
+              <path d="M1360 820c0-8 7-15 15-15s15 7 15 15c0 8-15 18-15 18s-15-10-15-18z" fill="#b2dfdb"/>
+              <path d="M700 400c0-7 6-13 13-13s13 6 13 13c0 7-13 15-13 15s-13-8-13-15z" fill="#c5cae9"/>
+            </g>
+            <g opacity="0.10">
+              <rect x="1200" y="100" width="32" height="18" rx="7" fill="#ff914d"/>
+              <ellipse cx="1216" cy="100" rx="16" ry="6" fill="#fff" fillOpacity="0.7"/>
+              <rect x="1230" y="110" width="8" height="8" rx="4" fill="#b2dfdb"/>
+            </g>
           </svg>
         </div>
         <nav className="bg-white shadow-sm">

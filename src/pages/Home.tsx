@@ -19,40 +19,44 @@ const Home = () => {
     <div className="space-y-12">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-primary-600">anemi meets</h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          {t('home.mission')}
-        </p>
-        <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-          {t('home.vision')}
-        </p>
-      </div>
-
-      <div className="flex justify-center">
-        <button
-          onClick={handleStartMeetup}
-          className="btn-primary text-lg px-8 py-3"
-        >
-          {t('common.startMeetup')}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <div className="card">
-          <h2 className="text-xl font-semibold text-primary-600 mb-4">
-            Simple Planning
-          </h2>
-          <p className="text-gray-600">
-            Choose your preferred dates and times, and let your friend pick what works best for them.
+        <div className="flex flex-col md:flex-row gap-4 justify-center mt-6 mb-8">
+          <div className="flex-1 card bg-[#b2dfdb]/80 flex flex-col items-center p-6 min-w-[180px]">
+            <span className="text-3xl mb-2">📝</span>
+            <h2 className="text-lg font-semibold text-primary-700 mb-1">Invullen</h2>
+            <p className="text-gray-600 text-sm text-center">Vul je naam, e-mail en favoriete data in.</p>
+          </div>
+          <div className="flex-1 card bg-[#ff914d]/80 flex flex-col items-center p-6 min-w-[180px]">
+            <span className="text-3xl mb-2">📤</span>
+            <h2 className="text-lg font-semibold text-primary-700 mb-1">Versturen</h2>
+            <p className="text-gray-600 text-sm text-center">Stuur de uitnodiging met één klik naar je vriend(in).</p>
+          </div>
+          <div className="flex-1 card bg-[#c5cae9]/80 flex flex-col items-center p-6 min-w-[180px]">
+            <span className="text-3xl mb-2">✅</span>
+            <h2 className="text-lg font-semibold text-primary-700 mb-1">Accepteren</h2>
+            <p className="text-gray-600 text-sm text-center">Je vriend kiest en bevestigt de beste tijd. Klaar!</p>
+          </div>
+        </div>
+        <div className="card bg-white/80 max-w-2xl mx-auto mt-4 mb-8">
+          <p className="text-lg text-gray-800 text-center">
+            <span className="text-2xl">😅</span> Gek van het heen en weer appen van <b>waar</b>, <b>wanneer</b> en <b>hoelaat</b>?<br/>
+            <span className="text-primary-600 font-semibold">Laat ons jou helpen die stap weg te nemen.</span><br/>
+            Jij wint door sneller te connecten <span className="text-xl">⚡️</span> en wij helpen lokale stadsplekken aan meer bezoekers <span className="text-xl">🏙️</span>.
           </p>
         </div>
-
-        <div className="card">
-          <h2 className="text-xl font-semibold text-primary-600 mb-4">
-            Local Cafes
+        <div className="bg-[#b2dfdb]/80 rounded-3xl shadow-xl p-8 flex flex-col items-center gap-2 max-w-xl mx-auto">
+          <h2 className="text-2xl font-bold text-primary-700 mb-2 flex items-center gap-2">
+            <span role="img" aria-label="connect">🤝</span> Versterk de connectie
           </h2>
-          <p className="text-gray-600">
-            Discover cozy cafes in your city, perfect for meaningful conversations.
+          <p className="text-lg text-gray-700 text-center">
+            Zet vandaag de eerste stap naar meer echte ontmoetingen.<br/>
+            <span className="text-2xl">☕️✨</span>
           </p>
+          <button
+            onClick={handleStartMeetup}
+            className="text-lg px-8 py-3 mt-4 rounded-2xl font-semibold shadow-xl bg-[#ff914d] text-white hover:bg-[#ffb184] transition-colors duration-300"
+          >
+            Start nu
+          </button>
         </div>
       </div>
     </div>
