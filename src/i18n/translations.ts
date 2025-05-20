@@ -51,6 +51,10 @@ export const translations = {
       contactSuccess: 'Thank you for your message! We will get back to you soon.',
       contactError: 'Something went wrong. Please try again later.',
       errorMissingFields: 'You are missing: {{fields}}',
+      freeAccountInfo: 'With a free account you can immediately plan meetups and send invitations.',
+      freeMeetupInfo: 'Planning a meetup is completely free.',
+      testimonial1: 'Anemi Meets saves me so much time! — Sophie, Rotterdam',
+      testimonialsTitle: 'What others say',
     },
     home: {
       mission: 'Help people easily coordinate real-life meetings in a relaxing, low-friction way.',
@@ -138,6 +142,10 @@ export const translations = {
       contactSuccess: 'Bedankt voor je bericht! We nemen zo snel mogelijk contact met je op.',
       contactError: 'Er ging iets mis. Probeer het later opnieuw.',
       errorMissingFields: 'Je mist nog: {{fields}}',
+      freeAccountInfo: 'Met een gratis account kun je direct meetups plannen en uitnodigingen versturen.',
+      freeMeetupInfo: 'Het plannen van een afspraak is helemaal gratis.',
+      testimonial1: 'Anemi Meets bespaart me zoveel tijd! — Sophie, Rotterdam',
+      testimonialsTitle: 'Wat anderen zeggen',
     },
     home: {
       mission: 'Help mensen eenvoudig afspraken te maken op een ontspannen, laagdrempelige manier.',

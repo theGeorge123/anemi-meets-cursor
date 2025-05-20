@@ -24,7 +24,7 @@ const steps = [
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
     name: '',
@@ -72,19 +72,22 @@ const Signup = () => {
         emoji: form.emoji,
       });
       if (profileError) {
-        setError('Account aangemaakt, maar profiel opslaan is mislukt.');
+        setError('Account aangemaakt, maar profiel opslaan is mislukt: ' + profileError.message);
         setLoading(false);
         return;
       }
       // Updates-subscribers opslaan als vinkje aanstaat
       if (wantsUpdates) {
-        await supabase.from('updates_subscribers').upsert({ email: form.email });
+        const { error: updatesError } = await supabase.from('updates_subscribers').upsert({ email: form.email });
+        if (updatesError) {
+          setError('Account aangemaakt, maar aanmelden voor updates is mislukt: ' + updatesError.message);
+        }
       }
     }
     if (wantsUpdates) {
       localStorage.setItem(UPDATES_EMAIL_KEY, form.email);
     }
-    setSuccess('Account aangemaakt! Je wordt doorgestuurd naar je accountpagina...');
+    setSuccess('Account aangemaakt! Check je e-mail voor een bevestigingslink. Zo houden we het veilig en blijven spammers buiten. Je wordt doorgestuurd naar je accountpagina...');
     setLoading(false);
     setTimeout(() => navigate('/account'), 2000);
   };
@@ -120,6 +123,20 @@ const Signup = () => {
 
   return (
     <div className="max-w-md mx-auto">
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={() => {
+            const newLang = i18n.language === 'en' ? 'nl' : 'en';
+            i18n.changeLanguage(newLang);
+          }}
+          className="px-4 py-2 rounded-full border-2 border-[#ff914d] bg-white text-primary-700 font-bold shadow hover:bg-[#ff914d] hover:text-white transition text-lg"
+        >
+          {i18n.language === 'en' ? 'NL' : 'EN'}
+        </button>
+      </div>
+      <div className="bg-[#fff7f3] rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base">
+        {t('common.freeAccountInfo')}
+      </div>
       <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('common.createAccount')}</h1>
       <div className="flex justify-center gap-2 mb-6">
         {steps.map((label, idx) => (
@@ -136,7 +153,7 @@ const Signup = () => {
         {step === 0 && (
           <div>
             <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">😊</span> Hoe leuk dat je hier bent! Maar wat is je naam eigenlijk?
+              <span className="text-2xl">😊</span> Wat leuk dat je hier bent! Hoe mogen we je noemen?
             </label>
             <input
               type="text"
@@ -151,34 +168,34 @@ const Signup = () => {
           </div>
         )}
         {step === 1 && (
-          <div>
+        <div>
             <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">📧</span> En op welk e-mailadres mogen we je helpen connecten?
-            </label>
-            <input
-              type="email"
-              id="signup-email"
-              className="input-field mt-1"
-              value={form.email}
+          </label>
+          <input
+            type="email"
+            id="signup-email"
+            className="input-field mt-1"
+            value={form.email}
               onChange={(e) => handleFieldChange('email', e.target.value)}
-              required
+            required
               placeholder="E-mail"
               autoFocus
-            />
-          </div>
+          />
+        </div>
         )}
         {step === 2 && (
-          <div>
+        <div>
             <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">🔒</span> Met welk wachtwoord wil je dit account beveiligen?
-            </label>
-            <input
-              type="password"
-              id="signup-password"
+          </label>
+          <input
+            type="password"
+            id="signup-password"
               className="input-field mt-1 mb-4"
-              value={form.password}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-              required
+            value={form.password}
+            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            required
               placeholder="Wachtwoord (min. 6 tekens)"
               autoFocus
             />
@@ -197,25 +214,25 @@ const Signup = () => {
             {form.password && form.confirmPassword && form.password !== form.confirmPassword && (
               <div className="text-red-500 text-sm mt-2">Oeps, wachtwoorden komen niet overeen!</div>
             )}
-          </div>
+        </div>
         )}
         {step === 3 && (
-          <div>
+        <div>
             <label htmlFor="gender" className="block text-lg font-medium text-gray-700 mb-2">
               Je hoeft je geslacht niet te zeggen, maar het is wel leuk om te weten! <span className="text-lg">😊</span>
-            </label>
-            <select
-              id="gender"
-              className="input-field mt-1"
-              value={form.gender}
+          </label>
+          <select
+            id="gender"
+            className="input-field mt-1"
+            value={form.gender}
               onChange={(e) => handleFieldChange('gender', e.target.value)}
-            >
-              <option value="">{t('common.selectOption')}</option>
-              {GENDER_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
+          >
+            <option value="">{t('common.selectOption')}</option>
+            {GENDER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
         )}
         {step === 4 && (
           <div>
@@ -251,16 +268,16 @@ const Signup = () => {
               </ul>
             </div>
             <div className="flex items-center mb-4">
-              <input
-                type="checkbox"
-                id="updates-checkbox"
-                checked={wantsUpdates}
-                onChange={() => setWantsUpdates((v) => !v)}
-                className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
-              />
-              <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
+          <input
+            type="checkbox"
+            id="updates-checkbox"
+            checked={wantsUpdates}
+            onChange={() => setWantsUpdates((v) => !v)}
+            className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
+          />
+          <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
                 Wil je meegroeien met deze startup en zien waar we mee bezig zijn? Klik dan hier!
-              </label>
+          </label>
             </div>
             <button
               type="submit"
@@ -302,6 +319,12 @@ const Signup = () => {
         >
           {t('common.alreadyHaveAccount')}
         </button>
+      </div>
+      <div className="text-center mt-10">
+        <h2 className="text-xl font-bold text-primary-700 mb-2">{t('common.testimonialsTitle')}</h2>
+        <div className="italic text-gray-700 bg-white/70 rounded-xl p-4 shadow max-w-xs mx-auto">
+          {t('common.testimonial1')}
+        </div>
       </div>
     </div>
   );

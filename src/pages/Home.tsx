@@ -1,9 +1,11 @@
 // import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleStartMeetup = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -19,11 +21,17 @@ const Home = () => {
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-primary-600">anemi meets</h1>
         <div className="flex flex-col md:flex-row gap-4 justify-center mt-6 mb-8">
-          <div className="flex-1 card bg-[#b2dfdb]/80 flex flex-col items-center p-6 min-w-[180px]">
+        <button
+            type="button"
+          onClick={handleStartMeetup}
+            className="flex-1 card bg-[#b2dfdb]/80 flex flex-col items-center p-6 min-w-[180px] cursor-pointer transition transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#ff914d]/40"
+            style={{ border: '2px solid #b2dfdb' }}
+            aria-label="Start een nieuwe meeting"
+        >
             <span className="text-3xl mb-2">📝</span>
             <h2 className="text-lg font-semibold text-primary-700 mb-1">Invullen</h2>
             <p className="text-gray-600 text-sm text-center">Vul je naam, e-mail en favoriete data in.</p>
-          </div>
+        </button>
           <div className="flex-1 card bg-[#ff914d]/80 flex flex-col items-center p-6 min-w-[180px]">
             <span className="text-3xl mb-2">📤</span>
             <h2 className="text-lg font-semibold text-primary-700 mb-1">Versturen</h2>
@@ -34,7 +42,7 @@ const Home = () => {
             <h2 className="text-lg font-semibold text-primary-700 mb-1">Accepteren</h2>
             <p className="text-gray-600 text-sm text-center">Je vriend kiest en bevestigt de beste tijd. Klaar!</p>
           </div>
-        </div>
+      </div>
         <div className="card bg-white/80 max-w-2xl mx-auto mt-4 mb-8">
           <p className="text-lg text-gray-800 text-center">
             Moe van het eindeloze appen over waar, wanneer en hoe laat?<br/>
@@ -56,6 +64,13 @@ const Home = () => {
           >
             Start nu
           </button>
+        </div>
+      </div>
+      {/* Testimonial sectie */}
+      <div className="max-w-xl mx-auto mt-8">
+        <h2 className="text-xl font-bold text-primary-700 mb-2 text-center">{t('common.testimonialsTitle')}</h2>
+        <div className="italic text-gray-700 bg-white/70 rounded-xl p-4 shadow text-center">
+          {t('common.testimonial1')}
         </div>
       </div>
     </div>

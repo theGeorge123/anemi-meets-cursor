@@ -154,8 +154,8 @@ const Respond = () => {
           </h2>
           <img src="/coffee-fun.gif" alt="Leuke koffie GIF" style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
           <p className="text-lg text-gray-700 mb-6 text-center">
-            De bevestiging is verstuurd naar beide e-mailadressen.
-          </p>
+          De bevestiging is verstuurd naar beide e-mailadressen.
+        </p>
           <button className="btn-primary w-full mb-3" onClick={() => window.location.href = "/"}>Terug naar start</button>
           <div className="w-full flex flex-col items-center mt-2">
             <p className="mb-2">Wil je zelf een meeting aanmaken? Maak dan nu een account aan!</p>

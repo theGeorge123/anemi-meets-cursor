@@ -139,7 +139,16 @@ const CreateMeetup = () => {
 
   const handleCityChange = (city: string) => {
     setFormData(prev => ({ ...prev, city }));
-    setSelectedCafe(null);
+    // Zoek cafés voor deze stad en selecteer er direct één (random)
+    supabase.from('cafes').select('*').eq('city', city).then(({ data }) => {
+      if (data && data.length > 0) {
+        setCafes(data);
+        setSelectedCafe(data[Math.floor(Math.random() * data.length)]);
+      } else {
+        setCafes([]);
+        setSelectedCafe(null);
+      }
+    });
   };
 
   const shuffleCafe = () => {
@@ -217,16 +226,8 @@ const CreateMeetup = () => {
     return false;
   };
 
-  // Automatische progressie
-  useEffect(() => {
-    if (step === 2 && formData.city) setStep(3);
-    if (step === 3 && formData.dates.length > 0) setStep(4);
-    if (step === 4 && dateTimeOptions.some(opt => opt.times.length > 0)) setStep(5);
-  }, [step, formData.city, formData.dates, dateTimeOptions]);
-
   // Stap-indicator
   const steps = [
-    'Jij',
     'Stad',
     'Datum',
     'Tijd',
@@ -235,13 +236,17 @@ const CreateMeetup = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Gratis plannen uitleg */}
+      <div className="bg-[#fff7f3] rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base">
+        {t('common.freeMeetupInfo')}
+      </div>
       {/* Stap-indicator */}
       <div className="flex justify-center gap-2 mb-6">
         {steps.map((label, idx) => (
           <div
             key={label}
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200
-              ${step === idx + 1 ? 'bg-[#ff914d] text-white scale-110 shadow-lg' : 'bg-[#b2dfdb] text-primary-700 opacity-60'}`}
+              ${step === idx + 2 ? 'bg-[#ff914d] text-white scale-110 shadow-lg' : 'bg-[#b2dfdb] text-primary-700 opacity-60'}`}
           >
             {idx + 1}
           </div>
@@ -257,31 +262,75 @@ const CreateMeetup = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Stap 2: Stad */}
         {step === 2 && (
-          <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-              <span role="img" aria-label="city">🏙️</span> Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!
-            </label>
-            <div className="relative">
-              <select
-                id="city"
-                className="city-select"
-                value={formData.city}
-                onChange={(e) => handleCityChange(e.target.value)}
-                required
-              >
-                <option value="">{t('common.selectCity')}</option>
-                {cities.map((city) => (
-                  <option key={city.id} value={city.name}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
+          <>
+            <div>
+              <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
+                <span className="text-lg">🏙️</span> Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.
+              </div>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                <span role="img" aria-label="city">🏙️</span> Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!
+              </label>
+              <div className="relative">
+                <select
+                  id="city"
+                  className="city-select"
+                  value={formData.city}
+                  onChange={(e) => handleCityChange(e.target.value)}
+                  required
+                >
+                  <option value="">{t('common.selectCity')}</option>
+                  {cities.map((city) => (
+                    <option key={city.id} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Direct café tonen na stadkeuze */}
+              {selectedCafe && (
+                <div className="mt-6 bg-white/80 rounded-2xl shadow-md p-4 flex flex-col gap-1 border border-[#b2dfdb]/40 max-w-md mx-auto items-start">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">☕️</span>
+                    <span className="font-semibold text-primary-700 text-lg">{selectedCafe.name}</span>
+                  </div>
+                  <span className="text-gray-500 text-sm mb-2">{selectedCafe.address}</span>
+                  {selectedCafe.image_url && (
+                    <img
+                      src={selectedCafe.image_url}
+                      alt={selectedCafe.name}
+                      className="w-full max-w-md mx-auto rounded-2xl shadow mb-3 object-cover"
+                      style={{ maxHeight: 120 }}
+                    />
+                  )}
+                </div>
+              )}
             </div>
-          </div>
+            {/* Navigatieknoppen voor step 2 */}
+            <div className="flex gap-4 mt-8">
+              <button
+                type="button"
+                className="btn-secondary flex-1 opacity-50 cursor-not-allowed"
+                disabled
+              >
+                Vorige
+              </button>
+              <button
+                type="button"
+                className={`btn-primary flex-1 ${!formData.city ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => formData.city && setStep(3)}
+                disabled={!formData.city}
+              >
+                Volgende
+              </button>
+            </div>
+          </>
         )}
         {/* Stap 3: Datum */}
         {step === 3 && (
           <div>
+            <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
+              <span className="text-lg">📅</span> Kies de dagen waarop jij tijd hebt. Zo wordt het plannen voor iedereen makkelijker!
+            </div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <span role="img" aria-label="calendar">📅</span> Kies de 3 datums die voor jou het best uitkomen voor een connectie!
             </label>
@@ -320,6 +369,9 @@ const CreateMeetup = () => {
         {/* Stap 4: Tijdvakken */}
         {step === 4 && dateTimeOptions.length > 0 && (
           <div>
+            <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
+              <span className="text-lg">⏰</span> Geef aan wanneer je het liefst afspreekt. Zo vinden we samen het beste moment!
+            </div>
             <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.time')}</label>
             <div className="space-y-4">
               {dateTimeOptions.map(opt => (
@@ -352,6 +404,9 @@ const CreateMeetup = () => {
         {/* Stap 5: Café + shuffle + bevestigen */}
         {step === 5 && selectedCafe && (
           <div className="mt-6">
+            <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
+              <span className="text-lg">☕️</span> Kies je favoriete plekje of laat je verrassen. Zo wordt het extra gezellig!
+            </div>
             <h3 className="text-lg font-semibold text-primary-600 mb-3 flex items-center gap-2 w-full max-w-md mx-auto">
               Jouw plekje <span role="img" aria-label="coffee">☕️</span>
             </h3>

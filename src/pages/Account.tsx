@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 const Account = () => {
   const [user, setUser] = useState<any>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [emojiSaving, setEmojiSaving] = useState(false);
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
 
@@ -48,11 +50,27 @@ const Account = () => {
 
   return (
     <div className="max-w-lg mx-auto py-12 flex flex-col items-center">
+      {/* Prominente taal-switch */}
+      <div className="flex justify-end w-full mb-2">
+        <button
+          onClick={() => {
+            const newLang = i18n.language === 'en' ? 'nl' : 'en';
+            i18n.changeLanguage(newLang);
+          }}
+          className="px-4 py-2 rounded-full border-2 border-[#ff914d] bg-white text-primary-700 font-bold shadow hover:bg-[#ff914d] hover:text-white transition text-lg"
+        >
+          {i18n.language === 'en' ? 'NL' : 'EN'}
+        </button>
+      </div>
+      {/* Uitleg gratis account */}
+      <div className="bg-[#fff7f3] rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base w-full">
+        {t('common.freeAccountInfo')}
+      </div>
       <div className="bg-[#b2dfdb]/80 rounded-full shadow-2xl p-6 mb-6 flex items-center justify-center">
         <span className="text-6xl" role="img" aria-label="avatar">👤</span>
       </div>
       <div className="card bg-white/80 w-full mb-6 text-center">
-        <h1 className="text-2xl font-bold text-primary-600 mb-2">Jouw account</h1>
+        <h1 className="text-2xl font-bold text-primary-600 mb-2">{t('common.createAccount')}</h1>
         {user ? (
           <>
             <div className="text-lg text-gray-700 mb-2">Ingelogd als:</div>
@@ -69,7 +87,7 @@ const Account = () => {
           </>
         )}
       </div>
-      <div className="bg-[#ff914d]/10 rounded-3xl p-6 shadow text-center mt-4">
+      <div className="bg-[#ff914d]/10 rounded-3xl p-6 shadow text-center mt-4 w-full">
         <p className="text-lg text-primary-700 font-semibold mb-2">Welkom bij Anemi Meets!</p>
         {user ? (
           <p className="text-gray-700">Hier kun je je account beheren, uitloggen of je gegevens bekijken.<br/>We maken het makkelijk om echte connecties te versterken <span role="img" aria-label="connect">🤝</span></p>
@@ -85,7 +103,7 @@ const Account = () => {
               onClick={() => navigate('/signup')}
               className="btn-primary px-8 py-3 rounded-2xl font-semibold text-lg mt-2"
             >
-              Maak een account aan
+              {t('common.createAccount')}
             </button>
           </>
         )}
@@ -110,6 +128,13 @@ const Account = () => {
           {emojiSaving && <div className="text-xs text-gray-500">Opslaan...</div>}
         </div>
       )}
+      {/* Testimonial sectie */}
+      <div className="text-center mt-10 w-full">
+        <h2 className="text-xl font-bold text-primary-700 mb-2">{t('common.testimonialsTitle')}</h2>
+        <div className="italic text-gray-700 bg-white/70 rounded-xl p-4 shadow max-w-xs mx-auto">
+          {t('common.testimonial1')}
+        </div>
+      </div>
     </div>
   );
 };
