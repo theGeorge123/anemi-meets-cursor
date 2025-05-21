@@ -49,11 +49,20 @@ const CreateMeetup = () => {
   }, [formData.city]);
 
   useEffect(() => {
-    // Prefill email with logged-in user's email
+    // Prefill email and name with logged-in user's info
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && session.user && session.user.email) {
-        setFormData((prev) => ({ ...prev, email: session.user.email! }));
+        let userName = '';
+        // Try to get name from profile
+        const { data: profile } = await supabase.from('profiles').select('name').eq('id', session.user.id).single();
+        if (profile && profile.name) {
+          userName = profile.name;
+        } else {
+          // Fallback: use email prefix
+          userName = session.user.email.split('@')[0];
+        }
+        setFormData((prev) => ({ ...prev, email: session.user.email!, name: userName }));
         setUserId(session.user.id);
       }
     };
@@ -231,7 +240,6 @@ const CreateMeetup = () => {
     'Stad',
     'Datum',
     'Tijd',
-    'Café',
   ];
 
   return (
@@ -263,6 +271,12 @@ const CreateMeetup = () => {
         {/* Stap 2: Stad */}
         {step === 2 && (
           <>
+            {/* Welkomstbericht alleen bij eerste stap */}
+            <div className="mb-6 bg-white/80 rounded-xl shadow p-4 text-center text-primary-700 font-semibold text-lg">
+              Hey welkom{formData.name ? `, ${formData.name}` : ''}!<br />
+              We helpen je graag met een connectie maken.<br />
+              Vul de informatie in en verstuur de link, dan regelen wij de rest.
+            </div>
             <div>
               <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
                 <span className="text-lg">🏙️</span> Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.
@@ -302,6 +316,16 @@ const CreateMeetup = () => {
                       style={{ maxHeight: 120 }}
                     />
                   )}
+                  {cafes.length > 1 && (
+                    <button
+                      type="button"
+                      className={`btn-secondary mt-2 transition-colors duration-200 ${shuffleCooldown ? 'opacity-60 cursor-not-allowed bg-gray-200 text-gray-400' : ''}`}
+                      onClick={shuffleCafe}
+                      disabled={shuffleCooldown}
+                    >
+                      {shuffleCooldown ? 'Even wachten...' : 'Shuffle café'}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -325,7 +349,7 @@ const CreateMeetup = () => {
             </div>
           </>
         )}
-        {/* Stap 3: Datum */}
+        {/* Stap 3: Datum + Tijdvakken */}
         {step === 3 && (
           <div>
             <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
@@ -344,96 +368,57 @@ const CreateMeetup = () => {
               calendarClassName="anemi-datepicker"
               locale={nl}
             />
-            {formData.dates.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {formData.dates.map((d) => {
-                  const dateStr = getLocalDateString(d);
-                  return (
-                    <span key={dateStr} className="inline-flex items-center bg-primary-100 text-primary-700 rounded-full px-3 py-1 text-sm font-medium">
-                      {new Date(dateStr).toLocaleDateString()}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveDate(dateStr)}
-                        className="ml-2 text-primary-500 hover:text-red-500 focus:outline-none"
-                        aria-label="Verwijder datum"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-        {/* Stap 4: Tijdvakken */}
-        {step === 4 && dateTimeOptions.length > 0 && (
-          <div>
-            <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
-              <span className="text-lg">⏰</span> Geef aan wanneer je het liefst afspreekt. Zo vinden we samen het beste moment!
-            </div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.time')}</label>
-            <div className="space-y-4">
-              {dateTimeOptions.map(opt => (
-                <div key={opt.date} className="border rounded-lg p-3 bg-primary-50">
-                  <div className="font-medium text-primary-600 mb-2">{new Date(opt.date).toLocaleDateString()}</div>
-                  <div className="flex gap-6">
-                    {['morning', 'afternoon', 'evening'].map(time => (
-                      <label key={time} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={opt.times.includes(time)}
-                          onChange={() => handleTimeToggle(opt.date, time)}
-                          className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                          disabled={isTimeSlotPast(opt.date, time)}
-                        />
-                        <span className="ml-2 text-gray-700">
-                          {t(`common.${time}`)}
-                          {isTimeSlotPast(opt.date, time) && (
-                            <span className="ml-1 text-xs text-gray-400">(verlopen)</span>
-                          )}
-                        </span>
-                      </label>
-                    ))}
+            {/* Direct tijdvakken per gekozen datum */}
+            {dateTimeOptions.length > 0 && (
+              <div className="mt-6 space-y-4">
+                {dateTimeOptions.map(opt => (
+                  <div key={opt.date} className="border rounded-lg p-3 bg-primary-50">
+                    <div className="font-medium text-primary-600 mb-2">{new Date(opt.date).toLocaleDateString()}</div>
+                    <div className="flex gap-6">
+                      {['morning', 'afternoon', 'evening'].map(time => (
+                        <label key={time} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={opt.times.includes(time)}
+                            onChange={() => handleTimeToggle(opt.date, time)}
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                            disabled={isTimeSlotPast(opt.date, time)}
+                          />
+                          <span className="ml-2 text-gray-700">
+                            {t(`common.${time}`)}
+                            {isTimeSlotPast(opt.date, time) && (
+                              <span className="ml-1 text-xs text-gray-400">(verlopen)</span>
+                            )}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {/* Stap 5: Café + shuffle + bevestigen */}
-        {step === 5 && selectedCafe && (
-          <div className="mt-6">
-            <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
-              <span className="text-lg">☕️</span> Kies je favoriete plekje of laat je verrassen. Zo wordt het extra gezellig!
-            </div>
-            <h3 className="text-lg font-semibold text-primary-600 mb-3 flex items-center gap-2 w-full max-w-md mx-auto">
-              Jouw plekje <span role="img" aria-label="coffee">☕️</span>
-            </h3>
-            {selectedCafe.image_url && (
-              <img
-                src={selectedCafe.image_url}
-                alt={selectedCafe.name}
-                className="w-full max-w-md mx-auto rounded-2xl shadow mb-3 object-cover"
-                style={{ maxHeight: 180 }}
-              />
-            )}
-            <div className="bg-white/80 rounded-2xl shadow-md p-4 flex flex-col gap-1 border border-[#b2dfdb]/40 max-w-md mx-auto items-start">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">☕️</span>
-                <span className="font-semibold text-primary-700 text-lg">{selectedCafe.name}</span>
+                ))}
               </div>
-              <span className="text-gray-500 text-sm mb-2">{selectedCafe.address}</span>
-              {cafes.length > 1 && (
-                <button
-                  type="button"
-                  className={`btn-secondary mt-2 transition-colors duration-200 ${shuffleCooldown ? 'opacity-60 cursor-not-allowed bg-gray-200 text-gray-400' : ''}`}
-                  onClick={shuffleCafe}
-                  disabled={shuffleCooldown}
-                >
-                  {shuffleCooldown ? 'Even wachten...' : 'Shuffle café'}
-                </button>
-              )}
+            )}
+            {/* Speelse informele tekst onder datums/tijden */}
+            {(formData.city && selectedCafe && dateTimeOptions.length > 0) && (
+              <div className="mt-10 bg-white/80 rounded-2xl shadow-md p-5 border border-[#b2dfdb]/40 max-w-lg mx-auto text-center text-primary-700 font-semibold">
+                🎉 Bijna klaar! Als je op <b>doorgaan</b> klikt, krijg je je persoonlijke invite-link die je direct kunt delen met je vriend!
+              </div>
+            )}
+            {/* Navigatieknoppen voor stap 3: direct submitten */}
+            <div className="flex gap-4 mt-8">
+              <button
+                type="button"
+                className="btn-secondary flex-1"
+                onClick={() => setStep(2)}
+              >
+                Vorige
+              </button>
+              <button
+                type="submit"
+                className={`btn-primary flex-1 ${!(formData.dates.length > 0 && dateTimeOptions.some(opt => opt.times.length > 0)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!(formData.dates.length > 0 && dateTimeOptions.some(opt => opt.times.length > 0))}
+              >
+                {t('common.continue')}
+              </button>
             </div>
           </div>
         )}
@@ -441,19 +426,6 @@ const CreateMeetup = () => {
         {formError && (
           <div className="text-red-500 text-sm">{formError}</div>
         )}
-        {/* Navigatieknoppen */}
-        <div className="flex gap-4 mt-8">
-          {step > 2 && step <= 5 && (
-            <button type="button" className="btn-secondary flex-1" onClick={() => setStep(step - 1)}>
-              Vorige
-            </button>
-          )}
-          {step === 5 && (
-            <button type="submit" className="btn-primary flex-1">
-              {t('common.continue')}
-            </button>
-          )}
-        </div>
       </form>
     </div>
   );
