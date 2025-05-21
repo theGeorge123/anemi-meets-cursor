@@ -56,11 +56,11 @@ const CreateMeetup = () => {
         let userName = '';
         // Try to get name from profile
         const { data: profile } = await supabase.from('profiles').select('name').eq('id', session.user.id).single();
-        if (profile && profile.name) {
+        if (profile && profile.name && profile.name.trim() !== '') {
           userName = profile.name;
         } else {
           // Fallback: use email prefix
-          userName = session.user.email.split('@')[0];
+          userName = '';
         }
         setFormData((prev) => ({ ...prev, email: session.user.email!, name: userName }));
         setUserId(session.user.id);
@@ -262,19 +262,15 @@ const CreateMeetup = () => {
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
         <span role="img" aria-label="connect">🤝</span> Versterk de connectie
       </h1>
-      <p className="text-gray-600 mb-8 text-lg">
-        Vul hieronder alle details in en <span role="img" aria-label="rocket">🚀</span> met één druk op de knop ben je een stap dichterbij écht herconnecten op een bijzondere manier.<br/>
-        Geen appjes, geen gedoe – gewoon samen afspreken <span role="img" aria-label="coffee">☕️</span> en ondertussen steun je ook nog de leukste lokale plekjes <span role="img" aria-label="cafe">🏠</span>!
-      </p>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Stap 2: Stad */}
         {step === 2 && (
           <>
             {/* Welkomstbericht alleen bij eerste stap */}
             <div className="mb-6 bg-white/80 rounded-xl shadow p-4 text-center text-primary-700 font-semibold text-lg">
-              Hey welkom{formData.name ? `, ${formData.name}` : ''}!<br />
-              We helpen je graag met een connectie maken.<br />
-              Vul de informatie in en verstuur de link, dan regelen wij de rest.
+              {t('common.welcomeTitle')}{formData.name && formData.name.trim() !== '' ? `, ${formData.name}` : ''}!<br />
+              {t('common.welcomeLine1')}<br />
+              {t('common.welcomeLine2')}
             </div>
             <div>
               <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
