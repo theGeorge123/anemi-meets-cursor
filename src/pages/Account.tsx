@@ -8,7 +8,7 @@ const Account = () => {
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [emojiSaving, setEmojiSaving] = useState(false);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
 
