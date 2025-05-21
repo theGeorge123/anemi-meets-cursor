@@ -238,8 +238,7 @@ const CreateMeetup = () => {
   // Stap-indicator
   const steps = [
     'Stad',
-    'Datum',
-    'Tijd',
+    'Datum & Tijd',
   ];
 
   return (
@@ -349,7 +348,6 @@ const CreateMeetup = () => {
             </div>
           </>
         )}
-        {/* Stap 3: Datum + Tijdvakken */}
         {step === 3 && (
           <div>
             <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
@@ -397,12 +395,10 @@ const CreateMeetup = () => {
                 ))}
               </div>
             )}
-            {/* Speelse informele tekst onder datums/tijden */}
-            {(formData.city && selectedCafe && dateTimeOptions.length > 0) && (
-              <div className="mt-10 bg-white/80 rounded-2xl shadow-md p-5 border border-[#b2dfdb]/40 max-w-lg mx-auto text-center text-primary-700 font-semibold">
-                🎉 Bijna klaar! Als je op <b>doorgaan</b> klikt, krijg je je persoonlijke invite-link die je direct kunt delen met je vriend!
-              </div>
-            )}
+            {/* Informele tekst altijd tonen */}
+            <div className="mt-10 bg-white/80 rounded-2xl shadow-md p-5 border border-[#b2dfdb]/40 max-w-lg mx-auto text-center text-primary-700 font-semibold">
+              Druk op <b>doorgaan</b> om je persoonlijke invite-link te krijgen!
+            </div>
             {/* Navigatieknoppen voor stap 3: direct submitten */}
             <div className="flex gap-4 mt-8">
               <button
