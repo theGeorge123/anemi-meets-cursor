@@ -13,11 +13,10 @@ const GENDER_OPTIONS = [
 const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
-const steps = t('signup.steps', { returnObjects: true }) as string[];
-
 const Signup = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const steps = t('signup.steps', { returnObjects: true }) as string[];
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
     name: '',
