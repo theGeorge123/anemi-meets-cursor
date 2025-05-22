@@ -83,7 +83,9 @@ export const translations = {
       chooseCityInfo: 'Choose your city! That way we know where to find the best spots for you.',
       chooseCityLabel: 'Which local cafés would you like to visit? We\'ll find the right place!',
       ctaGetInvite: 'Click continue to get your personal invite link!',
-      expired: '(expired)'
+      expired: '(expired)',
+      chooseDaysInfo: 'Choose the days you are available. This makes planning easier for everyone!',
+      chooseThreeDates: 'You can select as many dates as you like, but it\'s easiest for everyone if you keep it to just a few!'
     },
     invite: {
       title: 'Share Your Invite',
@@ -242,7 +244,9 @@ export const translations = {
       chooseCityInfo: 'Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.',
       chooseCityLabel: 'Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!',
       ctaGetInvite: 'Druk op doorgaan om je persoonlijke invite-link te krijgen!',
-      expired: '(verlopen)'
+      expired: '(verlopen)',
+      chooseDaysInfo: 'Kies de dagen waarop jij tijd hebt. Zo wordt het plannen voor iedereen makkelijker!',
+      chooseThreeDates: 'Je mag zoveel datums kiezen als je wilt, maar het is voor iedereen het makkelijkst als je het beperkt houdt!'
     },
     invite: {
       title: 'Deel Je Uitnodiging',

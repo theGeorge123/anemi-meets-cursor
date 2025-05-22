@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
-import { nl } from 'date-fns/locale';
+import { nl, enUS } from 'date-fns/locale';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
 
 const CreateMeetup = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -28,6 +28,7 @@ const CreateMeetup = () => {
   const [shuffleCooldown, setShuffleCooldown] = useState(false);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [step, setStep] = useState(2);
+  const dateLocale = i18n.language === 'en' ? enUS : nl;
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -74,12 +75,20 @@ const CreateMeetup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    // Extra check op verplichte velden
-    if (!formData.name || !formData.email || !formData.city || formData.dates.length === 0 || !selectedCafe || !dateTimeOptions.some(opt => opt.times.length > 0)) {
-      setFormError('Niet alle velden zijn ingevuld.');
+    // Nieuwe validatie: minimaal één datum én één tijdvak
+    if (formData.dates.length === 0) {
+      setFormError(t('common.requiredTime'));
       return;
     }
-    if (!selectedCafe) return;
+    const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
+    if (!hasAnyTime) {
+      setFormError(t('common.requiredTime'));
+      return;
+    }
+    if (!formData.name || !formData.email || !formData.city || !selectedCafe) {
+      setFormError(t('common.errorMissingFields'));
+      return;
+    }
     if (!userId) {
       alert(t('common.notLoggedIn'));
       return;
@@ -91,12 +100,6 @@ const CreateMeetup = () => {
     });
     if (profileError) {
       setFormError('Kon profiel niet aanmaken: ' + profileError.message);
-      return;
-    }
-    // Controle: minimaal één tijd geselecteerd voor een van de datums
-    const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
-    if (!hasAnyTime) {
-      setFormError(t('common.requiredTime'));
       return;
     }
     // Filter alleen geldige tijdvakken
@@ -347,10 +350,10 @@ const CreateMeetup = () => {
         {step === 3 && (
           <div>
             <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
-              <span className="text-lg">📅</span> Kies de dagen waarop jij tijd hebt. Zo wordt het plannen voor iedereen makkelijker!
+              <span className="text-lg">📅</span> {t('createMeetup.chooseDaysInfo')}
             </div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              <span role="img" aria-label="calendar">📅</span> Kies de 3 datums die voor jou het best uitkomen voor een connectie!
+              <span role="img" aria-label="calendar">📅</span> {t('createMeetup.chooseThreeDates')}
             </label>
             <DatePicker
               inline
@@ -360,7 +363,7 @@ const CreateMeetup = () => {
               onChange={handleDatePickerChange}
               customInput={<CustomInput />}
               calendarClassName="anemi-datepicker"
-              locale={nl}
+              locale={dateLocale}
             />
             {/* Direct tijdvakken per gekozen datum */}
             {dateTimeOptions.length > 0 && (
