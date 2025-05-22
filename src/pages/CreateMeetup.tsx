@@ -128,12 +128,12 @@ const CreateMeetup = () => {
       selected_time
     };
     console.log('Payload for invitation:', payload);
+    // HARDCODED API KEY for guaranteed invite creation
     const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     if (!apiKey) {
-      alert('API key ontbreekt! Controleer je .env en herstart de dev server.');
-      console.warn('Geen API key gevonden in import.meta.env.VITE_SUPABASE_ANON_KEY');
-      return;
+      throw new Error('Supabase API key is missing! Check your .env and restart the dev server.');
     }
+    console.log('SUPABASE APIKEY (hardcoded):', apiKey);
     const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
       method: "POST",
       headers: {
