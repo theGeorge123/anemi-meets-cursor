@@ -86,7 +86,7 @@ const CreateMeetup = () => {
       return;
     }
     if (!formData.name || !formData.email || !formData.city || !selectedCafe) {
-      setFormError(t('common.errorMissingFields'));
+      setFormError(t('common.errorCreatingInvite'));
       return;
     }
     if (!userId) {
