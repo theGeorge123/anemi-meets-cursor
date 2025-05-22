@@ -98,13 +98,16 @@ const Account = () => {
       </div>
       {/* Emoji-profiel sectie */}
       {user && (
-        <div className="bg-white/70 rounded-3xl p-6 shadow text-center mt-4 w-full">
-          <p className="text-primary-700 font-semibold mb-2">{t('account.emojiPrompt')}</p>
+        <div className="bg-white/70 rounded-3xl p-6 shadow text-center mt-8 w-full border-2 border-[#ff914d]/40">
+          <h2 className="text-2xl font-bold text-primary-700 mb-2 flex items-center justify-center gap-2">
+            <span role="img" aria-label="emoji">🎨</span> {t('account.emojiProfileTitle')}
+          </h2>
+          <p className="text-base text-gray-700 mb-4">{t('account.emojiProfileDesc')}</p>
           <div className="flex flex-wrap justify-center gap-2 mb-2">
             {EMOJI_OPTIONS.map((emoji) => (
               <button
                 key={emoji}
-                className={`text-2xl px-3 py-2 rounded-full border-2 transition-all duration-150 ${selectedEmoji === emoji ? 'border-[#ff914d] bg-[#ff914d]/10' : 'border-transparent hover:border-[#b2dfdb]'}`}
+                className={`text-3xl px-4 py-3 rounded-full border-4 transition-all duration-150 font-bold shadow-sm ${selectedEmoji === emoji ? 'border-[#ff914d] bg-[#ff914d]/20 scale-110 ring-2 ring-[#ff914d]' : 'border-transparent hover:border-[#b2dfdb]'}`}
                 onClick={() => handleEmojiSelect(emoji)}
                 disabled={emojiSaving}
                 aria-label={`Kies emoji ${emoji}`}
@@ -113,7 +116,7 @@ const Account = () => {
               </button>
             ))}
           </div>
-          {emojiSaving && <div className="text-xs text-gray-500">{t('account.saving')}</div>}
+          {emojiSaving && <div className="text-xs text-gray-500 mt-2">{t('account.saving')}</div>}
         </div>
       )}
     </div>

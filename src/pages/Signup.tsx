@@ -16,7 +16,7 @@ const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 const Signup = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const steps = t('signup.steps', { returnObjects: true }) as string[];
+  const steps = [t('signup.steps')[0], t('signup.steps')[1], t('signup.steps')[2], t('signup.overviewTitle')];
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
     name: '',
@@ -24,7 +24,6 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
     gender: '',
-    emoji: '',
   });
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +60,6 @@ const Signup = () => {
         email: form.email,
         full_name: form.name,
         gender: form.gender,
-        emoji: form.emoji,
       });
       if (profileError) {
         setError('Account aangemaakt, maar profiel opslaan is mislukt: ' + profileError.message);
@@ -98,11 +96,7 @@ const Signup = () => {
           form.password === form.confirmPassword
         );
       case 3:
-        return true; // Geslacht is optioneel
-      case 4:
-        return !!form.emoji;
-      case 5:
-        return true;
+        return true; // samenvatting
       default:
         return false;
     }
@@ -203,63 +197,34 @@ const Signup = () => {
               required
               placeholder={t('signup.confirmPassword')}
             />
-            {form.password && form.confirmPassword && form.password !== form.confirmPassword && (
-              <div className="text-red-500 text-sm mt-2">{t('signup.passwordsNoMatch')}</div>
-            )}
-        </div>
-        )}
-        {step === 3 && (
-        <div>
-            <label htmlFor="gender" className="block text-lg font-medium text-gray-700 mb-2">
-              {t('signup.genderPrompt')} <span className="text-lg">😊</span>
-          </label>
-          <select
-            id="gender"
-            className="input-field mt-1"
-            value={form.gender}
-              onChange={(e) => handleFieldChange('gender', e.target.value)}
-          >
-            <option value="">{t('common.selectOption')}</option>
-            {GENDER_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-        )}
-        {step === 4 && (
-          <div>
-            <label className="block text-lg font-medium text-gray-700 mb-2">
-              {t('signup.emojiPrompt')} <span className="text-2xl">🎨</span>
-            </label>
-            <div className="flex flex-wrap justify-center gap-2 mb-2">
-              {EMOJI_OPTIONS.map((emoji) => (
-                <button
-                  type="button"
-                  key={emoji}
-                  className={`text-2xl px-3 py-2 rounded-full border-2 transition-all duration-150 ${form.emoji === emoji ? 'border-[#ff914d] bg-[#ff914d]/10' : 'border-transparent hover:border-[#b2dfdb]'}`}
-                  onClick={() => setForm((prev) => ({ ...prev, emoji }))}
-                  aria-label={`Kies emoji ${emoji}`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-            {!form.emoji && <div className="text-sm text-gray-500 mt-2">{t('signup.chooseFavorite')}</div>}
           </div>
         )}
-        {step === 5 && (
+        {step === 3 && (
           <div>
-            <div className="mb-6 bg-[#fff7f3] rounded-2xl p-4 shadow text-left">
-              <h2 className="text-lg font-bold text-primary-700 mb-2 flex items-center gap-2">📝 {t('signup.overviewTitle')}</h2>
-              <ul className="space-y-1 text-base">
-                <li><span className="font-semibold">{t('common.name')}:</span> {form.name || <span className="text-gray-400">-</span>}</li>
-                <li><span className="font-semibold">{t('common.email')}:</span> {form.email || <span className="text-gray-400">-</span>}</li>
-                <li><span className="font-semibold">{t('common.gender')}:</span> {form.gender ? GENDER_OPTIONS.find(opt => opt.value === form.gender)?.label : <span className="text-gray-400">-</span>}</li>
-                <li><span className="font-semibold">{t('common.emoji')}:</span> {form.emoji ? <span className="text-2xl align-middle">{form.emoji}</span> : <span className="text-gray-400">-</span>}</li>
-                <li><span className="font-semibold">{t('signup.updatesLabel')}:</span> {wantsUpdates ? <span className="text-green-600 font-semibold">{t('signup.yes')}</span> : <span className="text-gray-400">{t('signup.no')}</span>}</li>
-              </ul>
+            <h2 className="text-xl font-bold mb-4">{t('signup.overviewTitle')}</h2>
+            <div className="mb-4">
+              <div><b>{t('common.name')}:</b> {form.name}</div>
+              <div><b>{t('common.email')}:</b> {form.email}</div>
             </div>
-            <div className="flex items-center mb-4">
+            <div className="mb-4">
+              <label htmlFor="signup-gender" className="block text-lg font-medium text-gray-700 mb-2">
+                <span className="text-2xl">🧑‍🤝‍🧑</span> {t('signup.genderPrompt')}
+              </label>
+              <select
+                id="signup-gender"
+                className="input-field mt-1"
+                value={form.gender}
+                onChange={(e) => setForm((prev) => ({ ...prev, gender: e.target.value }))}
+              >
+                <option value="">{t('common.selectOption')}</option>
+                {GENDER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+        <div className="flex items-center mb-4">
           <input
             type="checkbox"
             id="updates-checkbox"
@@ -268,19 +233,17 @@ const Signup = () => {
             className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
           />
           <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
-                {t('signup.updatesCta')}
+            {t('signup.updatesCta')}
           </label>
-            </div>
-            <button
-              type="submit"
-              className={`btn-primary w-full flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={loading || !isStepValid()}
-            >
-              {loading ? <span className="animate-spin mr-2 w-5 h-5 border-2 border-white border-t-[#ff914d] rounded-full inline-block"></span> : null}
-              {t('common.createAccount')}
-            </button>
-          </div>
-        )}
+        </div>
+        <button
+          type="submit"
+          className={`btn-primary w-full flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={loading || !isStepValid()}
+        >
+          {loading ? <span className="animate-spin mr-2 w-5 h-5 border-2 border-white border-t-[#ff914d] rounded-full inline-block"></span> : null}
+          {t('common.createAccount')}
+        </button>
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
         {success && <div className="text-green-600 text-sm mt-2">{success}</div>}
         <div className="flex justify-between mt-8">

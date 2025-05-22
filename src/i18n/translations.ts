@@ -135,7 +135,9 @@ export const translations = {
       connectCta: 'Take the first step and create an account today.',
       noAccountYet: 'No account yet? No worries, you can sign up in no time!',
       emojiPrompt: 'We want an emoji with your name too! Choose your favorite:',
-      saving: 'Saving...'
+      saving: 'Saving...',
+      emojiProfileTitle: 'Choose your profile emoji',
+      emojiProfileDesc: 'Show your personality! Your emoji appears with your name and makes your profile more fun. You can change it anytime.',
     },
     login: {
       welcomeBack: 'Welcome back!',
@@ -296,7 +298,9 @@ export const translations = {
       connectCta: 'Zet vandaag de eerste stap en maak een account aan.',
       noAccountYet: 'Nog geen account? Geen zorgen, je bent zo aangemeld!',
       emojiPrompt: 'We willen ook een emoji bij je naam hebben! Kies je favoriet:',
-      saving: 'Opslaan...'
+      saving: 'Opslaan...',
+      emojiProfileTitle: 'Kies je profiel-emoji',
+      emojiProfileDesc: 'Laat zien wie je bent! Je emoji verschijnt bij je naam en maakt je profiel persoonliker. Je kunt altijd wisselen.',
     },
     login: {
       welcomeBack: 'Welkom terug!',

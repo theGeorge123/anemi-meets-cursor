@@ -128,11 +128,17 @@ const CreateMeetup = () => {
       selected_time
     };
     console.log('Payload for invitation:', payload);
+    const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (!apiKey) {
+      alert('API key ontbreekt! Controleer je .env en herstart de dev server.');
+      console.warn('Geen API key gevonden in import.meta.env.VITE_SUPABASE_ANON_KEY');
+      return;
+    }
     const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
       method: "POST",
       headers: {
-        "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        "apikey": apiKey,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "Prefer": "return=representation"
       },
