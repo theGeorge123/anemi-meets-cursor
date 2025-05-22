@@ -120,6 +120,16 @@ const CreateMeetup = () => {
     const selected_time = firstDateOpt.times[0];
     // 1. Invitation aanmaken via Supabase REST API
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+    const payload = {
+      token,
+      email_a: formData.email,
+      selected_date,
+      selected_time,
+      cafe_id: selectedCafe.id,
+      status: "pending",
+      date_time_options: filteredDateTimeOptions
+    };
+    console.log('Payload for invitation:', payload);
     const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
       method: "POST",
       headers: {
@@ -128,17 +138,10 @@ const CreateMeetup = () => {
         "Content-Type": "application/json",
         "Prefer": "return=representation"
       },
-      body: JSON.stringify({
-        token,
-        email_a: formData.email,
-        selected_date,
-        selected_time,
-        cafe_id: selectedCafe.id,
-        status: "pending",
-        date_time_options: filteredDateTimeOptions
-      })
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
+    console.log('Supabase response:', res.status, data);
     if (!res.ok || !data || !data[0]) {
       alert(t('common.errorCreatingInvite'));
       return;
