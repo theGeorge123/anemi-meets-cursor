@@ -122,12 +122,10 @@ const CreateMeetup = () => {
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
     const payload = {
       token,
-      email_a: formData.email,
-      selected_date,
-      selected_time,
-      cafe_id: selectedCafe.id,
+      email: formData.email,
       status: "pending",
-      date_time_options: filteredDateTimeOptions
+      selected_date,
+      selected_time
     };
     console.log('Payload for invitation:', payload);
     const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
@@ -146,9 +144,12 @@ const CreateMeetup = () => {
       alert(t('common.errorCreatingInvite'));
       return;
     }
-    // 2. Token opslaan voor Invite-pagina
+    // 2. Token opslaan voor Invite-pagina + extra info voor edge function
     sessionStorage.setItem('inviteToken', data[0].token);
     sessionStorage.setItem('invitationId', data[0].id);
+    sessionStorage.setItem('inviteEmailA', formData.email);
+    sessionStorage.setItem('inviteCafeId', selectedCafe.id);
+    sessionStorage.setItem('inviteDateTimeOptions', JSON.stringify(filteredDateTimeOptions));
     navigate('/invite');
   };
 
