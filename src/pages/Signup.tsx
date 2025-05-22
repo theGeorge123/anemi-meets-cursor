@@ -10,7 +10,6 @@ const GENDER_OPTIONS = [
   { value: 'wil_niet_zeggen', label: 'Wil ik niet zeggen' },
 ];
 
-const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
 const Signup = () => {
@@ -285,4 +284,4 @@ const Signup = () => {
   );
 };
 
-export default Signup; 
+export default Signup;
