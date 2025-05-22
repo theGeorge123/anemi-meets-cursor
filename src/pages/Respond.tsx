@@ -238,14 +238,14 @@ const Respond = () => {
             className="h-4 w-4 text-primary-600 focus:ring-primary-500"
           />
           <label htmlFor="updates" className="ml-2 text-gray-700">
-            Wil je updates ontvangen?
+            {t('respond.wantUpdates')}
           </label>
         </div>
 
         <button type="submit" className="btn-primary w-full" disabled={status === 'sending'}>
-          {status === 'sending' ? 'Versturen...' : t('common.submit')}
+          {status === 'sending' ? t('respond.sending') : t('common.submit')}
         </button>
-        {status === 'done' && <div className="text-green-600 mt-2">Uitnodiging bevestigd en mail verstuurd!</div>}
+        {status === 'done' && <div className="text-green-600 mt-2">{t('respond.confirmedMail')}</div>}
       </form>
     </div>
   );

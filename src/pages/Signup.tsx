@@ -13,14 +13,7 @@ const GENDER_OPTIONS = [
 const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
-const steps = [
-  'Naam',
-  'E-mail',
-  'Wachtwoord',
-  'Geslacht',
-  'Emoji',
-  'Updates',
-];
+const steps = t('signup.steps', { returnObjects: true }) as string[];
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -153,7 +146,7 @@ const Signup = () => {
         {step === 0 && (
           <div>
             <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">😊</span> Wat leuk dat je hier bent! Hoe mogen we je noemen?
+              <span className="text-2xl">😊</span> {t('signup.namePrompt')}
             </label>
             <input
               type="text"
@@ -162,7 +155,7 @@ const Signup = () => {
               value={form.name}
               onChange={(e) => handleFieldChange('name', e.target.value)}
               required
-              placeholder="Naam"
+              placeholder={t('common.name')}
               autoFocus
             />
           </div>
@@ -170,7 +163,7 @@ const Signup = () => {
         {step === 1 && (
         <div>
             <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">📧</span> En op welk e-mailadres mogen we je helpen connecten?
+              <span className="text-2xl">📧</span> {t('signup.emailPrompt')}
           </label>
           <input
             type="email"
@@ -179,7 +172,7 @@ const Signup = () => {
             value={form.email}
               onChange={(e) => handleFieldChange('email', e.target.value)}
             required
-              placeholder="E-mail"
+              placeholder={t('common.email')}
               autoFocus
           />
         </div>
@@ -187,7 +180,7 @@ const Signup = () => {
         {step === 2 && (
         <div>
             <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">🔒</span> Met welk wachtwoord wil je dit account beveiligen?
+              <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
           </label>
           <input
             type="password"
@@ -196,11 +189,11 @@ const Signup = () => {
             value={form.password}
             onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
             required
-              placeholder="Wachtwoord (min. 6 tekens)"
+              placeholder={t('common.password') + ' (min. 6)'}
               autoFocus
             />
             <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
-              <span className="text-lg">😅</span> Sorry, maar we moeten toch even checken of je je wachtwoord goed hebt geschreven.
+              <span className="text-lg">😅</span> {t('signup.confirmPasswordPrompt')}
             </label>
             <input
               type="password"
@@ -209,17 +202,17 @@ const Signup = () => {
               value={form.confirmPassword}
               onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
               required
-              placeholder="Bevestig wachtwoord"
+              placeholder={t('signup.confirmPassword')}
             />
             {form.password && form.confirmPassword && form.password !== form.confirmPassword && (
-              <div className="text-red-500 text-sm mt-2">Oeps, wachtwoorden komen niet overeen!</div>
+              <div className="text-red-500 text-sm mt-2">{t('signup.passwordsNoMatch')}</div>
             )}
         </div>
         )}
         {step === 3 && (
         <div>
             <label htmlFor="gender" className="block text-lg font-medium text-gray-700 mb-2">
-              Je hoeft je geslacht niet te zeggen, maar het is wel leuk om te weten! <span className="text-lg">😊</span>
+              {t('signup.genderPrompt')} <span className="text-lg">😊</span>
           </label>
           <select
             id="gender"
@@ -237,7 +230,7 @@ const Signup = () => {
         {step === 4 && (
           <div>
             <label className="block text-lg font-medium text-gray-700 mb-2">
-              Kies een emoji als profielfoto! <span className="text-2xl">🎨</span>
+              {t('signup.emojiPrompt')} <span className="text-2xl">🎨</span>
             </label>
             <div className="flex flex-wrap justify-center gap-2 mb-2">
               {EMOJI_OPTIONS.map((emoji) => (
@@ -252,19 +245,19 @@ const Signup = () => {
                 </button>
               ))}
             </div>
-            {!form.emoji && <div className="text-sm text-gray-500 mt-2">Kies je favoriet!</div>}
+            {!form.emoji && <div className="text-sm text-gray-500 mt-2">{t('signup.chooseFavorite')}</div>}
           </div>
         )}
         {step === 5 && (
           <div>
             <div className="mb-6 bg-[#fff7f3] rounded-2xl p-4 shadow text-left">
-              <h2 className="text-lg font-bold text-primary-700 mb-2 flex items-center gap-2">📝 Overzicht van je gegevens</h2>
+              <h2 className="text-lg font-bold text-primary-700 mb-2 flex items-center gap-2">📝 {t('signup.overviewTitle')}</h2>
               <ul className="space-y-1 text-base">
-                <li><span className="font-semibold">Naam:</span> {form.name || <span className="text-gray-400">-</span>}</li>
-                <li><span className="font-semibold">E-mail:</span> {form.email || <span className="text-gray-400">-</span>}</li>
-                <li><span className="font-semibold">Geslacht:</span> {form.gender ? GENDER_OPTIONS.find(opt => opt.value === form.gender)?.label : <span className="text-gray-400">-</span>}</li>
-                <li><span className="font-semibold">Emoji:</span> {form.emoji ? <span className="text-2xl align-middle">{form.emoji}</span> : <span className="text-gray-400">-</span>}</li>
-                <li><span className="font-semibold">Updates ontvangen:</span> {wantsUpdates ? <span className="text-green-600 font-semibold">Ja 🎉</span> : <span className="text-gray-400">Nee</span>}</li>
+                <li><span className="font-semibold">{t('common.name')}:</span> {form.name || <span className="text-gray-400">-</span>}</li>
+                <li><span className="font-semibold">{t('common.email')}:</span> {form.email || <span className="text-gray-400">-</span>}</li>
+                <li><span className="font-semibold">{t('common.gender')}:</span> {form.gender ? GENDER_OPTIONS.find(opt => opt.value === form.gender)?.label : <span className="text-gray-400">-</span>}</li>
+                <li><span className="font-semibold">{t('common.emoji')}:</span> {form.emoji ? <span className="text-2xl align-middle">{form.emoji}</span> : <span className="text-gray-400">-</span>}</li>
+                <li><span className="font-semibold">{t('signup.updatesLabel')}:</span> {wantsUpdates ? <span className="text-green-600 font-semibold">{t('signup.yes')}</span> : <span className="text-gray-400">{t('signup.no')}</span>}</li>
               </ul>
             </div>
             <div className="flex items-center mb-4">
@@ -276,7 +269,7 @@ const Signup = () => {
             className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
           />
           <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
-                Wil je meegroeien met deze startup en zien waar we mee bezig zijn? Klik dan hier!
+                {t('signup.updatesCta')}
           </label>
             </div>
             <button

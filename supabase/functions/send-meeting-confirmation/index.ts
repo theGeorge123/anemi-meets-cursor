@@ -25,7 +25,10 @@ Deno.serve(async (req) => {
       throw new Error("Missing environment variables.");
     }
 
-    const { token, email_b, selected_date, selected_time } = await req.json();
+    const reqBody = await req.json();
+    const lang = reqBody.lang || "nl";
+    const isEnglish = lang === "en";
+    const { token, email_b, selected_date, selected_time } = reqBody;
     if (!token || !email_b || !selected_date || !selected_time) {
       throw new Error("Missing required fields.");
     }
@@ -63,18 +66,32 @@ Deno.serve(async (req) => {
       afternoon: ["T120000", "T170000"],
       evening: ["T170000", "T210000"]
     };
-    const readableTimes = {
-      morning: "09:00 – 12:00",
-      afternoon: "12:00 – 17:00",
-      evening: "17:00 – 21:00"
-    };
+    const readableTimes = isEnglish
+      ? {
+          morning: "09:00 – 12:00",
+          afternoon: "12:00 – 17:00",
+          evening: "17:00 – 21:00"
+        }
+      : {
+          morning: "09:00 – 12:00",
+          afternoon: "12:00 – 17:00",
+          evening: "17:00 – 21:00"
+        };
     const safeTime = selected_time.toLowerCase();
+    if (!slots[safeTime]) console.warn("Unexpected time slot:", safeTime);
     const [dtStart, dtEnd] = slots[safeTime] || ["T090000", "T120000"];
-    const readableTime = readableTimes[safeTime] || "Onbekend";
+    const readableTime = readableTimes[safeTime] || (isEnglish ? "Unknown" : "Onbekend");
 
     const datePart = selected_date.replace(/-/g, "");
     const uid = crypto.randomUUID();
     const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const icsSummary = isEnglish
+      ? `Coffee Meetup with ${email_a.split('@')[0]}`
+      : `Koffie Meetup met ${email_a.split('@')[0]}`;
+    const icsDescription = isEnglish
+      ? `Your coffee meetup is confirmed via Anemi Meets!`
+      : `Jullie koffie-afspraak via Anemi Meets!`;
 
     const ics = `
 BEGIN:VCALENDAR
@@ -83,18 +100,18 @@ PRODID:-//AnemiMeets//EN
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
 UID:${uid}
-SUMMARY=Koffie Meetup met ${email_a.split('@')[0]}
+SUMMARY:${icsSummary}
 DTSTAMP:${dtStamp}
 DTSTART:${datePart}${dtStart}00Z
 DTEND:${datePart}${dtEnd}00Z
 LOCATION:${cafe.name} ${cafe.address}
-DESCRIPTION=Jullie koffie-afspraak via Anemi Meets
+DESCRIPTION:${icsDescription}
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`.trim();
 
-    const title = encodeURIComponent("Koffie Meetup via Anemi");
-    const description = encodeURIComponent("Jullie afspraak is bevestigd!");
+    const title = encodeURIComponent(isEnglish ? "Coffee Meetup via Anemi" : "Koffie Meetup via Anemi");
+    const description = encodeURIComponent(isEnglish ? "Your meetup is confirmed!" : "Jullie afspraak is bevestigd!");
     const location = encodeURIComponent(`${cafe.name} ${cafe.address}`);
     const start = `${datePart}${dtStart}00Z`;
     const end = `${datePart}${dtEnd}00Z`;
@@ -102,16 +119,36 @@ END:VCALENDAR`.trim();
     const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
     const cafeImageUrl = cafe.image_url || `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
 
-    const html = `
-<h2>🎉 Jullie koffie-afspraak is bevestigd!</h2>
+    const nameA = email_a.split('@')[0];
+    const subject = isEnglish
+      ? `☕️ ${nameA} just booked coffee with you!`
+      : `☕️ ${nameA} heeft een koffie-date gepland!`;
+    const html = isEnglish
+      ? `
+<h2>☕️ Yes! Your coffee meetup is set!</h2>
+<img src="${cafeImageUrl}" alt="Café image" width="100%" style="max-width:600px;border-radius:12px;margin-bottom:16px;" />
+<p>Hey legends!<br>
+You just planned a coffee meetup at <b>${cafe.name}</b>.<br>
+<b>Address:</b> ${cafe.address}<br>
+<b>Date:</b> ${selected_date}<br>
+<b>Time:</b> ${readableTime}</p>
+<p>Add it to your calendar below, and remember: first round is for the fastest 😉</p>
+<p>🗓️ <a href="${gcalUrl}" target="_blank">➕ Add to Google Calendar</a><br>
+📎 Or use the attachment below for Apple or Outlook (.ics)</p>
+<p style="margin-top:24px;">See you soon!<br><span style="font-size:1.2em;">– The Anemi Meets Team</span></p>
+`
+      : `
+<h2>☕️ Yes! Jullie koffie-date staat!</h2>
 <img src="${cafeImageUrl}" alt="Café foto" width="100%" style="max-width:600px;border-radius:12px;margin-bottom:16px;" />
-<p><b>📍 Locatie:</b> <a href="${mapsUrl}" target="_blank" style="color:#007AFF">${cafe.name}</a><br>
-<b>🗺️ Adres:</b> ${cafe.address}<br>
-<b>📅 Datum:</b> ${selected_date}<br>
-<b>⏰ Tijd:</b> ${readableTime}</p>
+<p>Hey toppers!<br>
+Jullie hebben zojuist samen een koffie-afspraak gepland bij <b>${cafe.name}</b>.<br>
+<b>Adres:</b> ${cafe.address}<br>
+<b>Wanneer:</b> ${selected_date} om ${readableTime}</p>
+<p>Voeg het meteen toe aan je agenda (zie hieronder) en vergeet niet: de eerste ronde is voor de snelste 😉</p>
 <p>🗓️ <a href="${gcalUrl}" target="_blank">➕ Voeg toe aan Google Calendar</a><br>
 📎 Of gebruik de bijlage hieronder voor Apple of Outlook (.ics)</p>
-<p style="margin-top:24px;">Tot snel!<br>– Het Anemi Meets team</p>`;
+<p style="margin-top:24px;">Tot snel!<br><span style="font-size:1.2em;">– Het Anemi Meets team</span></p>
+`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
@@ -125,7 +162,7 @@ END:VCALENDAR`.trim();
       body: JSON.stringify({
         from: "noreply@anemimeets.com",
         to: [email_a, email_b],
-        subject: "Jullie koffie-afspraak is bevestigd!",
+        subject,
         html,
         attachments: [
           {

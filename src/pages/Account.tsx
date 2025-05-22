@@ -61,32 +61,32 @@ const Account = () => {
         <h1 className="text-2xl font-bold text-primary-600 mb-2">{t('common.createAccount')}</h1>
         {user ? (
           <>
-            <div className="text-lg text-gray-700 mb-2">Ingelogd als:</div>
+            <div className="text-lg text-gray-700 mb-2">{t('account.loggedInAs')}</div>
             <div className="text-xl font-semibold text-primary-700 mb-4 flex items-center justify-center gap-2">
               {selectedEmoji && <span className="text-2xl">{selectedEmoji}</span>}
               {user.email}
             </div>
-            <button onClick={handleLogout} className="btn-secondary w-full">Uitloggen</button>
+            <button onClick={handleLogout} className="btn-secondary w-full">{t('account.logout')}</button>
           </>
         ) : (
           <>
-            <div className="text-lg text-gray-700 mb-4">Hé! Als je al een account hebt, log gezellig in, dan regelen we samen connecties.</div>
-            <button onClick={() => navigate('/login')} className="btn-primary w-full">Inloggen</button>
+            <div className="text-lg text-gray-700 mb-4">{t('account.loginPrompt')}</div>
+            <button onClick={() => navigate('/login')} className="btn-primary w-full">{t('account.login')}</button>
           </>
         )}
       </div>
       <div className="bg-[#ff914d]/10 rounded-3xl p-6 shadow text-center mt-4 w-full">
-        <p className="text-lg text-primary-700 font-semibold mb-2">Welkom bij Anemi Meets!</p>
+        <p className="text-lg text-primary-700 font-semibold mb-2">{t('account.welcomeTitle')}</p>
         {user ? (
-          <p className="text-gray-700">Hier kun je je account beheren, uitloggen of je gegevens bekijken.<br/>We maken het makkelijk om echte connecties te versterken <span role="img" aria-label="connect">🤝</span></p>
+          <p className="text-gray-700">{t('account.welcomeDesc')}</p>
         ) : (
           <>
             <p className="text-gray-700 mb-2">
-              <span className="text-2xl">✨</span> Echte connecties beginnen bij jou!<br/>
-              Zet vandaag de eerste stap en maak een account aan.<br/>
+              <span className="text-2xl">✨</span> {t('account.connectStart')}<br/>
+              {t('account.connectCta')}<br/>
               <span className="text-xl">🌱🤗</span>
             </p>
-            <p className="text-gray-700 mb-4">Nog geen account? Geen zorgen, je bent zo aangemeld!</p>
+            <p className="text-gray-700 mb-4">{t('account.noAccountYet')}</p>
             <button
               onClick={() => navigate('/signup')}
               className="btn-primary px-8 py-3 rounded-2xl font-semibold text-lg mt-2"
@@ -99,7 +99,7 @@ const Account = () => {
       {/* Emoji-profiel sectie */}
       {user && (
         <div className="bg-white/70 rounded-3xl p-6 shadow text-center mt-4 w-full">
-          <p className="text-primary-700 font-semibold mb-2">We willen ook een emoji bij je naam hebben! Kies je favoriet:</p>
+          <p className="text-primary-700 font-semibold mb-2">{t('account.emojiPrompt')}</p>
           <div className="flex flex-wrap justify-center gap-2 mb-2">
             {EMOJI_OPTIONS.map((emoji) => (
               <button
@@ -113,7 +113,7 @@ const Account = () => {
               </button>
             ))}
           </div>
-          {emojiSaving && <div className="text-xs text-gray-500">Opslaan...</div>}
+          {emojiSaving && <div className="text-xs text-gray-500">{t('account.saving')}</div>}
         </div>
       )}
     </div>

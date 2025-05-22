@@ -43,8 +43,8 @@ const Login = () => {
       </h1>
       <div className="bg-[#fff7f3] rounded-2xl shadow p-6 mb-8 text-center">
         <div className="text-2xl mb-2">👋✨</div>
-        <div className="text-lg font-semibold text-primary-700 mb-1">Welkom terug!</div>
-        <div className="text-gray-700 text-base">We hebben je gemist. Nog even inloggen en je kunt weer makkelijk echte connecties maken.<br/>Pak je favoriete drankje ☕️ en log snel in!</div>
+        <div className="text-lg font-semibold text-primary-700 mb-1">{t('login.welcomeBack')}</div>
+        <div className="text-gray-700 text-base">{t('login.welcomeDesc')}</div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -87,7 +87,7 @@ const Login = () => {
           className="text-primary-600 underline hover:text-primary-800 text-sm"
           onClick={() => navigate('/signup')}
         >
-          Nog geen account? Maak hier je account
+          {t('login.noAccountCta')}
         </button>
       </div>
     </div>

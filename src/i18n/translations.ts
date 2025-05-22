@@ -80,6 +80,10 @@ export const translations = {
     createMeetup: {
       title: 'Create a Meetup',
       subtitle: 'Fill in the details to start planning your coffee meetup',
+      chooseCityInfo: 'Choose your city! That way we know where to find the best spots for you.',
+      chooseCityLabel: 'Which local cafés would you like to visit? We\'ll find the right place!',
+      ctaGetInvite: 'Click continue to get your personal invite link!',
+      expired: '(expired)'
     },
     invite: {
       title: 'Share Your Invite',
@@ -105,6 +109,9 @@ export const translations = {
       invalidDateFormat: 'Invalid date format. Please select a time.',
       genericError: 'Something went wrong. Please try again.',
       availableTimes: 'Available Times',
+      wantUpdates: 'Would you like to receive updates?',
+      sending: 'Sending...',
+      confirmedMail: 'Invitation confirmed and mail sent!'
     },
     confirmed: {
       title: 'Confirmed!',
@@ -115,6 +122,41 @@ export const translations = {
       description: 'Your action was completed successfully. You will receive a confirmation soon.',
       button: 'Back to Home',
     },
+    account: {
+      loggedInAs: 'Logged in as:',
+      logout: 'Logout',
+      loginPrompt: 'Hey! If you already have an account, log in and let\'s connect.',
+      login: 'Login',
+      welcomeTitle: 'Welcome to Anemi Meets!',
+      welcomeDesc: 'Here you can manage your account, log out, or view your details. We make it easy to strengthen real connections 🤝',
+      connectStart: 'Real connections start with you!',
+      connectCta: 'Take the first step and create an account today.',
+      noAccountYet: 'No account yet? No worries, you can sign up in no time!',
+      emojiPrompt: 'We want an emoji with your name too! Choose your favorite:',
+      saving: 'Saving...'
+    },
+    login: {
+      welcomeBack: 'Welcome back!',
+      welcomeDesc: 'We missed you. Log in and you can easily make real connections again. Grab your favorite drink ☕️ and log in!',
+      noAccountCta: 'No account yet? Create your account here'
+    },
+    signup: {
+      steps: ['Name', 'Email', 'Password', 'Gender', 'Emoji', 'Updates'],
+      namePrompt: 'We\'re glad you\'re here! What should we call you?',
+      emailPrompt: 'Which email address can we use to connect you?',
+      passwordPrompt: 'Which password do you want to use for this account?',
+      confirmPasswordPrompt: 'Sorry, but we need to check if you typed your password correctly.',
+      confirmPassword: 'Confirm password',
+      passwordsNoMatch: 'Oops, passwords do not match!',
+      genderPrompt: 'You don\'t have to specify your gender, but it\'s nice to know!',
+      emojiPrompt: 'Choose an emoji as your profile picture!',
+      chooseFavorite: 'Choose your favorite!',
+      overviewTitle: 'Overview of your details',
+      updatesLabel: 'Receive updates',
+      updatesCta: 'Want to grow with this startup and see what we\'re working on? Click here!',
+      yes: 'Yes 🎉',
+      no: 'No'
+    }
   },
   nl: {
     common: {
@@ -197,6 +239,10 @@ export const translations = {
     createMeetup: {
       title: 'Maak een Meetup',
       subtitle: 'Vul de details in om je koffie-afspraak te plannen',
+      chooseCityInfo: 'Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.',
+      chooseCityLabel: 'Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!',
+      ctaGetInvite: 'Druk op doorgaan om je persoonlijke invite-link te krijgen!',
+      expired: '(verlopen)'
     },
     invite: {
       title: 'Deel Je Uitnodiging',
@@ -222,6 +268,9 @@ export const translations = {
       invalidDateFormat: 'Ongeldig datumformaat. Selecteer een tijd.',
       genericError: 'Er ging iets mis. Probeer het opnieuw.',
       availableTimes: 'Beschikbare tijden',
+      wantUpdates: 'Wil je updates ontvangen?',
+      sending: 'Versturen...',
+      confirmedMail: 'Uitnodiging bevestigd en mail verstuurd!'
     },
     confirmed: {
       title: 'Bevestigd!',
@@ -232,5 +281,40 @@ export const translations = {
       description: 'Je actie is succesvol afgerond. Je ontvangt binnenkort een bevestiging.',
       button: 'Terug naar start',
     },
+    account: {
+      loggedInAs: 'Ingelogd als:',
+      logout: 'Uitloggen',
+      loginPrompt: 'Hé! Als je al een account hebt, log gezellig in, dan regelen we samen connecties.',
+      login: 'Inloggen',
+      welcomeTitle: 'Welkom bij Anemi Meets!',
+      welcomeDesc: 'Hier kun je je account beheren, uitloggen of je gegevens bekijken. We maken het makkelijk om echte connecties te versterken 🤝',
+      connectStart: 'Echte connecties beginnen bij jou!',
+      connectCta: 'Zet vandaag de eerste stap en maak een account aan.',
+      noAccountYet: 'Nog geen account? Geen zorgen, je bent zo aangemeld!',
+      emojiPrompt: 'We willen ook een emoji bij je naam hebben! Kies je favoriet:',
+      saving: 'Opslaan...'
+    },
+    login: {
+      welcomeBack: 'Welkom terug!',
+      welcomeDesc: 'We hebben je gemist. Nog even inloggen en je kunt weer makkelijk echte connecties maken. Pak je favoriete drankje ☕️ en log snel in!',
+      noAccountCta: 'Nog geen account? Maak hier je account'
+    },
+    signup: {
+      steps: ['Naam', 'E-mail', 'Wachtwoord', 'Geslacht', 'Emoji', 'Updates'],
+      namePrompt: 'Wat leuk dat je hier bent! Hoe mogen we je noemen?',
+      emailPrompt: 'En op welk e-mailadres mogen we je helpen connecten?',
+      passwordPrompt: 'Met welk wachtwoord wil je dit account beveiligen?',
+      confirmPasswordPrompt: 'Sorry, maar we moeten toch even checken of je je wachtwoord goed hebt geschreven.',
+      confirmPassword: 'Bevestig wachtwoord',
+      passwordsNoMatch: 'Oeps, wachtwoorden komen niet overeen!',
+      genderPrompt: 'Je hoeft je geslacht niet te zeggen, maar het is wel leuk om te weten!',
+      emojiPrompt: 'Kies een emoji als profielfoto!',
+      chooseFavorite: 'Kies je favoriet!',
+      overviewTitle: 'Overzicht van je gegevens',
+      updatesLabel: 'Updates ontvangen',
+      updatesCta: 'Wil je meegroeien met deze startup en zien waar we mee bezig zijn? Klik dan hier!',
+      yes: 'Ja 🎉',
+      no: 'Nee'
+    }
   },
 }; 

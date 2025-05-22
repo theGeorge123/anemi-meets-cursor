@@ -274,10 +274,10 @@ const CreateMeetup = () => {
             </div>
             <div>
               <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
-                <span className="text-lg">🏙️</span> Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.
+                <span className="text-lg">🏙️</span> {t('createMeetup.chooseCityInfo')}
               </div>
               <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                <span role="img" aria-label="city">🏙️</span> Welke lokale stadstentjes wil je bezoeken? Wij regelen de juiste plek!
+                <span role="img" aria-label="city">🏙️</span> {t('createMeetup.chooseCityLabel')}
               </label>
               <div className="relative">
                 <select
@@ -381,7 +381,7 @@ const CreateMeetup = () => {
                           <span className="ml-2 text-gray-700">
                             {t(`common.${time}`)}
                             {isTimeSlotPast(opt.date, time) && (
-                              <span className="ml-1 text-xs text-gray-400">(verlopen)</span>
+                              <span className="ml-1 text-xs text-gray-400">{t('createMeetup.expired')}</span>
                             )}
                           </span>
                         </label>
@@ -393,7 +393,7 @@ const CreateMeetup = () => {
             )}
             {/* Informele tekst altijd tonen */}
             <div className="mt-10 bg-white/80 rounded-2xl shadow-md p-5 border border-[#b2dfdb]/40 max-w-lg mx-auto text-center text-primary-700 font-semibold">
-              Druk op <b>doorgaan</b> om je persoonlijke invite-link te krijgen!
+              {t('createMeetup.ctaGetInvite')}
             </div>
             {/* Navigatieknoppen voor stap 3: direct submitten */}
             <div className="flex gap-4 mt-8">
