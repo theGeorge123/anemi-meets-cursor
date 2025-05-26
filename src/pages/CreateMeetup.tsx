@@ -122,10 +122,13 @@ const CreateMeetup = () => {
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
     const payload = {
       token,
-      email: formData.email,
+      email_a: formData.email,
       status: "pending",
       selected_date,
-      selected_time
+      selected_time,
+      cafe_id: selectedCafe.id,
+      city_id: cities.find(c => c.name === formData.city)?.id,
+      date_time_options: filteredDateTimeOptions
     };
     console.log('Payload for invitation:', payload);
     // HARDCODED API KEY for guaranteed invite creation
