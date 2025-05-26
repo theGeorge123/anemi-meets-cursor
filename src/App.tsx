@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
@@ -52,7 +52,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <div className="min-h-screen bg-secondary-50 relative">
         {/* Abstract SVG Background */}
         <div className="abstract-bg">
@@ -118,7 +118,7 @@ function App() {
         </main>
         <Footer />
       </div>
-    </Router>
+    </BrowserRouter>
   );
 }
 

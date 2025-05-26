@@ -56,9 +56,9 @@ const CreateMeetup = () => {
       if (session && session.user && session.user.email) {
         let userName = '';
         // Try to get name from profile
-        const { data: profile } = await supabase.from('profiles').select('name').eq('id', session.user.id).single();
-        if (profile && profile.name && profile.name.trim() !== '') {
-          userName = profile.name;
+        const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', session.user.id).single();
+        if (profile && profile.full_name && profile.full_name.trim() !== '') {
+          userName = profile.full_name;
         } else {
           // Fallback: use email prefix
           userName = '';
@@ -123,18 +123,16 @@ const CreateMeetup = () => {
     const payload = {
       token,
       email_a: formData.email,
+      invitee_name: formData.name,
       status: "pending",
       selected_date,
-      selected_time,
-      cafe_id: selectedCafe.id,
-      city_id: cities.find(c => c.name === formData.city)?.id,
-      date_time_options: filteredDateTimeOptions
+      selected_time
     };
     console.log('Payload for invitation:', payload);
     // HARDCODED API KEY for guaranteed invite creation
     const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     if (!apiKey) {
-      throw new Error('Supabase API key is missing! Check your .env and restart the dev server.');
+      throw new Error("API key not loaded – check .env or environment settings.");
     }
     console.log('SUPABASE APIKEY (hardcoded):', apiKey);
     const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
@@ -150,16 +148,16 @@ const CreateMeetup = () => {
     const data = await res.json();
     console.log('Supabase response:', res.status, data);
     if (!res.ok || !data || !data[0]) {
-      alert(t('common.errorCreatingInvite'));
+      alert(data?.message || 'Er ging iets mis bij het aanmaken van de uitnodiging.');
       return;
     }
-    // 2. Token opslaan voor Invite-pagina + extra info voor edge function
-    sessionStorage.setItem('inviteToken', data[0].token);
-    sessionStorage.setItem('invitationId', data[0].id);
-    sessionStorage.setItem('inviteEmailA', formData.email);
-    sessionStorage.setItem('inviteCafeId', selectedCafe.id);
-    sessionStorage.setItem('inviteDateTimeOptions', JSON.stringify(filteredDateTimeOptions));
-    navigate('/invite');
+    // Redirect naar de invite-pagina met het token
+    const responseToken = data[0].token;
+    if (responseToken) {
+      navigate(`/invite/${responseToken}`);
+    } else {
+      alert('Geen token teruggekregen van Supabase.');
+    }
   };
 
   const handleCityChange = (city: string) => {
