@@ -105,7 +105,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/create-meetup" element={<CreateMeetup />} />
-            <Route path="/invite" element={<Invite />} />
+            <Route path="/invite/:token" element={<Invite />} />
             <Route path="/respond" element={<Respond />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />

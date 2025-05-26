@@ -1,16 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 const Invite = () => {
   const { t } = useTranslation();
   const [inviteLink, setInviteLink] = useState('');
+  const { token } = useParams();
 
   useEffect(() => {
-    const token = sessionStorage.getItem('inviteToken');
     if (token) {
       setInviteLink(`${window.location.origin}/respond?token=${token}`);
     }
-  }, []);
+  }, [token]);
 
   return (
     <div className="max-w-2xl mx-auto text-center">
