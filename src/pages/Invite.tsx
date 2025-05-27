@@ -1,11 +1,9 @@
-import { useTranslation } from 'react-i18next';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import happyGif from '../assets/happy-connect.gif';
 
 const Invite = () => {
-  const { t } = useTranslation();
   const [inviteLink, setInviteLink] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const { token } = useParams();
