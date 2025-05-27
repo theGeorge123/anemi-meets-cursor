@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import happyGif from '../assets/happy-connect.gif';
 
 const Invite = () => {
   const [inviteLink, setInviteLink] = useState('');
@@ -73,7 +72,7 @@ const Invite = () => {
       <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-4">
         Hey, je bent al een stapje dichterbij het connecten! 🎉
       </h1>
-      <img src={happyGif} alt="Happy connect" className="mx-auto mb-6 w-40 sm:w-56 rounded-xl shadow-lg" style={{maxWidth:'100%'}} />
+      {/* <img src={happyGif} alt="Happy connect" className="mx-auto mb-6 w-40 sm:w-56 rounded-xl shadow-lg" style={{maxWidth:'100%'}} /> */}
       {loading && <div className="text-lg text-primary-700">Uitnodiging laden...</div>}
       {error && <div className="text-red-600 font-semibold text-lg mb-4">{error}</div>}
       {invitation && (
