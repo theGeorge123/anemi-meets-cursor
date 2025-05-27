@@ -19,6 +19,7 @@ const Respond = () => {
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [invitation, setInvitation] = useState<any>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [confirmationInfo, setConfirmationInfo] = useState<any>(null);
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -134,13 +135,23 @@ const Respond = () => {
       if (!res.ok || !data.success) {
         setStatus("error");
         setErrorMsg(data.error || "Er ging iets mis. Probeer het opnieuw.");
+        console.error("Supabase error:", data.error || data);
       } else {
         setStatus("done");
         setSubmitted(true);
+        // Log en bewaar de response data
+        console.log('Meeting bevestigd:', data);
+        setConfirmationInfo({
+          cafe_name: data.cafe_name,
+          cafe_address: data.cafe_address,
+          selected_date: data.selected_date,
+          selected_time: data.selected_time
+        });
       }
     } catch (err) {
       setStatus("error");
-      setErrorMsg("Er ging iets mis. Probeer het opnieuw.");
+      setErrorMsg("Er ging iets mis met de verbinding. Probeer het opnieuw.");
+      console.error("Netwerkfout:", err);
     }
   };
 
@@ -148,14 +159,22 @@ const Respond = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <div className="card bg-[#fff7f3] shadow-2xl p-8 max-w-lg w-full flex flex-col items-center">
-          <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>��</span>
+          <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>☕️</span>
           <h2 className="text-2xl font-bold text-[#37474f] mb-2 flex items-center gap-2">
             Jullie gaan binnenkort weer afspreken!
           </h2>
           <img src="/coffee-fun.gif" alt="Leuke koffie GIF" style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
           <p className="text-lg text-gray-700 mb-6 text-center">
-          De bevestiging is verstuurd naar beide e-mailadressen.
-        </p>
+            De bevestiging is verstuurd naar beide e-mailadressen.
+          </p>
+          {confirmationInfo && (
+            <div className="bg-white rounded-lg shadow p-4 mb-4 w-full text-center">
+              <div className="font-semibold text-primary-700 mb-1">Café: {confirmationInfo.cafe_name}</div>
+              <div className="text-gray-600 mb-1">Adres: {confirmationInfo.cafe_address}</div>
+              <div className="text-gray-600 mb-1">Datum: {confirmationInfo.selected_date}</div>
+              <div className="text-gray-600">Tijd: {confirmationInfo.selected_time}</div>
+            </div>
+          )}
           <button className="btn-primary w-full mb-3" onClick={() => window.location.href = "/"}>Terug naar start</button>
           <div className="w-full flex flex-col items-center mt-2">
             <p className="mb-2">Wil je zelf een meeting aanmaken? Maak dan nu een account aan!</p>

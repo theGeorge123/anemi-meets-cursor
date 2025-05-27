@@ -93,22 +93,7 @@ Deno.serve(async (req) => {
       ? `Your coffee meetup is confirmed via Anemi Meets!`
       : `Jullie koffie-afspraak via Anemi Meets!`;
 
-    const ics = `
-BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//AnemiMeets//EN
-CALSCALE:GREGORIAN
-BEGIN:VEVENT
-UID:${uid}
-SUMMARY:${icsSummary}
-DTSTAMP:${dtStamp}
-DTSTART:${datePart}${dtStart}00Z
-DTEND:${datePart}${dtEnd}00Z
-LOCATION:${cafe.name} ${cafe.address}
-DESCRIPTION:${icsDescription}
-STATUS:CONFIRMED
-END:VEVENT
-END:VCALENDAR`.trim();
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}00Z\nDTEND:${datePart}${dtEnd}00Z\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
 
     const title = encodeURIComponent(isEnglish ? "Coffee Meetup via Anemi" : "Koffie Meetup via Anemi");
     const description = encodeURIComponent(isEnglish ? "Your meetup is confirmed!" : "Jullie afspraak is bevestigd!");
@@ -184,7 +169,14 @@ Jullie hebben zojuist samen een koffie-afspraak gepland bij <b>${cafe.name}</b>.
       throw new Error("Resend error: " + text);
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ 
+      success: true,
+      cafe_name: cafe.name,
+      cafe_address: cafe.address,
+      invitation_token: token,
+      selected_date,
+      selected_time
+    }), {
       status: 200,
       headers: {
         "Access-Control-Allow-Origin": "*"

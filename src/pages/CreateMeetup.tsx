@@ -120,6 +120,12 @@ const CreateMeetup = () => {
     const selected_time = firstDateOpt.times[0];
     // 1. Invitation aanmaken via Supabase REST API
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+    // Extra check op verplichte velden
+    if (!token || !formData.email || !formData.name || !selected_date || !selected_time) {
+      setFormError('Vul alle verplichte velden in (naam, email, datum, tijd).');
+      console.error('Verplichte velden missen:', { token, email: formData.email, name: formData.name, selected_date, selected_time });
+      return;
+    }
     const payload = {
       token,
       email_a: formData.email,
@@ -130,33 +136,36 @@ const CreateMeetup = () => {
     };
     console.log('Payload for invitation:', payload);
     // HARDCODED API KEY for guaranteed invite creation
-    const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    if (!apiKey) {
-      throw new Error("API key not loaded – check .env or environment settings.");
-    }
-    console.log('SUPABASE APIKEY (hardcoded):', apiKey);
-    const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
-      method: "POST",
-      headers: {
-        "apikey": apiKey,
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=representation"
-      },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    console.log('Supabase response:', res.status, data);
-    if (!res.ok || !data || !data[0]) {
-      alert(data?.message || 'Er ging iets mis bij het aanmaken van de uitnodiging.');
-      return;
-    }
-    // Redirect naar de invite-pagina met het token
-    const responseToken = data[0].token;
-    if (responseToken) {
-      navigate(`/invite/${responseToken}`);
-    } else {
-      alert('Geen token teruggekregen van Supabase.');
+    const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpanllcmNncGdhaGVlb2V1bXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczMDcyODgsImV4cCI6MjA2Mjg4MzI4OH0.dU3hjP96CWZqiIc90oYEAXCslgUDvoANpYrSg69oy_g';
+    try {
+      const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
+        method: "POST",
+        headers: {
+          "apikey": apiKey,
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      console.log('Supabase response:', res.status, data);
+      if (!res.ok || !data || !data[0]) {
+        alert(data?.message || 'Er ging iets mis bij het aanmaken van de uitnodiging.');
+        console.error('Supabase error:', data?.message || data);
+        return;
+      }
+      // Redirect naar de invite-pagina met het token
+      const responseToken = data[0].token;
+      if (responseToken) {
+        navigate(`/invite/${responseToken}`);
+      } else {
+        alert('Geen token teruggekregen van Supabase.');
+        console.error('Geen token teruggekregen van Supabase.', data);
+      }
+    } catch (err) {
+      alert('Er ging iets mis met de verbinding. Probeer het opnieuw.');
+      console.error('Netwerkfout:', err);
     }
   };
 
