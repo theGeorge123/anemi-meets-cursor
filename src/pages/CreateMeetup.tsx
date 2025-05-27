@@ -6,6 +6,8 @@ import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import { nl, enUS } from 'date-fns/locale';
 
+console.log('COMPONENT RENDER');
+
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
 
@@ -61,7 +63,7 @@ const CreateMeetup = () => {
           userName = profile.full_name;
         } else {
           // Fallback: use email prefix
-          userName = '';
+          userName = session.user.email.split('@')[0];
         }
         setFormData((prev) => ({ ...prev, email: session.user.email!, name: userName }));
         setUserId(session.user.id);
@@ -74,6 +76,11 @@ const CreateMeetup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('handleSubmit aangeroepen');
+    console.log('DEBUG formData:', formData);
+    console.log('DEBUG dateTimeOptions:', dateTimeOptions);
+    console.log('DEBUG selectedCafe:', selectedCafe);
+    console.log('DEBUG userId:', userId);
     setFormError(null);
     // Nieuwe validatie: minimaal één datum én één tijdvak
     if (formData.dates.length === 0) {
