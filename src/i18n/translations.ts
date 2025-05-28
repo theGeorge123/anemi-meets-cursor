@@ -38,6 +38,13 @@ export const translations = {
       privacySoon: 'Our privacy policy will be available soon. We handle your data with care and never share it without your consent.',
       cookiesSoon: 'Our cookie policy will be available soon. We only use functional cookies for the operation of the website.',
       lastUpdate: 'Last update:',
+      step: 'Step',
+      back: 'Back',
+      shuffle: 'Shuffle',
+      remove: 'Remove',
+      selectedDates: 'Selected Dates',
+      cafe: 'Café',
+      address: 'Address',
       // --- Policies ---
       privacyFull: `We respect your privacy and handle your personal data with care. Your data is only used to provide our service, such as creating an account, scheduling meetups, and sending invitations. Your data will never be shared with third parties without your consent.\n\nYou have the right to access, correct, delete, or transfer your data, and to object to or restrict processing. For questions or requests about your privacy, please contact us using the form below.`,
       cookiesFull: `This website only uses functional cookies that are necessary for the proper functioning of the site. These cookies do not collect personal data and are not used for advertising or tracking purposes. You can use our website without us analyzing or storing your browsing behavior. By using this site, you agree to the use of these functional cookies.`,
@@ -85,12 +92,26 @@ export const translations = {
       ctaGetInvite: 'Click continue to get your personal invite link!',
       expired: '(expired)',
       chooseDaysInfo: 'Choose the days you are available. This makes planning easier for everyone!',
-      chooseThreeDates: 'You can select as many dates as you like, but it\'s easiest for everyone if you keep it to just a few!'
+      chooseThreeDates: 'You can select as many dates as you like, but it\'s easiest for everyone if you keep it to just a few!',
+      step1: 'Choose City',
+      step2: 'Select Dates',
+      step3: 'Choose Café'
     },
     invite: {
       title: 'Share Your Invite',
       message: 'Send this invite link to your friend to confirm the meetup time.',
       copyLink: 'Copy Link',
+      errorNotFound: 'Oops! We couldn\'t find your invitation. Check your link or contact support.',
+      titleStepCloser: 'Hey, you\'re one step closer to connecting!',
+      detailsHeading: 'Meetup Details',
+      shareInstructions: 'Share this link with your coffee buddy so you can plan together:',
+      copySuccess: 'Link copied!',
+      copyError: 'Copying failed. Please try again.',
+      cafeInfoPending: 'Café information will follow after confirmation!',
+      share: 'Share Invite',
+      shareTitle: 'Coffee Meetup Invitation',
+      shareText: 'Let\'s meet for coffee! Click here to choose a time that works for you.',
+      shareTextWithCafe: 'Let\'s meet for coffee at {{cafe}}! Click here to choose a time that works for you.'
     },
     respond: {
       title: 'Respond to Invite',
@@ -113,7 +134,13 @@ export const translations = {
       availableTimes: 'Available Times',
       wantUpdates: 'Would you like to receive updates?',
       sending: 'Sending...',
-      confirmedMail: 'Invitation confirmed and mail sent!'
+      confirmedMail: 'Invitation confirmed and mail sent!',
+      invalidInvitation: 'No valid invitation found.',
+      expiredOrMissing: 'Invitation not found or has expired.',
+      meetupConfirmed: 'You\'re meeting up again soon!',
+      emailSent: 'The confirmation has been sent to both email addresses.',
+      coffeeGifAlt: 'Fun coffee GIF',
+      errorNoInvite: 'Invitation not found.'
     },
     confirmed: {
       title: 'Confirmed!',
@@ -201,6 +228,13 @@ export const translations = {
       privacySoon: 'Hier komt binnenkort ons privacybeleid. We gaan zorgvuldig om met jouw gegevens en zullen deze nooit zonder toestemming delen.',
       cookiesSoon: 'Hier komt binnenkort ons cookiebeleid. We gebruiken alleen functionele cookies voor het functioneren van de website.',
       lastUpdate: 'Laatste update:',
+      step: 'Stap',
+      back: 'Terug',
+      shuffle: 'Shuffle',
+      remove: 'Verwijderen',
+      selectedDates: 'Gekozen Datums',
+      cafe: 'Café',
+      address: 'Adres',
       // --- Policies ---
       privacyFull: `Wij respecteren jouw privacy en gaan zorgvuldig om met je persoonsgegevens. Je gegevens worden uitsluitend gebruikt om onze dienst mogelijk te maken, zoals het aanmaken van een account, het plannen van afspraken en het versturen van uitnodigingen. Je gegevens worden nooit zonder jouw toestemming gedeeld met derden.\n\nJe hebt het recht om je gegevens in te zien, te corrigeren, te verwijderen of over te dragen, en om bezwaar te maken tegen of de verwerking te beperken. Voor vragen of verzoeken over je privacy kun je contact met ons opnemen via het onderstaande formulier.`,
       cookiesFull: `Op deze website gebruiken wij alleen functionele cookies die noodzakelijk zijn voor het correct functioneren van de site. Deze cookies verzamelen geen persoonlijke gegevens en worden niet gebruikt voor advertentie- of trackingdoeleinden. Je kunt onze website gebruiken zonder dat wij je surfgedrag analyseren of opslaan. Door gebruik te maken van deze site ga je akkoord met het gebruik van deze functionele cookies.`,
@@ -248,12 +282,26 @@ export const translations = {
       ctaGetInvite: 'Druk op doorgaan om je persoonlijke invite-link te krijgen!',
       expired: '(verlopen)',
       chooseDaysInfo: 'Kies de dagen waarop jij tijd hebt. Zo wordt het plannen voor iedereen makkelijker!',
-      chooseThreeDates: 'Je mag zoveel datums kiezen als je wilt, maar het is voor iedereen het makkelijkst als je het beperkt houdt!'
+      chooseThreeDates: 'Je mag zoveel datums kiezen als je wilt, maar het is voor iedereen het makkelijkst als je het beperkt houdt!',
+      step1: 'Kies Stad',
+      step2: 'Selecteer Datums',
+      step3: 'Kies Café'
     },
     invite: {
-      title: 'Deel Je Uitnodiging',
-      message: 'Stuur deze uitnodigingslink naar je vriend om de afspraaktijd te bevestigen.',
-      copyLink: 'Kopieer link',
+      title: 'Deel je uitnodiging',
+      message: 'Stuur deze uitnodigingslink naar je vriend(in) om de afspraak te bevestigen.',
+      copyLink: 'Link kopiëren',
+      errorNotFound: 'Oeps! We konden je uitnodiging niet vinden. Controleer je link of neem contact op.',
+      titleStepCloser: 'Hey, je bent al een stapje dichterbij het connecten!',
+      detailsHeading: 'Afspraakgegevens',
+      shareInstructions: 'Deel deze link met je koffie-buddy zodat jullie samen kunnen plannen:',
+      copySuccess: 'Link gekopieerd!',
+      copyError: 'Kopiëren mislukt. Probeer opnieuw.',
+      cafeInfoPending: 'Café-informatie volgt na bevestiging!',
+      share: 'Deel Uitnodiging',
+      shareTitle: 'Koffie Afspraak Uitnodiging',
+      shareText: 'Laten we afspreken voor een kopje koffie! Klik hier om een tijd te kiezen die jou uitkomt.',
+      shareTextWithCafe: 'Laten we afspreken voor een kopje koffie bij {{cafe}}! Klik hier om een tijd te kiezen die jou uitkomt.'
     },
     respond: {
       title: 'Reageer op Uitnodiging',
@@ -276,7 +324,13 @@ export const translations = {
       availableTimes: 'Beschikbare tijden',
       wantUpdates: 'Wil je updates ontvangen?',
       sending: 'Versturen...',
-      confirmedMail: 'Uitnodiging bevestigd en mail verstuurd!'
+      confirmedMail: 'Uitnodiging bevestigd en mail verstuurd!',
+      invalidInvitation: 'Geen geldige uitnodiging gevonden.',
+      expiredOrMissing: 'Uitnodiging niet gevonden of verlopen.',
+      meetupConfirmed: 'Jullie gaan binnenkort weer afspreken!',
+      emailSent: 'De bevestiging is verstuurd naar beide e-mailadressen.',
+      coffeeGifAlt: 'Leuke koffie-GIF',
+      errorNoInvite: 'Uitnodiging niet gevonden.'
     },
     confirmed: {
       title: 'Bevestigd!',

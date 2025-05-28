@@ -5,8 +5,7 @@ import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import { nl, enUS } from 'date-fns/locale';
-
-console.log('COMPONENT RENDER');
+import Confetti from 'react-confetti';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
@@ -16,7 +15,6 @@ const CreateMeetup = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
     dates: [] as Date[],
     timePreference: '',
     city: '',
@@ -24,13 +22,17 @@ const CreateMeetup = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [cafes, setCafes] = useState<Cafe[]>([]);
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [dateTimeOptions, setDateTimeOptions] = useState<{ date: string; times: string[] }[]>([]);
-  const [formError, setFormError] = useState<string | null>(null);
   const [shuffleCooldown, setShuffleCooldown] = useState(false);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [step, setStep] = useState(2);
   const dateLocale = i18n.language === 'en' ? enUS : nl;
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -52,64 +54,63 @@ const CreateMeetup = () => {
   }, [formData.city]);
 
   useEffect(() => {
-    // Prefill email and name with logged-in user's info
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session && session.user && session.user.email) {
-        let userName = '';
-        // Try to get name from profile
-        const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', session.user.id).single();
-        if (profile && profile.full_name && profile.full_name.trim() !== '') {
-          userName = profile.full_name;
-        } else {
-          // Fallback: use email prefix
-          userName = session.user.email.split('@')[0];
-        }
-        setFormData((prev) => ({ ...prev, email: session.user.email!, name: userName }));
-        setUserId(session.user.id);
-      }
-    };
-    getUser();
     // Scroll naar boven bij laden
     window.scrollTo(0, 0);
   }, []);
 
+  // Update window size for confetti
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    // Check login status
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session?.user);
+    };
+    checkSession();
+    // Listen for auth changes
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      checkSession();
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('handleSubmit aangeroepen');
-    console.log('DEBUG formData:', formData);
-    console.log('DEBUG dateTimeOptions:', dateTimeOptions);
-    console.log('DEBUG selectedCafe:', selectedCafe);
-    console.log('DEBUG userId:', userId);
-    setFormError(null);
-    // Nieuwe validatie: minimaal één datum én één tijdvak
+    if (!isLoggedIn) {
+      alert(t('common.notLoggedIn'));
+      navigate('/login');
+      return;
+    }
+
+    // Validatie
     if (formData.dates.length === 0) {
-      setFormError(t('common.requiredTime'));
+      alert(t('common.requiredTime'));
       return;
     }
     const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
     if (!hasAnyTime) {
-      setFormError(t('common.requiredTime'));
+      alert(t('common.requiredTime'));
       return;
     }
-    if (!formData.name || !formData.email || !formData.city || !selectedCafe) {
-      setFormError(t('common.errorCreatingInvite'));
+    if (!formData.name || !formData.city || !selectedCafe) {
+      alert(t('common.errorCreatingInvite'));
       return;
     }
-    if (!userId) {
-      alert(t('common.notLoggedIn'));
-      return;
-    }
-    // Check of profiel bestaat, zo niet: aanmaken (met upsert)
-    const { error: profileError } = await supabase.from('profiles').upsert({
-      id: userId,
-      email: formData.email,
-    });
-    if (profileError) {
-      setFormError('Kon profiel niet aanmaken: ' + profileError.message);
-      return;
-    }
-    // Filter alleen geldige tijdvakken
+
+    // Filter tijdvakken
     const validTimes = ['morning', 'afternoon', 'evening'];
     const filteredDateTimeOptions = dateTimeOptions
       .map(opt => ({
@@ -117,62 +118,47 @@ const CreateMeetup = () => {
         times: (opt.times || []).filter(time => validTimes.includes(time))
       }))
       .filter(opt => opt.times.length > 0);
-    // Extract the first selected date and time
+
     const firstDateOpt = filteredDateTimeOptions.find(opt => opt.times.length > 0);
     if (!firstDateOpt) {
-      setFormError(t('common.requiredTime'));
+      alert(t('common.requiredTime'));
       return;
     }
+
     const selected_date = firstDateOpt.date;
     const selected_time = firstDateOpt.times[0];
-    // 1. Invitation aanmaken via Supabase REST API
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
-    // Extra check op verplichte velden
-    if (!token || !formData.email || !formData.name || !selected_date || !selected_time) {
-      setFormError('Vul alle verplichte velden in (naam, email, datum, tijd).');
-      console.error('Verplichte velden missen:', { token, email: formData.email, name: formData.name, selected_date, selected_time });
-      return;
-    }
+
     const payload = {
       token,
-      email_a: formData.email,
       invitee_name: formData.name,
       status: "pending",
       selected_date,
-      selected_time
+      selected_time,
+      cafe_id: selectedCafe.id,
+      date_time_options: filteredDateTimeOptions
     };
-    console.log('Payload for invitation:', payload);
-    // HARDCODED API KEY for guaranteed invite creation
-    const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpanllcmNncGdhaGVlb2V1bXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczMDcyODgsImV4cCI6MjA2Mjg4MzI4OH0.dU3hjP96CWZqiIc90oYEAXCslgUDvoANpYrSg69oy_g';
+
     try {
-      const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/rest/v1/invitations", {
-        method: "POST",
-        headers: {
-          "apikey": apiKey,
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "Prefer": "return=representation"
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      console.log('Supabase response:', res.status, data);
-      if (!res.ok || !data || !data[0]) {
-        alert(data?.message || 'Er ging iets mis bij het aanmaken van de uitnodiging.');
-        console.error('Supabase error:', data?.message || data);
+      const { data: insertData, error: insertError } = await supabase
+        .from('invitations')
+        .insert(payload)
+        .select();
+      if (insertError || !insertData || insertData.length === 0) {
+        alert(insertError?.message || 'Er ging iets mis bij het aanmaken van de uitnodiging.');
         return;
       }
-      // Redirect naar de invite-pagina met het token
-      const responseToken = data[0].token;
+      const createdInvite = insertData[0];
+      const responseToken = createdInvite.token;
       if (responseToken) {
-        navigate(`/invite/${responseToken}`);
-      } else {
-        alert('Geen token teruggekregen van Supabase.');
-        console.error('Geen token teruggekregen van Supabase.', data);
+        setShowConfetti(true);
+        setTimeout(() => {
+          setShowConfetti(false);
+          navigate(`/invite/${responseToken}`);
+        }, 2000);
       }
     } catch (err) {
       alert('Er ging iets mis met de verbinding. Probeer het opnieuw.');
-      console.error('Netwerkfout:', err);
     }
   };
 
@@ -248,74 +234,113 @@ const CreateMeetup = () => {
     setDateTimeOptions(prev => prev.filter(opt => opt.date !== dateStr));
   };
 
-  // Custom input voor DatePicker (verbergt standaard input)
-  const CustomInput = forwardRef<HTMLInputElement>((props, ref) => (
-    <input type="text" style={{ position: 'absolute', left: '-9999px', width: 0, height: 0, opacity: 0 }} ref={ref} {...props} />
-  ));
-
   // Helper: bepaal of een tijdvak in het verleden ligt (alleen voor vandaag)
   const isTimeSlotPast = (dateStr: string, time: string) => {
     const today = new Date();
     const date = new Date(dateStr);
     if (date.toDateString() !== today.toDateString()) return false;
-    const now = today.getHours();
-    if (time === 'morning' && now >= 12) return true;
-    if (time === 'afternoon' && now >= 18) return true;
-    if (time === 'evening' && now >= 22) return true;
-    return false;
+    
+    const now = new Date();
+    const timeMap = {
+      morning: 12, // voor 12:00
+      afternoon: 17, // voor 17:00
+      evening: 22 // voor 22:00
+    };
+    return now.getHours() >= timeMap[time as keyof typeof timeMap];
   };
 
-  // Stap-indicator
-  const steps = [
-    'Stad',
-    'Datum & Tijd',
-  ];
+  // Helper: check of er geldige datum/tijd selecties zijn
+  const hasValidDateTimeSelection = () => {
+    return formData.dates.length > 0 && dateTimeOptions.some(opt => opt.times.length > 0);
+  };
+
+  // Custom input voor DatePicker (verbergt standaard input)
+  const CustomInput = forwardRef<HTMLInputElement>((props, ref) => (
+    <input type="text" style={{ position: 'absolute', left: '-9999px', width: 0, height: 0, opacity: 0 }} ref={ref} {...props} />
+  ));
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Gratis plannen uitleg */}
-      <div className="bg-[#fff7f3] rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base">
-        {t('common.freeMeetupInfo')}
-      </div>
-      {/* Stap-indicator */}
-      <div className="flex justify-center gap-2 mb-6">
-        {steps.map((label, idx) => (
-          <div
-            key={label}
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200
-              ${step === idx + 2 ? 'bg-[#ff914d] text-white scale-110 shadow-lg' : 'bg-[#b2dfdb] text-primary-700 opacity-60'}`}
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      {isLoggedIn === false && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mb-8">
+          <div className="text-2xl mb-2">🔒</div>
+          <div className="text-lg font-semibold text-red-700 mb-2">{t('common.notLoggedIn')}</div>
+          <button
+            className="btn-primary mt-4"
+            onClick={() => navigate('/login')}
           >
-            {idx + 1}
-          </div>
-        ))}
-      </div>
-      <h1 className="text-3xl font-bold text-primary-600 mb-2">
-        <span role="img" aria-label="connect">🤝</span> Versterk de connectie
-      </h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Stap 2: Stad */}
-        {step === 2 && (
-          <>
-            {/* Welkomstbericht alleen bij eerste stap */}
-            <div className="mb-6 bg-white/80 rounded-xl shadow p-4 text-center text-primary-700 font-semibold text-lg">
-              {t('common.welcomeTitle')}{formData.name && formData.name.trim() !== '' ? `, ${formData.name}` : ''}!<br />
-              {t('common.welcomeLine1')}<br />
-              {t('common.welcomeLine2')}
+            {t('common.login')}
+          </button>
+        </div>
+      )}
+      {isLoggedIn && (
+        <>
+          {showConfetti && (
+            <div className="fixed inset-0 pointer-events-none z-50">
+              <Confetti
+                width={windowSize.width}
+                height={windowSize.height}
+                recycle={false}
+                numberOfPieces={300}
+                gravity={0.2}
+                initialVelocityY={10}
+                tweenDuration={2000}
+              />
             </div>
-            <div>
-              <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
-                <span className="text-lg">🏙️</span> {t('createMeetup.chooseCityInfo')}
+          )}
+          <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-4">
+            {t('createMeetup.title')}
+          </h1>
+          <p className="text-gray-700 mb-8 text-lg">
+            {t('createMeetup.subtitle')}
+          </p>
+
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  1
+                </div>
+                <span className="ml-2 font-medium">{t('createMeetup.step1')}</span>
               </div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                <span role="img" aria-label="city">🏙️</span> {t('createMeetup.chooseCityLabel')}
-              </label>
-              <div className="relative">
+              <div className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  2
+                </div>
+                <span className="ml-2 font-medium">{t('createMeetup.step2')}</span>
+              </div>
+              <div className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  3
+                </div>
+                <span className="ml-2 font-medium">{t('createMeetup.step3')}</span>
+              </div>
+            </div>
+          </div>
+
+          {step === 1 && (
+            <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
+              <h2 className="text-xl font-semibold text-primary-700 mb-4">
+                {t('createMeetup.chooseCityInfo')}
+              </h2>
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2">
+                  {t('common.name')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4"
+                  placeholder={t('common.name')}
+                />
+                <label className="block text-gray-700 mb-2">
+                  {t('createMeetup.chooseCityLabel')}
+                </label>
                 <select
-                  id="city"
-                  className="city-select"
                   value={formData.city}
                   onChange={(e) => handleCityChange(e.target.value)}
-                  required
+                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="">{t('common.selectCity')}</option>
                   {cities.map((city) => (
@@ -325,130 +350,153 @@ const CreateMeetup = () => {
                   ))}
                 </select>
               </div>
-              {/* Direct café tonen na stadkeuze */}
-              {selectedCafe && (
-                <div className="mt-6 bg-white/80 rounded-2xl shadow-md p-4 flex flex-col gap-1 border border-[#b2dfdb]/40 max-w-md mx-auto items-start">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">☕️</span>
-                    <span className="font-semibold text-primary-700 text-lg">{selectedCafe.name}</span>
-                  </div>
-                  <span className="text-gray-500 text-sm mb-2">{selectedCafe.address}</span>
-                  {selectedCafe.image_url && (
-                    <img
-                      src={selectedCafe.image_url}
-                      alt={selectedCafe.name}
-                      className="w-full max-w-md mx-auto rounded-2xl shadow mb-3 object-cover"
-                      style={{ maxHeight: 120 }}
-                    />
-                  )}
-                  {cafes.length > 1 && (
-                    <button
-                      type="button"
-                      className={`btn-secondary mt-2 transition-colors duration-200 ${shuffleCooldown ? 'opacity-60 cursor-not-allowed bg-gray-200 text-gray-400' : ''}`}
-                      onClick={shuffleCafe}
-                      disabled={shuffleCooldown}
-                    >
-                      {shuffleCooldown ? 'Even wachten...' : 'Shuffle café'}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-            {/* Navigatieknoppen voor step 2 */}
-            <div className="flex gap-4 mt-8">
               <button
-                type="button"
-                className="btn-secondary flex-1 opacity-50 cursor-not-allowed"
-                disabled
-              >
-                Vorige
-              </button>
-              <button
-                type="button"
-                className={`btn-primary flex-1 ${!formData.city ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={() => formData.city && setStep(3)}
-                disabled={!formData.city}
-              >
-                Volgende
-              </button>
-            </div>
-          </>
-        )}
-        {step === 3 && (
-          <div>
-            <div className="mb-3 text-primary-700 text-base font-medium bg-[#fff7f3] rounded-xl p-3 shadow-sm">
-              <span className="text-lg">📅</span> {t('createMeetup.chooseDaysInfo')}
-            </div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <span role="img" aria-label="calendar">📅</span> {t('createMeetup.chooseThreeDates')}
-            </label>
-            <DatePicker
-              inline
-              minDate={new Date()}
-              maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
-              highlightDates={formData.dates}
-              onChange={handleDatePickerChange}
-              customInput={<CustomInput />}
-              calendarClassName="anemi-datepicker"
-              locale={dateLocale}
-            />
-            {/* Direct tijdvakken per gekozen datum */}
-            {dateTimeOptions.length > 0 && (
-              <div className="mt-6 space-y-4">
-                {dateTimeOptions.map(opt => (
-                  <div key={opt.date} className="border rounded-lg p-3 bg-primary-50">
-                    <div className="font-medium text-primary-600 mb-2">{new Date(opt.date).toLocaleDateString()}</div>
-                    <div className="flex gap-6">
-                      {['morning', 'afternoon', 'evening'].map(time => (
-                        <label key={time} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={opt.times.includes(time)}
-                            onChange={() => handleTimeToggle(opt.date, time)}
-                            className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                            disabled={isTimeSlotPast(opt.date, time)}
-                          />
-                          <span className="ml-2 text-gray-700">
-                            {t(`common.${time}`)}
-                            {isTimeSlotPast(opt.date, time) && (
-                              <span className="ml-1 text-xs text-gray-400">{t('createMeetup.expired')}</span>
-                            )}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/* Informele tekst altijd tonen */}
-            <div className="mt-10 bg-white/80 rounded-2xl shadow-md p-5 border border-[#b2dfdb]/40 max-w-lg mx-auto text-center text-primary-700 font-semibold">
-              {t('createMeetup.ctaGetInvite')}
-            </div>
-            {/* Navigatieknoppen voor stap 3: direct submitten */}
-            <div className="flex gap-4 mt-8">
-              <button
-                type="button"
-                className="btn-secondary flex-1"
                 onClick={() => setStep(2)}
-              >
-                Vorige
-              </button>
-              <button
-                type="submit"
-                className={`btn-primary flex-1 ${!(formData.dates.length > 0 && dateTimeOptions.some(opt => opt.times.length > 0)) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={!(formData.dates.length > 0 && dateTimeOptions.some(opt => opt.times.length > 0))}
+                disabled={!formData.city || !formData.name}
+                className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('common.continue')}
               </button>
             </div>
-          </div>
-        )}
-        {/* Foutmelding */}
-        {formError && (
-          <div className="text-red-500 text-sm">{formError}</div>
-        )}
-      </form>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('common.date')}
+                </label>
+                <div className="relative">
+                  <DatePicker
+                    selected={null}
+                    onChange={handleDatePickerChange}
+                    locale={dateLocale}
+                    inline
+                    minDate={new Date()}
+                    customInput={<CustomInput />}
+                  />
+                </div>
+                <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
+              </div>
+
+              {formData.dates.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-medium text-gray-700">{t('common.selectedDates')}</h3>
+                  {formData.dates.map((date, idx) => {
+                    const dateStr = getLocalDateString(date);
+                    const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
+                    return (
+                      <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="font-medium">{date.toLocaleDateString()}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDate(dateStr)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            {t('common.remove')}
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          {['morning', 'afternoon', 'evening'].map(time => (
+                            <label key={time} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={dateOpt?.times.includes(time) || false}
+                                onChange={() => handleTimeToggle(dateStr, time)}
+                                disabled={isTimeSlotPast(dateStr, time)}
+                                className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                              />
+                              <span className={`ml-2 ${isTimeSlotPast(dateStr, time) ? 'text-gray-400' : 'text-gray-700'}`}>
+                                {t(`common.${time}`)}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="btn-secondary flex-1"
+                >
+                  {t('common.back')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  className="btn-primary flex-1"
+                  disabled={!hasValidDateTimeSelection()}
+                >
+                  {t('common.continue')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-6">
+              <div className="bg-primary-50 p-6 rounded-xl shadow-md">
+                <h2 className="text-xl font-semibold text-primary-700 mb-4">
+                  {t('createMeetup.chooseCityLabel')}
+                </h2>
+                
+                {selectedCafe && (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+                    {selectedCafe.image_url && (
+                      <img
+                        src={selectedCafe.image_url}
+                        alt={selectedCafe.name}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">{selectedCafe.name}</h3>
+                      <p className="text-gray-600 mb-2">{selectedCafe.address}</p>
+                      {selectedCafe.description && (
+                        <p className="text-gray-500 text-sm">{selectedCafe.description}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={shuffleCafe}
+                    disabled={shuffleCooldown || cafes.length <= 1}
+                    className="btn-secondary flex-1"
+                  >
+                    {t('common.shuffle')}
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    className="btn-primary flex-1"
+                    disabled={!selectedCafe || !hasValidDateTimeSelection()}
+                  >
+                    {t('common.submit')}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="btn-secondary flex-1"
+                >
+                  {t('common.back')}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

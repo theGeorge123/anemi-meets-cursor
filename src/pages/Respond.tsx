@@ -28,14 +28,14 @@ const Respond = () => {
       const params = new URLSearchParams(location.search);
       const token = params.get('token');
       if (!token) {
-        setError('Geen geldige uitnodiging gevonden.');
+        setError(t('respond.invalidInvitation'));
         setLoading(false);
         return;
       }
       // Haal invitation op
       const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).single();
       if (invitationError || !invitation) {
-        setError('Uitnodiging niet gevonden of verlopen.');
+        setError(t('respond.expiredOrMissing'));
         setLoading(false);
         return;
       }
@@ -73,7 +73,7 @@ const Respond = () => {
       setFormData((prev) => ({ ...prev, email: savedEmail }));
       setWantsUpdates(true);
     }
-  }, [location.search]);
+  }, [location.search, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +85,7 @@ const Respond = () => {
     const datePart = formData.selectedTime.substring(0, lastDash);
     const timePart = formData.selectedTime.substring(lastDash + 1);
     if (!datePart || !timePart || !/^\d{4}-\d{2}-\d{2}$/.test(datePart) || !['morning','afternoon','evening'].includes(timePart)) {
-      setErrorMsg('Ongeldig datumformaat. Selecteer een tijd.');
+      setErrorMsg(t('respond.invalidDateFormat'));
       return;
     }
     if (missing.length > 0) {
@@ -94,9 +94,9 @@ const Respond = () => {
           fields: missing
             .map((field) =>
               field === 'email'
-                ? 'e-mailadres'
+                ? t('common.email')
                 : field === 'selectedTime'
-                ? 'tijd'
+                ? t('common.time')
                 : field
             )
             .join(', ')
@@ -107,7 +107,7 @@ const Respond = () => {
     setErrorMsg("");
     setStatus("sending");
     if (!invitation) {
-      setErrorMsg("Uitnodiging niet gevonden.");
+      setErrorMsg(t('respond.errorNoInvite'));
       setStatus("error");
       return;
     }
@@ -134,7 +134,7 @@ const Respond = () => {
       const data = await res.json();
       if (!res.ok || !data.success) {
         setStatus("error");
-        setErrorMsg(data.error || "Er ging iets mis. Probeer het opnieuw.");
+        setErrorMsg(data.error || t('respond.genericError'));
         console.error("Supabase error:", data.error || data);
       } else {
         setStatus("done");
@@ -150,7 +150,7 @@ const Respond = () => {
       }
     } catch (err) {
       setStatus("error");
-      setErrorMsg("Er ging iets mis met de verbinding. Probeer het opnieuw.");
+      setErrorMsg(t('respond.genericError'));
       console.error("Netwerkfout:", err);
     }
   };
@@ -161,24 +161,24 @@ const Respond = () => {
         <div className="card bg-[#fff7f3] shadow-2xl p-8 max-w-lg w-full flex flex-col items-center">
           <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>☕️</span>
           <h2 className="text-2xl font-bold text-[#37474f] mb-2 flex items-center gap-2">
-            Jullie gaan binnenkort weer afspreken!
+            {t('respond.meetupConfirmed')}
           </h2>
-          <img src="/coffee-fun.gif" alt="Leuke koffie GIF" style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
+          <img src="/coffee-fun.gif" alt={t('respond.coffeeGifAlt')} style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
           <p className="text-lg text-gray-700 mb-6 text-center">
-            De bevestiging is verstuurd naar beide e-mailadressen.
+            {t('respond.emailSent')}
           </p>
           {confirmationInfo && (
             <div className="bg-white rounded-lg shadow p-4 mb-4 w-full text-center">
-              <div className="font-semibold text-primary-700 mb-1">Café: {confirmationInfo.cafe_name}</div>
-              <div className="text-gray-600 mb-1">Adres: {confirmationInfo.cafe_address}</div>
-              <div className="text-gray-600 mb-1">Datum: {confirmationInfo.selected_date}</div>
-              <div className="text-gray-600">Tijd: {confirmationInfo.selected_time}</div>
+              <div className="font-semibold text-primary-700 mb-1">{t('common.cafe')}: {confirmationInfo.cafe_name}</div>
+              <div className="text-gray-600 mb-1">{t('common.address')}: {confirmationInfo.cafe_address}</div>
+              <div className="text-gray-600 mb-1">{t('common.date')}: {confirmationInfo.selected_date}</div>
+              <div className="text-gray-600">{t('common.time')}: {confirmationInfo.selected_time}</div>
             </div>
           )}
-          <button className="btn-primary w-full mb-3" onClick={() => window.location.href = "/"}>Terug naar start</button>
+          <button className="btn-primary w-full mb-3" onClick={() => window.location.href = "/"}>{t('common.backToHome')}</button>
           <div className="w-full flex flex-col items-center mt-2">
-            <p className="mb-2">Wil je zelf een meeting aanmaken? Maak dan nu een account aan!</p>
-            <a href="/signup" className="btn-secondary w-full">Account aanmaken</a>
+            <p className="mb-2">{t('respond.cta')}</p>
+            <a href="/signup" className="btn-secondary w-full">{t('common.createAccount')}</a>
           </div>
         </div>
       </div>
@@ -186,7 +186,7 @@ const Respond = () => {
   }
 
   if (loading) {
-    return <div className="max-w-2xl mx-auto text-center py-12">Loading...</div>;
+    return <div className="max-w-2xl mx-auto text-center py-12">{t('common.loading')}</div>;
   }
   if (error) {
     return <div className="max-w-2xl mx-auto text-center py-12 text-red-500">{error}</div>;
@@ -196,7 +196,7 @@ const Respond = () => {
     <div className="max-w-2xl mx-auto">
       {cafe && (
         <div className="card bg-primary-50 mb-6">
-          <h2 className="text-xl font-semibold text-primary-600">Café</h2>
+          <h2 className="text-xl font-semibold text-primary-600">{t('common.cafe')}</h2>
           <p className="text-gray-700 font-medium">{cafe.name}</p>
           <p className="text-gray-500">{cafe.address}</p>
         </div>
@@ -212,7 +212,7 @@ const Respond = () => {
         {errorMsg && <div className="text-red-600 mb-2">{errorMsg}</div>}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-4">
-            Available Times
+            {t('respond.availableTimes')}
           </label>
           <div className="space-y-3">
             {availableTimes.map((time, idx) => (
@@ -250,21 +250,24 @@ const Respond = () => {
 
         <div className="flex items-center">
           <input
-            id="updates"
             type="checkbox"
+            id="updates"
             checked={wantsUpdates}
-            onChange={() => setWantsUpdates(v => !v)}
+            onChange={(e) => setWantsUpdates(e.target.checked)}
             className="h-4 w-4 text-primary-600 focus:ring-primary-500"
           />
-          <label htmlFor="updates" className="ml-2 text-gray-700">
+          <label htmlFor="updates" className="ml-2 text-sm text-gray-700">
             {t('respond.wantUpdates')}
           </label>
         </div>
 
-        <button type="submit" className="btn-primary w-full" disabled={status === 'sending'}>
-          {status === 'sending' ? t('respond.sending') : t('common.submit')}
+        <button
+          type="submit"
+          className="btn-primary w-full"
+          disabled={status === "sending"}
+        >
+          {status === "sending" ? t('respond.sending') : t('common.submit')}
         </button>
-        {status === 'done' && <div className="text-green-600 mt-2">{t('respond.confirmedMail')}</div>}
       </form>
     </div>
   );
