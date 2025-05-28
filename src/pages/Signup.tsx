@@ -3,13 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 
-const GENDER_OPTIONS = [
-  { value: 'man', label: 'Man' },
-  { value: 'vrouw', label: 'Vrouw' },
-  { value: 'anders', label: 'Anders' },
-  { value: 'wil_niet_zeggen', label: 'Wil ik niet zeggen' },
-];
-
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
 const Signup = () => {
