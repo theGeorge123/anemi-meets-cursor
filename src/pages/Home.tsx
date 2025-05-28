@@ -7,13 +7,8 @@ const Home = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleStartMeetup = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session && session.user) {
-      navigate('/create-meetup');
-    } else {
-      navigate('/login');
-    }
+  const handleStartMeetup = () => {
+    navigate('/create-meetup');
   };
 
   return (

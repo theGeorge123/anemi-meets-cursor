@@ -25,14 +25,13 @@ const CreateMeetup = () => {
   const [dateTimeOptions, setDateTimeOptions] = useState<{ date: string; times: string[] }[]>([]);
   const [shuffleCooldown, setShuffleCooldown] = useState(false);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
   const dateLocale = i18n.language === 'en' ? enUS : nl;
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -58,6 +57,24 @@ const CreateMeetup = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Prefill name if logged in
+  useEffect(() => {
+    const fetchProfileName = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.user.id)
+          .single();
+        if (profile && profile.full_name && !formData.name) {
+          setFormData(prev => ({ ...prev, name: profile.full_name }));
+        }
+      }
+    };
+    fetchProfileName();
+  }, []);
+
   // Update window size for confetti
   useEffect(() => {
     const handleResize = () => {
@@ -71,29 +88,8 @@ const CreateMeetup = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    // Check login status
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsLoggedIn(!!session?.user);
-    };
-    checkSession();
-    // Listen for auth changes
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      checkSession();
-    });
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoggedIn) {
-      alert(t('common.notLoggedIn'));
-      navigate('/login');
-      return;
-    }
 
     // Validatie
     if (formData.dates.length === 0) {
@@ -261,241 +257,228 @@ const CreateMeetup = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {isLoggedIn === false && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mb-8">
-          <div className="text-2xl mb-2">🔒</div>
-          <div className="text-lg font-semibold text-red-700 mb-2">{t('common.notLoggedIn')}</div>
+      <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-4">
+        {t('createMeetup.title')}
+      </h1>
+      <p className="text-gray-700 mb-8 text-lg">
+        {t('createMeetup.subtitle')}
+      </p>
+
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+              1
+            </div>
+            <span className="ml-2 font-medium">{t('createMeetup.step1')}</span>
+          </div>
+          <div className="flex items-center">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+              2
+            </div>
+            <span className="ml-2 font-medium">{t('createMeetup.step2')}</span>
+          </div>
+          <div className="flex items-center">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+              3
+            </div>
+            <span className="ml-2 font-medium">{t('createMeetup.step3')}</span>
+          </div>
+        </div>
+      </div>
+
+      {step === 1 && (
+        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold text-primary-700 mb-4">
+            {t('createMeetup.chooseCityInfo')}
+          </h2>
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2">
+              {t('common.name')}
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4"
+              placeholder={t('common.name')}
+            />
+            <label className="block text-gray-700 mb-2">
+              {t('createMeetup.chooseCityLabel')}
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {cities.map((city) => (
+                <button
+                  key={city.id}
+                  type="button"
+                  onClick={() => handleCityChange(city.name)}
+                  className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center
+                    ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
+                  aria-pressed={formData.city === city.name}
+                >
+                  {city.name}
+                </button>
+              ))}
+            </div>
+          </div>
           <button
-            className="btn-primary mt-4"
-            onClick={() => navigate('/login')}
+            onClick={() => setStep(2)}
+            disabled={!formData.city || !formData.name}
+            className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           >
-            {t('common.login')}
+            {t('common.continue')}
           </button>
         </div>
       )}
-      {isLoggedIn && (
-        <>
-          {showConfetti && (
-            <div className="fixed inset-0 pointer-events-none z-50">
-              <Confetti
-                width={windowSize.width}
-                height={windowSize.height}
-                recycle={false}
-                numberOfPieces={300}
-                gravity={0.2}
-                initialVelocityY={10}
-                tweenDuration={2000}
+
+      {step === 2 && (
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('common.date')}
+            </label>
+            <div className="relative">
+              <DatePicker
+                selected={null}
+                onChange={handleDatePickerChange}
+                locale={dateLocale}
+                inline
+                minDate={new Date()}
+                customInput={<CustomInput />}
               />
             </div>
-          )}
-          <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-4">
-            {t('createMeetup.title')}
-          </h1>
-          <p className="text-gray-700 mb-8 text-lg">
-            {t('createMeetup.subtitle')}
-          </p>
+            <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
+          </div>
 
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                  1
+          {formData.dates.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-medium text-gray-700">{t('common.selectedDates')}</h3>
+              {formData.dates.map((date, idx) => {
+                const dateStr = getLocalDateString(date);
+                const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
+                return (
+                  <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-medium">{date.toLocaleDateString()}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDate(dateStr)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        {t('common.remove')}
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {['morning', 'afternoon', 'evening'].map(time => (
+                        <label key={time} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={dateOpt?.times.includes(time) || false}
+                            onChange={() => handleTimeToggle(dateStr, time)}
+                            disabled={isTimeSlotPast(dateStr, time)}
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                          />
+                          <span className={`ml-2 ${isTimeSlotPast(dateStr, time) ? 'text-gray-400' : 'text-gray-700'}`}>
+                            {t(`common.${time}`)}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="btn-secondary flex-1"
+            >
+              {t('common.back')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep(3)}
+              className="btn-primary flex-1"
+              disabled={!hasValidDateTimeSelection()}
+            >
+              {t('common.continue')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="space-y-6">
+          <div className="bg-primary-50 p-6 rounded-xl shadow-md">
+            <h2 className="text-xl font-semibold text-primary-700 mb-4">
+              {t('createMeetup.chooseCityLabel')}
+            </h2>
+            
+            {selectedCafe && (
+              <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+                {selectedCafe.image_url && (
+                  <img
+                    src={selectedCafe.image_url}
+                    alt={selectedCafe.name}
+                    className="w-full h-48 object-cover"
+                  />
+                )}
+                <div className="p-4">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{selectedCafe.name}</h3>
+                  <p className="text-gray-600 mb-2">{selectedCafe.address}</p>
+                  {selectedCafe.description && (
+                    <p className="text-gray-500 text-sm">{selectedCafe.description}</p>
+                  )}
                 </div>
-                <span className="ml-2 font-medium">{t('createMeetup.step1')}</span>
               </div>
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                  2
-                </div>
-                <span className="ml-2 font-medium">{t('createMeetup.step2')}</span>
-              </div>
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                  3
-                </div>
-                <span className="ml-2 font-medium">{t('createMeetup.step3')}</span>
-              </div>
+            )}
+
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={shuffleCafe}
+                disabled={shuffleCooldown || cafes.length <= 1}
+                className="btn-secondary flex-1"
+              >
+                {t('common.shuffle')}
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="btn-primary flex-1"
+                disabled={!selectedCafe || !hasValidDateTimeSelection()}
+              >
+                {t('common.submit')}
+              </button>
             </div>
           </div>
 
-          {step === 1 && (
-            <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-              <h2 className="text-xl font-semibold text-primary-700 mb-4">
-                {t('createMeetup.chooseCityInfo')}
-              </h2>
-              <div className="mb-6">
-                <label className="block text-gray-700 mb-2">
-                  {t('common.name')}
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4"
-                  placeholder={t('common.name')}
-                />
-                <label className="block text-gray-700 mb-2">
-                  {t('createMeetup.chooseCityLabel')}
-                </label>
-                <select
-                  value={formData.city}
-                  onChange={(e) => handleCityChange(e.target.value)}
-                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                >
-                  <option value="">{t('common.selectCity')}</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.name}>
-                      {city.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button
-                onClick={() => setStep(2)}
-                disabled={!formData.city || !formData.name}
-                className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {t('common.continue')}
-              </button>
-            </div>
-          )}
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              className="btn-secondary flex-1"
+            >
+              {t('common.back')}
+            </button>
+          </div>
+        </div>
+      )}
 
-          {step === 2 && (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('common.date')}
-                </label>
-                <div className="relative">
-                  <DatePicker
-                    selected={null}
-                    onChange={handleDatePickerChange}
-                    locale={dateLocale}
-                    inline
-                    minDate={new Date()}
-                    customInput={<CustomInput />}
-                  />
-                </div>
-                <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
-              </div>
-
-              {formData.dates.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="font-medium text-gray-700">{t('common.selectedDates')}</h3>
-                  {formData.dates.map((date, idx) => {
-                    const dateStr = getLocalDateString(date);
-                    const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
-                    return (
-                      <div key={idx} className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="font-medium">{date.toLocaleDateString()}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveDate(dateStr)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            {t('common.remove')}
-                          </button>
-                        </div>
-                        <div className="space-y-2">
-                          {['morning', 'afternoon', 'evening'].map(time => (
-                            <label key={time} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={dateOpt?.times.includes(time) || false}
-                                onChange={() => handleTimeToggle(dateStr, time)}
-                                disabled={isTimeSlotPast(dateStr, time)}
-                                className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                              />
-                              <span className={`ml-2 ${isTimeSlotPast(dateStr, time) ? 'text-gray-400' : 'text-gray-700'}`}>
-                                {t(`common.${time}`)}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="btn-secondary flex-1"
-                >
-                  {t('common.back')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  className="btn-primary flex-1"
-                  disabled={!hasValidDateTimeSelection()}
-                >
-                  {t('common.continue')}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-6">
-              <div className="bg-primary-50 p-6 rounded-xl shadow-md">
-                <h2 className="text-xl font-semibold text-primary-700 mb-4">
-                  {t('createMeetup.chooseCityLabel')}
-                </h2>
-                
-                {selectedCafe && (
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
-                    {selectedCafe.image_url && (
-                      <img
-                        src={selectedCafe.image_url}
-                        alt={selectedCafe.name}
-                        className="w-full h-48 object-cover"
-                      />
-                    )}
-                    <div className="p-4">
-                      <h3 className="text-xl font-semibold text-gray-800 mb-2">{selectedCafe.name}</h3>
-                      <p className="text-gray-600 mb-2">{selectedCafe.address}</p>
-                      {selectedCafe.description && (
-                        <p className="text-gray-500 text-sm">{selectedCafe.description}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={shuffleCafe}
-                    disabled={shuffleCooldown || cafes.length <= 1}
-                    className="btn-secondary flex-1"
-                  >
-                    {t('common.shuffle')}
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    className="btn-primary flex-1"
-                    disabled={!selectedCafe || !hasValidDateTimeSelection()}
-                  >
-                    {t('common.submit')}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="btn-secondary flex-1"
-                >
-                  {t('common.back')}
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          <Confetti
+            width={windowSize.width}
+            height={windowSize.height}
+            recycle={false}
+            numberOfPieces={300}
+            gravity={0.2}
+            initialVelocityY={10}
+            tweenDuration={2000}
+          />
+        </div>
       )}
     </div>
   );
