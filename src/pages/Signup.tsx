@@ -22,7 +22,6 @@ const Signup = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    gender: '',
   });
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,31 +45,24 @@ const Signup = () => {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
+      options: {
+        data: { full_name: form.name }
+      }
     });
     if (signUpError) {
-      setError('Registratie mislukt. Probeer het later opnieuw.');
+      if (signUpError.message && signUpError.message.toLowerCase().includes('user already registered')) {
+        setError('Dit e-mailadres is al geregistreerd. Log in of gebruik een ander e-mailadres.');
+      } else {
+        setError('Registratie mislukt. Probeer het later opnieuw.');
+      }
       setLoading(false);
       return;
     }
-    // Profiel opslaan in Supabase
-    if (data.user) {
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: data.user.id,
-        email: form.email,
-        full_name: form.name,
-        gender: form.gender,
-      });
-      if (profileError) {
-        setError('Account aangemaakt, maar profiel opslaan is mislukt: ' + profileError.message);
-        setLoading(false);
-        return;
-      }
-      // Updates-subscribers opslaan als vinkje aanstaat
-      if (wantsUpdates) {
-        const { error: updatesError } = await supabase.from('updates_subscribers').upsert({ email: form.email });
-        if (updatesError) {
-          setError('Account aangemaakt, maar aanmelden voor updates is mislukt: ' + updatesError.message);
-        }
+    // Updates-subscribers opslaan als vinkje aanstaat
+    if (data.user && wantsUpdates) {
+      const { error: updatesError } = await supabase.from('updates_subscribers').upsert({ email: form.email });
+      if (updatesError) {
+        setError('Account aangemaakt, maar aanmelden voor updates is mislukt: ' + updatesError.message);
       }
     }
     if (wantsUpdates) {
@@ -123,7 +115,7 @@ const Signup = () => {
         {t('common.freeAccountInfo')}
       </div>
       <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('common.createAccount')}</h1>
-      <div className="flex justify-center gap-2 mb-6">
+      <div className="flex justify-center gap-2 mb-8 mt-6">
         {steps.map((label, idx) => (
           <div
             key={label}
@@ -134,7 +126,8 @@ const Signup = () => {
           </div>
         ))}
       </div>
-      <form onSubmit={step === steps.length - 1 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }} className="space-y-8 bg-white/70 p-6 rounded-2xl shadow min-h-[320px] flex flex-col justify-between">
+      <form onSubmit={step === steps.length - 1 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }}
+        className="space-y-4 bg-white/90 p-3 rounded-xl shadow-2xl border border-primary-100 flex flex-col justify-between mt-2">
         {step === 0 && (
           <div>
             <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
@@ -170,17 +163,17 @@ const Signup = () => {
         </div>
         )}
         {step === 2 && (
-        <div>
+          <div>
             <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
-          </label>
-          <input
-            type="password"
-            id="signup-password"
+            </label>
+            <input
+              type="password"
+              id="signup-password"
               className="input-field mt-1 mb-4"
-            value={form.password}
-            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-            required
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+              required
               placeholder={t('common.password') + ' (min. 6)'}
               autoFocus
             />
@@ -196,53 +189,43 @@ const Signup = () => {
               required
               placeholder={t('signup.confirmPassword')}
             />
+            {form.password && form.confirmPassword && form.password !== form.confirmPassword && (
+              <div className="text-red-500 text-sm mt-2">Wachtwoorden komen niet overeen.</div>
+            )}
           </div>
         )}
         {step === 3 && (
           <div>
+            <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('common.createAccount')}</h1>
             <h2 className="text-xl font-bold mb-4">{t('signup.overviewTitle')}</h2>
             <div className="mb-4">
               <div><b>{t('common.name')}:</b> {form.name}</div>
               <div><b>{t('common.email')}:</b> {form.email}</div>
             </div>
-            <div className="mb-4">
-              <label htmlFor="signup-gender" className="block text-lg font-medium text-gray-700 mb-2">
-                <span className="text-2xl">🧑‍🤝‍🧑</span> {t('signup.genderPrompt')}
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="updates-checkbox"
+                checked={wantsUpdates}
+                onChange={() => setWantsUpdates((v) => !v)}
+                className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
+              />
+              <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
+                {t('signup.updatesCta')}
               </label>
-              <select
-                id="signup-gender"
-                className="input-field mt-1"
-                value={form.gender}
-                onChange={(e) => setForm((prev) => ({ ...prev, gender: e.target.value }))}
-              >
-                <option value="">{t('common.selectOption')}</option>
-                {GENDER_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
             </div>
           </div>
         )}
-        <div className="flex items-center mb-4">
-          <input
-            type="checkbox"
-            id="updates-checkbox"
-            checked={wantsUpdates}
-            onChange={() => setWantsUpdates((v) => !v)}
-            className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
-          />
-          <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
-            {t('signup.updatesCta')}
-          </label>
-        </div>
-        <button
-          type="submit"
-          className={`btn-primary w-full flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={loading || !isStepValid()}
-        >
-          {loading ? <span className="animate-spin mr-2 w-5 h-5 border-2 border-white border-t-[#ff914d] rounded-full inline-block"></span> : null}
-          {t('common.createAccount')}
-        </button>
+        {step === 3 && (
+          <button
+            type="submit"
+            className={`btn-primary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={loading || !isStepValid()}
+          >
+            {loading ? <span className="animate-spin mr-2 w-5 h-5 border-2 border-white border-t-[#ff914d] rounded-full inline-block"></span> : null}
+            {t('common.createAccount')}
+          </button>
+        )}
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
         {success && <div className="text-green-600 text-sm mt-2">{success}</div>}
         <div className="flex justify-between mt-8">
@@ -258,7 +241,7 @@ const Signup = () => {
           {step < steps.length - 1 && (
             <button
               type="submit"
-              className={`px-6 py-2 rounded-2xl font-medium bg-[#1573ff] text-white ml-2 hover:scale-105 transition ${!isStepValid() ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex-1 btn-primary py-2 text-base rounded-xl font-medium ${!isStepValid() ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={!isStepValid()}
             >
               Volgende

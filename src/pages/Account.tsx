@@ -7,10 +7,19 @@ const Account = () => {
   const [user, setUser] = useState<any>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [emojiSaving, setEmojiSaving] = useState(false);
+  const [gender, setGender] = useState<string>('');
+  const [genderSaving, setGenderSaving] = useState(false);
+  const [genderMsg, setGenderMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
+  const GENDER_OPTIONS = [
+    { value: 'man', label: 'Man' },
+    { value: 'vrouw', label: 'Vrouw' },
+    { value: 'anders', label: 'Anders' },
+    { value: 'wil_niet_zeggen', label: 'Wil ik niet zeggen' },
+  ];
 
   useEffect(() => {
     const getUser = async () => {
@@ -20,9 +29,10 @@ const Account = () => {
         return;
       }
       setUser(session.user);
-      // Haal emoji op uit profiel
-      const { data: profile } = await supabase.from('profiles').select('emoji').eq('id', session.user.id).single();
+      // Haal emoji en gender op uit profiel
+      const { data: profile } = await supabase.from('profiles').select('emoji, gender').eq('id', session.user.id).single();
       if (profile && profile.emoji) setSelectedEmoji(profile.emoji);
+      if (profile && profile.gender) setGender(profile.gender);
     };
     getUser();
   }, [navigate]);
@@ -46,6 +56,25 @@ const Account = () => {
       window.dispatchEvent(new Event('profile-emoji-updated'));
     }
     setEmojiSaving(false);
+  };
+
+  const handleGenderChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newGender = e.target.value;
+    setGender(newGender);
+    setGenderSaving(true);
+    setGenderMsg(null);
+    if (!user || !user.id) {
+      setGenderMsg('Je bent niet ingelogd.');
+      setGenderSaving(false);
+      return;
+    }
+    const { error } = await supabase.from('profiles').update({ gender: newGender }).eq('id', user.id);
+    if (error) {
+      setGenderMsg('Opslaan mislukt: ' + error.message);
+    } else {
+      setGenderMsg('Geslacht opgeslagen!');
+    }
+    setGenderSaving(false);
   };
 
   return (
@@ -117,6 +146,25 @@ const Account = () => {
             ))}
           </div>
           {emojiSaving && <div className="text-xs text-gray-500 mt-2">{t('account.saving')}</div>}
+          {/* Gender dropdown */}
+          <div className="mt-8 mb-2 text-left">
+            <label htmlFor="gender-select" className="block text-lg font-medium text-gray-700 mb-2">
+              Geslacht
+            </label>
+            <select
+              id="gender-select"
+              value={gender}
+              onChange={handleGenderChange}
+              className="input-field mt-1 w-full max-w-xs"
+              disabled={genderSaving}
+            >
+              <option value="">Selecteer...</option>
+              {GENDER_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {genderMsg && <div className="text-sm mt-2 text-green-700">{genderMsg}</div>}
+          </div>
         </div>
       )}
     </div>
