@@ -84,6 +84,9 @@ const Respond = () => {
     const lastDash = formData.selectedTime.lastIndexOf('-');
     const datePart = formData.selectedTime.substring(0, lastDash);
     const timePart = formData.selectedTime.substring(lastDash + 1);
+    // Check cafe_id presence
+    const cafeId = invitation?.cafe_id;
+    if (!cafeId) missing.push('cafe_id');
     if (!datePart || !timePart || !/^\d{4}-\d{2}-\d{2}$/.test(datePart) || !['morning','afternoon','evening'].includes(timePart)) {
       setErrorMsg(t('respond.invalidDateFormat'));
       return;
@@ -97,6 +100,8 @@ const Respond = () => {
                 ? t('common.email')
                 : field === 'selectedTime'
                 ? t('common.time')
+                : field === 'cafe_id'
+                ? t('common.cafe')
                 : field
             )
             .join(', ')
@@ -122,11 +127,9 @@ const Respond = () => {
         token: invitation.token,
         email_b: formData.email,
         selected_date: datePart,
-        selected_time: timePart
+        selected_time: timePart,
+        cafe_id: cafeId
       };
-      if (invitation.cafe_id) {
-        body.cafe_id = invitation.cafe_id;
-      }
       const authKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       console.log('DEBUG: VITE_SUPABASE_ANON_KEY:', authKey);
       console.log('DEBUG: fetch headers:', {
@@ -158,6 +161,10 @@ const Respond = () => {
           selected_date: data.selected_date,
           selected_time: data.selected_time
         });
+        // Redirect na succes
+        setTimeout(() => {
+          window.location.href = "/confirmed";
+        }, 1200);
       }
     } catch (err) {
       setStatus("error");
@@ -234,23 +241,24 @@ const Respond = () => {
           <label className="block text-sm font-medium text-gray-700 mb-4">
             {t('respond.availableTimes')}
           </label>
-          <div className="space-y-3">
-            {availableTimes.map((time, idx) => (
-              <label key={idx} className="flex items-center">
-                <input
-                  type="radio"
-                  name="selectedTime"
-                  value={`${time.date}-${time.time}`}
-                  checked={formData.selectedTime === `${time.date}-${time.time}`}
-                  onChange={(e) => setFormData(prev => ({ ...prev, selectedTime: e.target.value }))}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                  required
-                />
-                <span className="ml-2 text-gray-700">
-                  {new Date(time.date).toLocaleDateString()} - {t(`common.${time.time}`)}
-                </span>
-              </label>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {availableTimes.map((time, idx) => {
+              const value = `${time.date}-${time.time}`;
+              const isSelected = formData.selectedTime === value;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, selectedTime: value }))}
+                  className={`w-full p-4 rounded-xl border-2 font-semibold text-lg shadow-sm flex flex-col items-center justify-center transition-all duration-150
+                    ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
+                  aria-pressed={isSelected}
+                >
+                  <span>{new Date(time.date).toLocaleDateString()}</span>
+                  <span className="mt-1">{t(`common.${time.time}`)}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 

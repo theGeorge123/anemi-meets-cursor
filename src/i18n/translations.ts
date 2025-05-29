@@ -45,6 +45,7 @@ export const translations = {
       selectedDates: 'Selected Dates',
       cafe: 'Café',
       address: 'Address',
+      age: 'Age',
       // --- Policies ---
       privacyFull: `We respect your privacy and handle your personal data with care. Your data is only used to provide our service, such as creating an account, scheduling meetups, and sending invitations. Your data will never be shared with third parties without your consent.\n\nYou have the right to access, correct, delete, or transfer your data, and to object to or restrict processing. For questions or requests about your privacy, please contact us using the form below.`,
       cookiesFull: `This website only uses functional cookies that are necessary for the proper functioning of the site. These cookies do not collect personal data and are not used for advertising or tracking purposes. You can use our website without us analyzing or storing your browsing behavior. By using this site, you agree to the use of these functional cookies.`,
@@ -235,6 +236,7 @@ export const translations = {
       selectedDates: 'Gekozen Datums',
       cafe: 'Café',
       address: 'Adres',
+      age: 'Leeftijd',
       // --- Policies ---
       privacyFull: `Wij respecteren jouw privacy en gaan zorgvuldig om met je persoonsgegevens. Je gegevens worden uitsluitend gebruikt om onze dienst mogelijk te maken, zoals het aanmaken van een account, het plannen van afspraken en het versturen van uitnodigingen. Je gegevens worden nooit zonder jouw toestemming gedeeld met derden.\n\nJe hebt het recht om je gegevens in te zien, te corrigeren, te verwijderen of over te dragen, en om bezwaar te maken tegen of de verwerking te beperken. Voor vragen of verzoeken over je privacy kun je contact met ons opnemen via het onderstaande formulier.`,
       cookiesFull: `Op deze website gebruiken wij alleen functionele cookies die noodzakelijk zijn voor het correct functioneren van de site. Deze cookies verzamelen geen persoonlijke gegevens en worden niet gebruikt voor advertentie- of trackingdoeleinden. Je kunt onze website gebruiken zonder dat wij je surfgedrag analyseren of opslaan. Door gebruik te maken van deze site ga je akkoord met het gebruik van deze functionele cookies.`,

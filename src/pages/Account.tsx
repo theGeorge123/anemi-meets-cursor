@@ -12,6 +12,9 @@ const Account = () => {
   const [genderMsg, setGenderMsg] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
+  const [age, setAge] = useState<number | ''>('');
+  const [ageSaving, setAgeSaving] = useState(false);
+  const [ageMsg, setAgeMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -41,11 +44,17 @@ const Account = () => {
       setUser(session.user);
       // Haal naam op uit user_metadata of profiel
       let name = session.user.user_metadata?.full_name;
+      let profileAge = null;
       if (!name) {
-        const { data: profile } = await supabase.from('profiles').select('full_name, emoji, gender').eq('id', session.user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('full_name, emoji, gender, age').eq('id', session.user.id).single();
         name = profile?.full_name;
         if (profile?.emoji) setSelectedEmoji(profile.emoji);
         if (profile?.gender) setGender(profile.gender);
+        if (profile?.age !== undefined && profile?.age !== null) setAge(profile.age);
+      } else {
+        // Haal leeftijd op als user bekend is
+        const { data: profile } = await supabase.from('profiles').select('age').eq('id', session.user.id).single();
+        if (profile?.age !== undefined && profile?.age !== null) setAge(profile.age);
       }
       if (!name) {
         name = generateRandomName();
@@ -94,6 +103,36 @@ const Account = () => {
       setShowGenderDropdown(false);
     }
     setGenderSaving(false);
+  };
+
+  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '') setAge('');
+    else if (/^\d{0,3}$/.test(val)) setAge(Number(val));
+  };
+
+  const handleAgeBlur = async () => {
+    if (!user || !user.id) return;
+    setAgeSaving(true);
+    setAgeMsg(null);
+    const value = age === '' ? null : age;
+    const { error } = await supabase.from('profiles').update({ age: value }).eq('id', user.id);
+    if (error) {
+      setAgeMsg('Opslaan mislukt: ' + error.message);
+    } else {
+      setAgeMsg('Top! Je leeftijd is opgeslagen.');
+    }
+    setAgeSaving(false);
+  };
+
+  // Shuffle emoji
+  const handleShuffleEmoji = async () => {
+    if (!user || !user.id) return;
+    let newEmoji = selectedEmoji;
+    while (newEmoji === selectedEmoji) {
+      newEmoji = EMOJI_OPTIONS[Math.floor(Math.random() * EMOJI_OPTIONS.length)];
+    }
+    await handleEmojiSelect(newEmoji);
   };
 
   return (
@@ -164,6 +203,16 @@ const Account = () => {
                 {emoji}
               </button>
             ))}
+            <button
+              type="button"
+              className="ml-2 px-4 py-3 rounded-full border-4 border-[#b2dfdb] bg-[#e0f7fa] text-2xl font-bold shadow-sm hover:bg-[#b2dfdb]/60 transition-all duration-150"
+              onClick={handleShuffleEmoji}
+              disabled={emojiSaving}
+              aria-label="Shuffle emoji"
+              title="Shuffle emoji"
+            >
+              🔀
+            </button>
           </div>
           {emojiSaving && <div className="text-xs text-gray-500 mt-2">{t('account.saving')}</div>}
           {/* Gender: informeel tonen of dropdown */}
@@ -201,6 +250,25 @@ const Account = () => {
                 {genderMsg && <div className="text-sm mt-2 text-green-700">{genderMsg}</div>}
               </div>
             )}
+          </div>
+          {/* Leeftijd veld */}
+          <div className="mt-8 mb-2 text-left">
+            <label htmlFor="age-input" className="block text-lg font-medium text-gray-700 mb-2">
+              {t('common.age')}
+            </label>
+            <input
+              id="age-input"
+              type="number"
+              min="0"
+              max="120"
+              className="input-field mt-1 w-full max-w-xs"
+              value={age}
+              onChange={handleAgeChange}
+              onBlur={handleAgeBlur}
+              disabled={ageSaving}
+              placeholder={t('common.age')}
+            />
+            {ageMsg && <div className="text-sm mt-2 text-green-700">{ageMsg}</div>}
           </div>
         </div>
       )}

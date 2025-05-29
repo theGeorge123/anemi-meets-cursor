@@ -415,21 +415,24 @@ const CreateMeetup = () => {
                         {t('common.remove')}
                       </button>
                     </div>
-                    <div className="space-y-2">
-                      {['morning', 'afternoon', 'evening'].map(time => (
-                        <label key={time} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={dateOpt?.times.includes(time) || false}
-                            onChange={() => handleTimeToggle(dateStr, time)}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                      {['morning', 'afternoon', 'evening'].map(time => {
+                        const isSelected = dateOpt?.times.includes(time) || false;
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            onClick={() => handleTimeToggle(dateStr, time)}
                             disabled={isTimeSlotPast(dateStr, time)}
-                            className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                          />
-                          <span className={`ml-2 ${isTimeSlotPast(dateStr, time) ? 'text-gray-400' : 'text-gray-700'}`}>
+                            className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150
+                              ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}
+                              ${isTimeSlotPast(dateStr, time) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            aria-pressed={isSelected}
+                          >
                             {t(`common.${time}`)}
-                          </span>
-                        </label>
-                      ))}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 );
