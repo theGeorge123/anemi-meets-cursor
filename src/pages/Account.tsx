@@ -44,7 +44,6 @@ const Account = () => {
       setUser(session.user);
       // Haal naam op uit user_metadata of profiel
       let name = session.user.user_metadata?.full_name;
-      let profileAge = null;
       if (!name) {
         const { data: profile } = await supabase.from('profiles').select('full_name, emoji, gender, age').eq('id', session.user.id).single();
         name = profile?.full_name;
