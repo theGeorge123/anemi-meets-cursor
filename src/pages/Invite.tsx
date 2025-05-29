@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
+import Confetti from 'react-confetti';
 
 type InvitationWithCafe = {
   selected_date: string;
@@ -120,6 +121,7 @@ const Invite = () => {
 
   return (
     <div className="max-w-2xl mx-auto text-center px-2 sm:px-4 py-6">
+      {inviteLink && <Confetti numberOfPieces={180} recycle={false} />}
       <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-4">
         {t('invite.titleStepCloser')} 🎉
       </h1>
@@ -146,7 +148,6 @@ const Invite = () => {
         <p className="text-gray-700 mb-4 text-base sm:text-lg">
           {t('invite.shareInstructions')}
         </p>
-        
         <div className="bg-white p-4 rounded-lg border border-primary-200 overflow-x-auto">
           <code className="text-primary-600 break-all text-sm sm:text-base">
             {inviteLink || '...'}

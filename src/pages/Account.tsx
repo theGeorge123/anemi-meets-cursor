@@ -10,6 +10,8 @@ const Account = () => {
   const [gender, setGender] = useState<string>('');
   const [genderSaving, setGenderSaving] = useState(false);
   const [genderMsg, setGenderMsg] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState('');
+  const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -21,6 +23,14 @@ const Account = () => {
     { value: 'wil_niet_zeggen', label: 'Wil ik niet zeggen' },
   ];
 
+  function generateRandomName() {
+    const adjectives = ['Blije', 'Snelle', 'Slimme', 'Vrolijke', 'Stoere', 'Lieve', 'Dappere', 'Grappige', 'Knappe', 'Zonnige'];
+    const animals = ['Panda', 'Leeuw', 'Uil', 'Vos', 'Olifant', 'Aap', 'Egel', 'Hond', 'Kat', 'Vogel'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const animal = animals[Math.floor(Math.random() * animals.length)];
+    return `${adj} ${animal}`;
+  }
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -29,19 +39,18 @@ const Account = () => {
         return;
       }
       setUser(session.user);
-      // Haal emoji en gender op uit profiel
-      const { data: profile } = await supabase.from('profiles').select('emoji, gender').eq('id', session.user.id).single();
-      if (!profile) {
-        // Profiel bestaat niet, maak aan
-        await supabase.from('profiles').insert({
-          id: session.user.id,
-          email: session.user.email,
-          full_name: session.user.user_metadata?.full_name || '',
-        });
-      } else {
-        if (profile.emoji) setSelectedEmoji(profile.emoji);
-        if (profile.gender) setGender(profile.gender);
+      // Haal naam op uit user_metadata of profiel
+      let name = session.user.user_metadata?.full_name;
+      if (!name) {
+        const { data: profile } = await supabase.from('profiles').select('full_name, emoji, gender').eq('id', session.user.id).single();
+        name = profile?.full_name;
+        if (profile?.emoji) setSelectedEmoji(profile.emoji);
+        if (profile?.gender) setGender(profile.gender);
       }
+      if (!name) {
+        name = generateRandomName();
+      }
+      setDisplayName(name);
     };
     getUser();
   }, [navigate]);
@@ -81,7 +90,8 @@ const Account = () => {
     if (error) {
       setGenderMsg('Opslaan mislukt: ' + error.message);
     } else {
-      setGenderMsg('Geslacht opgeslagen!');
+      setGenderMsg('Top! Je geslacht is opgeslagen.');
+      setShowGenderDropdown(false);
     }
     setGenderSaving(false);
   };
@@ -96,13 +106,14 @@ const Account = () => {
         <span className="text-6xl" role="img" aria-label="avatar">👤</span>
       </div>
       <div className="card bg-white/80 w-full mb-6 text-center">
-        <h1 className="text-2xl font-bold text-primary-600 mb-2">{t('common.createAccount')}</h1>
+        <h1 className="text-2xl font-bold text-primary-600 mb-2 flex items-center justify-center gap-2">
+          Hallo, {displayName}!
+        </h1>
         {user ? (
           <>
             <div className="text-lg text-gray-700 mb-2">{t('account.loggedInAs')}</div>
             <div className="text-xl font-semibold text-primary-700 mb-4 flex items-center justify-center gap-2">
-              {selectedEmoji && <span className="text-2xl">{selectedEmoji}</span>}
-              {user.email}
+              {displayName} {selectedEmoji}
             </div>
             <button onClick={handleLogout} className="btn-secondary w-full">{t('account.logout')}</button>
           </>
@@ -138,7 +149,7 @@ const Account = () => {
       {user && (
         <div className="bg-white/70 rounded-3xl p-6 shadow text-center mt-8 w-full border-2 border-[#ff914d]/40">
           <h2 className="text-2xl font-bold text-primary-700 mb-2 flex items-center justify-center gap-2">
-            <span role="img" aria-label="emoji">🎨</span> {t('account.emojiProfileTitle')}
+            {selectedEmoji}
           </h2>
           <p className="text-base text-gray-700 mb-4">{t('account.emojiProfileDesc')}</p>
           <div className="flex flex-wrap justify-center gap-2 mb-2">
@@ -155,24 +166,41 @@ const Account = () => {
             ))}
           </div>
           {emojiSaving && <div className="text-xs text-gray-500 mt-2">{t('account.saving')}</div>}
-          {/* Gender dropdown */}
+          {/* Gender: informeel tonen of dropdown */}
           <div className="mt-8 mb-2 text-left">
-            <label htmlFor="gender-select" className="block text-lg font-medium text-gray-700 mb-2">
-              Geslacht
-            </label>
-            <select
-              id="gender-select"
-              value={gender}
-              onChange={handleGenderChange}
-              className="input-field mt-1 w-full max-w-xs"
-              disabled={genderSaving}
-            >
-              <option value="">Selecteer...</option>
-              {GENDER_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            {genderMsg && <div className="text-sm mt-2 text-green-700">{genderMsg}</div>}
+            {gender && !showGenderDropdown ? (
+              <div className="flex flex-col gap-2">
+                <div className="text-lg font-medium text-gray-700">
+                  Jouw gekozen geslacht: <span className="font-bold text-primary-700">{GENDER_OPTIONS.find(opt => opt.value === gender)?.label || gender}</span> 🎉
+                </div>
+                <button
+                  type="button"
+                  className="btn-secondary w-fit px-4 py-1 text-sm"
+                  onClick={() => setShowGenderDropdown(true)}
+                >
+                  Toch wijzigen?
+                </button>
+              </div>
+            ) : (
+              <div>
+                <label htmlFor="gender-select" className="block text-lg font-medium text-gray-700 mb-2">
+                  Wat is je geslacht?
+                </label>
+                <select
+                  id="gender-select"
+                  value={gender}
+                  onChange={handleGenderChange}
+                  className="input-field mt-1 w-full max-w-xs"
+                  disabled={genderSaving}
+                >
+                  <option value="">Selecteer...</option>
+                  {GENDER_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                {genderMsg && <div className="text-sm mt-2 text-green-700">{genderMsg}</div>}
+              </div>
+            )}
           </div>
         </div>
       )}

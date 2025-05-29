@@ -32,6 +32,9 @@ const CreateMeetup = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const [user, setUser] = useState<any>(null);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -94,6 +97,15 @@ const CreateMeetup = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Check if user is logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+    };
+    checkSession();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -131,7 +143,7 @@ const CreateMeetup = () => {
     const selected_time = firstDateOpt.times[0];
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
 
-    const payload = {
+    const payload: any = {
       token,
       invitee_name: formData.name,
       status: "pending",
@@ -140,6 +152,9 @@ const CreateMeetup = () => {
       cafe_id: selectedCafe.id,
       date_time_options: filteredDateTimeOptions
     };
+    if (!user) {
+      payload.email_b = email;
+    }
 
     try {
       const { data: insertData, error: insertError } = await supabase
@@ -309,6 +324,21 @@ const CreateMeetup = () => {
               className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4"
               placeholder={t('common.name')}
             />
+            {/* Email for non-logged-in users */}
+            {!user && (
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">{t('common.email')}</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder={t('common.email')}
+                  required
+                />
+                {emailError && <div className="text-red-500 text-sm mt-1">{emailError}</div>}
+              </div>
+            )}
             <label className="block text-gray-700 mb-2">
               {t('createMeetup.chooseCityLabel')}
             </label>
@@ -328,8 +358,19 @@ const CreateMeetup = () => {
             </div>
           </div>
           <button
-            onClick={() => setStep(2)}
-            disabled={!formData.city || !formData.name}
+            onClick={() => {
+              // Basic email validation for non-logged-in users
+              if (!user) {
+                if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                  setEmailError('Vul een geldig e-mailadres in.');
+                  return;
+                } else {
+                  setEmailError('');
+                }
+              }
+              setStep(2);
+            }}
+            disabled={!formData.city || !formData.name || (!user && !email)}
             className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           >
             {t('common.continue')}
@@ -473,7 +514,8 @@ const CreateMeetup = () => {
         </div>
       )}
 
-      {showConfetti && (
+      {/* Show confetti only during redirect, not on confirmation page */}
+      {showConfetti && step !== 3 && (
         <div className="fixed inset-0 pointer-events-none z-50">
           <Confetti
             width={windowSize.width}

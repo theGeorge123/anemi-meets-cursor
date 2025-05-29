@@ -11,8 +11,15 @@ Deno.serve(async (req) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+        "Access-Control-Allow-Headers": "Content-Type"
       }
+    });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Only POST requests allowed." }), {
+      status: 405,
+      headers: { "Access-Control-Allow-Origin": "*" }
     });
   }
 
@@ -25,10 +32,8 @@ Deno.serve(async (req) => {
       throw new Error("Missing environment variables.");
     }
 
-    const reqBody = await req.json();
-    const lang = reqBody.lang || "nl";
+    const { token, email_b, selected_date, selected_time, lang = "nl" } = await req.json();
     const isEnglish = lang === "en";
-    const { token, email_b, selected_date, selected_time } = reqBody;
     if (!token || !email_b || !selected_date || !selected_time) {
       throw new Error("Missing required fields.");
     }
@@ -37,12 +42,7 @@ Deno.serve(async (req) => {
 
     const { data: invitation, error } = await supabase
       .from("invitations")
-      .update({
-        email_b,
-        selected_date,
-        selected_time,
-        status: "accepted"
-      })
+      .update({ email_b, selected_date, selected_time, status: "accepted" })
       .eq("token", token)
       .neq("status", "accepted")
       .select()
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     if (error || !invitation) throw new Error(error?.message || "Could not update invitation.");
 
     const { email_a, cafe_id } = invitation;
-    if (!email_a || !cafe_id) throw new Error("Missing email or cafe_id");
+    if (!email_a || !cafe_id) throw new Error("Missing email_a or cafe_id.");
 
     const { data: cafe, error: cafeError } = await supabase
       .from("cafes")
@@ -59,84 +59,44 @@ Deno.serve(async (req) => {
       .eq("id", cafe_id)
       .single();
 
-    if (cafeError || !cafe) throw new Error("Café niet gevonden.");
+    if (cafeError || !cafe) throw new Error("Cafe not found.");
 
     const slots = {
       morning: ["T090000", "T120000"],
       afternoon: ["T120000", "T170000"],
       evening: ["T170000", "T210000"]
     };
-    const readableTimes = isEnglish
-      ? {
-          morning: "09:00 – 12:00",
-          afternoon: "12:00 – 17:00",
-          evening: "17:00 – 21:00"
-        }
-      : {
-          morning: "09:00 – 12:00",
-          afternoon: "12:00 – 17:00",
-          evening: "17:00 – 21:00"
-        };
-    const safeTime = selected_time.toLowerCase();
-    if (!slots[safeTime]) console.warn("Unexpected time slot:", safeTime);
-    const [dtStart, dtEnd] = slots[safeTime] || ["T090000", "T120000"];
-    const readableTime = readableTimes[safeTime] || (isEnglish ? "Unknown" : "Onbekend");
+    const readable = {
+      morning: "09:00 – 12:00",
+      afternoon: "12:00 – 17:00",
+      evening: "17:00 – 21:00"
+    };
 
+    const slot = selected_time.toLowerCase();
+    const [dtStart, dtEnd] = slots[slot] || slots["morning"];
+    const readableTime = readable[slot] || readable["morning"];
     const datePart = selected_date.replace(/-/g, "");
     const uid = crypto.randomUUID();
-    const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-
-    const icsSummary = isEnglish
-      ? `Coffee Meetup with ${email_a.split('@')[0]}`
-      : `Koffie Meetup met ${email_a.split('@')[0]}`;
-    const icsDescription = isEnglish
-      ? `Your coffee meetup is confirmed via Anemi Meets!`
-      : `Jullie koffie-afspraak via Anemi Meets!`;
+    const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
     const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}00Z\nDTEND:${datePart}${dtEnd}00Z\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
 
-    const title = encodeURIComponent(isEnglish ? "Coffee Meetup via Anemi" : "Koffie Meetup via Anemi");
-    const description = encodeURIComponent(isEnglish ? "Your meetup is confirmed!" : "Jullie afspraak is bevestigd!");
-    const location = encodeURIComponent(`${cafe.name} ${cafe.address}`);
-    const start = `${datePart}${dtStart}00Z`;
-    const end = `${datePart}${dtEnd}00Z`;
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cafe.name} ${cafe.address}`)}`;
-    const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
     const cafeImageUrl = cafe.image_url || `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
+    const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("Koffie Meetup via Anemi")}&dates=${datePart}${dtStart}00Z/${datePart}${dtEnd}00Z&location=${encodeURIComponent(`${cafe.name} ${cafe.address}`)}`;
 
     const nameA = email_a.split('@')[0];
     const subject = isEnglish
       ? `☕️ ${nameA} just booked coffee with you!`
       : `☕️ ${nameA} heeft een koffie-date gepland!`;
-    const html = isEnglish
-      ? `
-<h2>☕️ Yes! Your coffee meetup is set!</h2>
-<img src="${cafeImageUrl}" alt="Café image" width="100%" style="max-width:600px;border-radius:12px;margin-bottom:16px;" />
-<p>Hey legends!<br>
-You just planned a coffee meetup at <b>${cafe.name}</b>.<br>
-<b>Address:</b> ${cafe.address}<br>
-<b>Date:</b> ${selected_date}<br>
-<b>Time:</b> ${readableTime}</p>
-<p>Add it to your calendar below, and remember: first round is for the fastest 😉</p>
-<p>🗓️ <a href="${gcalUrl}" target="_blank">➕ Add to Google Calendar</a><br>
-📎 Or use the attachment below for Apple or Outlook (.ics)</p>
-<p style="margin-top:24px;">See you soon!<br><span style="font-size:1.2em;">– The Anemi Meets Team</span></p>
-`
-      : `
-<h2>☕️ Yes! Jullie koffie-date staat!</h2>
-<img src="${cafeImageUrl}" alt="Café foto" width="100%" style="max-width:600px;border-radius:12px;margin-bottom:16px;" />
-<p>Hey toppers!<br>
-Jullie hebben zojuist samen een koffie-afspraak gepland bij <b>${cafe.name}</b>.<br>
-<b>Adres:</b> ${cafe.address}<br>
-<b>Wanneer:</b> ${selected_date} om ${readableTime}</p>
-<p>Voeg het meteen toe aan je agenda (zie hieronder) en vergeet niet: de eerste ronde is voor de snelste 😉</p>
-<p>🗓️ <a href="${gcalUrl}" target="_blank">➕ Voeg toe aan Google Calendar</a><br>
-📎 Of gebruik de bijlage hieronder voor Apple of Outlook (.ics)</p>
-<p style="margin-top:24px;">Tot snel!<br><span style="font-size:1.2em;">– Het Anemi Meets team</span></p>
-`;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const html = `
+      <h2>${isEnglish ? "☕️ Yes! Your coffee meetup is set!" : "☕️ Yes! Jullie koffie-date staat!"}</h2>
+      <img src="${cafeImageUrl}" alt="Cafe" width="100%" style="max-width:600px;border-radius:12px;" />
+      <p>${isEnglish ? "Hey legends!" : "Hey toppers!"}<br>
+      ${isEnglish ? "You're meeting at" : "Jullie hebben afgesproken bij"} <b>${cafe.name}</b>.<br>
+      <b>${isEnglish ? "Address" : "Adres"}:</b> ${cafe.address}<br>
+      <b>${isEnglish ? "Time" : "Tijd"}:</b> ${readableTime} on ${selected_date}</p>
+      <p><a href="${gcalUrl}" target="_blank">➕ ${isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"}</a></p>`;
 
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -149,27 +109,17 @@ Jullie hebben zojuist samen een koffie-afspraak gepland bij <b>${cafe.name}</b>.
         to: [email_a, email_b],
         subject,
         html,
-        attachments: [
-          {
-            filename: "meeting.ics",
-            content: encodeBase64(ics),
-            type: "text/calendar"
-          }
-        ]
-      }),
-      signal: controller.signal
-    }).catch(err => {
-      throw new Error("Resend timeout or error: " + err.message);
+        attachments: [{
+          filename: "meeting.ics",
+          content: encodeBase64(ics),
+          type: "text/calendar"
+        }]
+      })
     });
 
-    clearTimeout(timeout);
+    if (!emailRes.ok) throw new Error("Email not sent: " + (await emailRes.text()));
 
-    if (!emailRes.ok) {
-      const text = await emailRes.text();
-      throw new Error("Resend error: " + text);
-    }
-
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true,
       cafe_name: cafe.name,
       cafe_address: cafe.address,
@@ -178,17 +128,14 @@ Jullie hebben zojuist samen een koffie-afspraak gepland bij <b>${cafe.name}</b>.
       selected_time
     }), {
       status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*"
-      }
+      headers: { "Access-Control-Allow-Origin": "*" }
     });
+
   } catch (e) {
     console.error("Function error:", e.message);
     return new Response(JSON.stringify({ error: e.message }), {
       status: 400,
-      headers: {
-        "Access-Control-Allow-Origin": "*"
-      }
+      headers: { "Access-Control-Allow-Origin": "*" }
     });
   }
 });

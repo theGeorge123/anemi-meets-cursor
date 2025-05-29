@@ -42,9 +42,9 @@ const Respond = () => {
       setInvitation(invitation);
       // Haal cafe details op via cafe_id
       if (invitation.cafe_id) {
-        const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address').eq('id', invitation.cafe_id).single();
+        const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address, image_url').eq('id', invitation.cafe_id).single();
         if (!cafeError && cafeData) {
-          setCafe({ name: cafeData.name, address: cafeData.address });
+          setCafe({ name: cafeData.name, address: cafeData.address, image_url: cafeData.image_url });
         } else {
           setCafe(null);
         }
@@ -118,18 +118,29 @@ const Respond = () => {
       localStorage.removeItem(UPDATES_EMAIL_KEY);
     }
     try {
+      const body: any = {
+        token: invitation.token,
+        email_b: formData.email,
+        selected_date: datePart,
+        selected_time: timePart
+      };
+      if (invitation.cafe_id) {
+        body.cafe_id = invitation.cafe_id;
+      }
+      const authKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      console.log('DEBUG: VITE_SUPABASE_ANON_KEY:', authKey);
+      console.log('DEBUG: fetch headers:', {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authKey}`
+      });
+      console.log('DEBUG: fetch body:', body);
       const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/functions/v1/send-meeting-confirmation", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          "Authorization": `Bearer ${authKey}`
         },
-        body: JSON.stringify({
-          token: invitation.token,
-          email_b: formData.email,
-          selected_date: datePart,
-          selected_time: timePart
-        })
+        body: JSON.stringify(body)
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -194,13 +205,22 @@ const Respond = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
-      {cafe && (
-        <div className="card bg-primary-50 mb-6">
-          <h2 className="text-xl font-semibold text-primary-600">{t('common.cafe')}</h2>
-          <p className="text-gray-700 font-medium">{cafe.name}</p>
-          <p className="text-gray-500">{cafe.address}</p>
-        </div>
-      )}
+      <div className="card bg-primary-50 mb-6">
+        <h2 className="text-xl font-semibold text-primary-600">{t('common.cafe')}</h2>
+        {cafe && cafe.image_url && (
+          <img src={cafe.image_url} alt={cafe.name} className="w-full h-40 object-cover rounded-lg mb-2" />
+        )}
+        {cafe && cafe.name ? (
+          <>
+            <p className="text-gray-700 font-medium">{cafe.name}</p>
+            {cafe.address && <p className="text-gray-500">{cafe.address}</p>}
+          </>
+        ) : invitation && invitation.cafe_id ? (
+          <p className="text-gray-700 font-medium">ID: {invitation.cafe_id}</p>
+        ) : (
+          <p className="text-gray-500">{t('invite.cafeInfoPending')}</p>
+        )}
+      </div>
       <h1 className="text-3xl font-bold text-primary-600 mb-2">
         {t('respond.title')}
       </h1>
