@@ -57,11 +57,17 @@ const CreateMeetup = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Prefill name if logged in
+  // Prefill name if logged in (prefer user_metadata, fallback to profiles)
   useEffect(() => {
     const fetchProfileName = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
+        const metaName = session.user.user_metadata?.full_name;
+        if (metaName && !formData.name) {
+          setFormData(prev => ({ ...prev, name: metaName }));
+          return;
+        }
+        // Fallback: try profiles table
         const { data: profile } = await supabase
           .from('profiles')
           .select('full_name')

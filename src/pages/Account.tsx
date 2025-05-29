@@ -31,8 +31,17 @@ const Account = () => {
       setUser(session.user);
       // Haal emoji en gender op uit profiel
       const { data: profile } = await supabase.from('profiles').select('emoji, gender').eq('id', session.user.id).single();
-      if (profile && profile.emoji) setSelectedEmoji(profile.emoji);
-      if (profile && profile.gender) setGender(profile.gender);
+      if (!profile) {
+        // Profiel bestaat niet, maak aan
+        await supabase.from('profiles').insert({
+          id: session.user.id,
+          email: session.user.email,
+          full_name: session.user.user_metadata?.full_name || '',
+        });
+      } else {
+        if (profile.emoji) setSelectedEmoji(profile.emoji);
+        if (profile.gender) setGender(profile.gender);
+      }
     };
     getUser();
   }, [navigate]);
