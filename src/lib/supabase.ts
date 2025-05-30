@@ -8,8 +8,6 @@ import {
   isCommunityMember,
   isMessage,
   isNotification,
-  isArrayOf,
-  isPaginatedResponse,
   validateResponse,
 } from '../utils/typeGuards';
 

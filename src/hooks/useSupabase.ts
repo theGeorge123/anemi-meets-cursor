@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Database } from '../types/supabase';
 import {
-  supabase,
   getRecord,
   getRecords,
   createRecord,

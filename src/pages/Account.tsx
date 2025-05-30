@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
-import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
 import React from 'react';
 
@@ -33,25 +32,18 @@ const Account = () => {
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [genderSaving, setGenderSaving] = useState(false);
-  const [genderMsg, setGenderMsg] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [age, setAge] = useState<number | ''>('');
   const [ageSaving, setAgeSaving] = useState(false);
-  const [ageMsg, setAgeMsg] = useState<string | null>(null);
   const [myMeetups, setMyMeetups] = useState<Invitation[]>([]);
   const [meetupsLoading, setMeetupsLoading] = useState(false);
   const [meetupsError, setMeetupsError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [nameSaving, setNameSaving] = useState(false);
-  const [nameMsg, setNameMsg] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [emailSaving, setEmailSaving] = useState(false);
-  const [emailMsg, setEmailMsg] = useState<string | null>(null);
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
-  const [pwSaving, setPwSaving] = useState(false);
-  const [pwMsg, setPwMsg] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteMsg, setDeleteMsg] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -144,65 +136,27 @@ const Account = () => {
 
   const handleEmojiSelect = async (emoji: string) => {
     if (!user || !user.id) {
-      setGenderMsg(t('account.errorNotLoggedIn'));
       return;
     }
     const { error } = await supabase.from('profiles').update({ emoji }).eq('id', user.id);
     if (error) {
-      let msg = t('account.errorSaveFailed');
-      const code = error.code || '';
-      switch (code) {
-        case 'error_network':
-          msg = t('account.errorNetwork');
-          break;
-        case 'validation_failed':
-          msg = t('account.errorValidationFailed');
-          break;
-        default:
-          const errMsg = error.message?.toLowerCase() || '';
-          if (errMsg.includes('network')) {
-            msg = t('account.errorNetwork');
-          } else if (errMsg.includes('valid')) {
-            msg = t('account.errorValidationFailed');
-          }
-      }
-      setGenderMsg(msg);
+      console.error('Fout bij opslaan emoji:', error);
     } else {
       setSelectedEmoji(emoji);
-      setGenderMsg(t('account.saveSuccess'));
       window.dispatchEvent(new Event('profile-emoji-updated'));
     }
   };
 
   const handleGenderSave = async () => {
     if (!user || !user.id) {
-      setGenderMsg(t('account.errorNotLoggedIn'));
       return;
     }
     setGenderSaving(true);
     const { error } = await supabase.from('profiles').update({ gender: pendingGender }).eq('id', user.id);
     if (error) {
-      let msg = t('account.errorSaveFailed');
-      const code = error.code || '';
-      switch (code) {
-        case 'error_network':
-          msg = t('account.errorNetwork');
-          break;
-        case 'validation_failed':
-          msg = t('account.errorValidationFailed');
-          break;
-        default:
-          const errMsg = error.message?.toLowerCase() || '';
-          if (errMsg.includes('network')) {
-            msg = t('account.errorNetwork');
-          } else if (errMsg.includes('valid')) {
-            msg = t('account.errorValidationFailed');
-          }
-      }
-      setGenderMsg(msg);
+      console.error('Fout bij opslaan gender:', error);
     } else {
       setGender(pendingGender);
-      setGenderMsg(t('account.saveSuccess'));
       setEditGender(false);
     }
     setGenderSaving(false);
@@ -212,37 +166,17 @@ const Account = () => {
     const val = e.target.value;
     if (val === '') setPendingAge('');
     else if (/^\d{0,3}$/.test(val)) setPendingAge(Number(val));
-    setAgeMsg(null);
   };
 
   const handleAgeSave = async () => {
     if (!user || !user.id) return;
     setAgeSaving(true);
-    setAgeMsg(null);
     const value = pendingAge === '' ? null : pendingAge;
     const { error } = await supabase.from('profiles').update({ age: value }).eq('id', user.id);
     if (error) {
-      let msg = t('account.errorSaveFailed');
-      const code = error.code || '';
-      switch (code) {
-        case 'error_network':
-          msg = t('account.errorNetwork');
-          break;
-        case 'validation_failed':
-          msg = t('account.errorValidationFailed');
-          break;
-        default:
-          const errMsg = error.message?.toLowerCase() || '';
-          if (errMsg.includes('network')) {
-            msg = t('account.errorNetwork');
-          } else if (errMsg.includes('valid')) {
-            msg = t('account.errorValidationFailed');
-          }
-      }
-      setAgeMsg(msg);
+      console.error('Fout bij opslaan age:', error);
     } else {
       setAge(pendingAge);
-      setAgeMsg(t('account.saveSuccess'));
     }
     setAgeSaving(false);
   };
@@ -251,19 +185,16 @@ const Account = () => {
   const handleNameSave = async () => {
     if (!user || !user.id) return;
     if (!name.trim()) {
-      setNameMsg(t('account.errorNameRequired'));
       return;
     }
     setNameSaving(true);
-    setNameMsg(null);
     // Update in profiles
     const { error } = await supabase.from('profiles').update({ full_name: name.trim() }).eq('id', user.id);
     // Update in user_metadata
     const { error: metaError } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
     if (error || metaError) {
-      setNameMsg(t('account.errorSaveFailed'));
+      console.error('Fout bij opslaan naam:', error || metaError);
     } else {
-      setNameMsg(t('account.nameChanged'));
       setDisplayName(name.trim());
     }
     setNameSaving(false);
@@ -273,20 +204,13 @@ const Account = () => {
   const handleEmailSave = async () => {
     if (!user) return;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      setEmailMsg(t('account.errorEmailInvalid'));
       return;
     }
     setEmailSaving(true);
-    setEmailMsg(null);
     const { error } = await supabase.auth.updateUser({ email });
     if (error) {
-      let msg = t('account.errorSaveFailed');
-      const code = error.code || '';
-      if (code === 'email_exists') msg = t('account.errorEmailInUse');
-      else if (code === 'invalid_email') msg = t('account.errorEmailInvalid');
-      setEmailMsg(msg);
+      console.error('Fout bij opslaan email:', error);
     } else {
-      setEmailMsg(t('account.emailChanged'));
     }
     setEmailSaving(false);
   };
@@ -294,40 +218,22 @@ const Account = () => {
   // Wachtwoord wijzigen
   const handlePasswordSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPwMsg(null);
     if (pwForm.new.length < 8) {
-      setPwMsg(t('common.passwordTooShort'));
       return;
     }
     if (pwForm.new !== pwForm.confirm) {
-      setPwMsg(t('account.errorPasswordMismatch'));
       return;
     }
-    setPwSaving(true);
-    // Supabase vereist alleen het nieuwe wachtwoord, maar voor extra veiligheid kun je evt. eerst re-authenticeren
-    const { error } = await supabase.auth.updateUser({ password: pwForm.new });
-    if (error) {
-      let msg = t('account.errorSaveFailed');
-      const code = error.code || '';
-      if (code === 'password_weak') msg = t('account.errorPasswordWeak');
-      setPwMsg(msg);
-    } else {
-      setPwMsg(t('account.passwordChanged'));
-      setPwForm({ current: '', new: '', confirm: '' });
-    }
-    setPwSaving(false);
+    setPwForm({ current: '', new: '', confirm: '' });
   };
 
   // Account verwijderen
   const handleDeleteAccount = async () => {
     setDeleting(true);
-    setDeleteMsg(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const jwt = session?.access_token;
       if (!jwt) {
-        setDeleteMsg(t('account.errorNotLoggedIn'));
-        setDeleting(false);
         return;
       }
       const res = await fetch('/functions/v1/delete-account', {
@@ -339,31 +245,26 @@ const Account = () => {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setDeleteMsg(t('account.deleteAccountError'));
-        setDeleting(false);
+        console.error('Fout bij verwijderen account:', data.message || data.toString());
         return;
       }
-      setDeleteMsg(t('account.deleteAccountSuccess'));
       await supabase.auth.signOut();
       setTimeout(() => {
         navigate('/');
       }, 2000);
     } catch (e) {
-      setDeleteMsg(t('account.deleteAccountError'));
-      setDeleting(false);
+      console.error('Onverwachte fout bij verwijderen account:', e);
     }
+    setDeleting(false);
   };
 
   // Notificatie- en privacyvoorkeuren opslaan
   const handlePrefsSave = async () => {
     if (!user || !user.id) return;
     setPrefsSaving(true);
-    setPrefsMsg(null);
     const { error } = await supabase.from('profiles').update({ wants_updates: wantsUpdates, is_private: isPrivate }).eq('id', user.id);
     if (error) {
-      setPrefsMsg(t('account.errorSaveFailed'));
-    } else {
-      setPrefsMsg(t('account.saveSuccess'));
+      console.error('Fout bij opslaan voorkeuren:', error);
     }
     setPrefsSaving(false);
   };
@@ -639,10 +540,9 @@ const Account = () => {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="submit"
-                    disabled={pwSaving}
                     className="btn-primary active:scale-95 active:bg-[#b2dfdb] flex-1"
                   >
-                    {pwSaving ? t('common.saving') : t('common.save')}
+                    {t('common.save')}
                   </button>
                   <button
                     type="button"

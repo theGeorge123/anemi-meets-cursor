@@ -66,7 +66,6 @@ const CreateMeetup = () => {
   });
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successSummary, setSuccessSummary] = useState<{date: string, time: string, cafe: string} | null>(null);
@@ -82,7 +81,7 @@ const CreateMeetup = () => {
       }),
   });
 
-  const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, watch, setValue, trigger } = useForm({
+  const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, setValue, trigger } = useForm({
     mode: 'onChange',
     resolver: yupResolver(contactSchema),
     defaultValues: {
