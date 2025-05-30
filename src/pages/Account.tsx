@@ -28,12 +28,10 @@ interface Invitation {
 const Account = () => {
   const [user, setUser] = useState<Profile | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
-  const [emojiSaving, setEmojiSaving] = useState(false);
   const [gender, setGender] = useState<string>('');
   const [genderSaving, setGenderSaving] = useState(false);
   const [genderMsg, setGenderMsg] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState('');
-  const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [age, setAge] = useState<number | ''>('');
   const [ageSaving, setAgeSaving] = useState(false);
   const [ageMsg, setAgeMsg] = useState<string | null>(null);
@@ -130,7 +128,6 @@ const Account = () => {
       setGenderMsg(t('account.errorNotLoggedIn'));
       return;
     }
-    setEmojiSaving(true);
     const { error } = await supabase.from('profiles').update({ emoji }).eq('id', user.id);
     if (error) {
       let msg = t('account.errorSaveFailed');
@@ -156,7 +153,6 @@ const Account = () => {
       setGenderMsg(t('account.saveSuccess'));
       window.dispatchEvent(new Event('profile-emoji-updated'));
     }
-    setEmojiSaving(false);
   };
 
   const handleGenderSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -193,7 +189,7 @@ const Account = () => {
     } else {
       setGender(pendingGender);
       setGenderMsg(t('account.saveSuccess'));
-      setShowGenderDropdown(false);
+      setEditGender(false);
     }
     setGenderSaving(false);
   };
