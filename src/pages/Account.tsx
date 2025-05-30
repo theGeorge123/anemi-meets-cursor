@@ -155,11 +155,6 @@ const Account = () => {
     }
   };
 
-  const handleGenderSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPendingGender(e.target.value);
-    setGenderMsg(null);
-  };
-
   const handleGenderSave = async () => {
     if (!user || !user.id) {
       setGenderMsg(t('account.errorNotLoggedIn'));
@@ -231,16 +226,6 @@ const Account = () => {
       setAgeMsg(t('account.saveSuccess'));
     }
     setAgeSaving(false);
-  };
-
-  // Shuffle emoji
-  const handleShuffleEmoji = async () => {
-    if (!user || !user.id) return;
-    let newEmoji = selectedEmoji;
-    while (newEmoji === selectedEmoji) {
-      newEmoji = EMOJI_OPTIONS[Math.floor(Math.random() * EMOJI_OPTIONS.length)];
-    }
-    await handleEmojiSelect(newEmoji);
   };
 
   // Profielnaam wijzigen
@@ -591,7 +576,8 @@ const Account = () => {
       <div className="bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-4 border border-[#b2dfdb]/30">
         <h2 className="text-xl font-bold text-primary-700 mb-2 flex items-center gap-2">☕️ {t('account.myMeetups').toLowerCase()}</h2>
         {meetupsLoading && <div className="text-gray-500 flex items-center gap-2"><span className="animate-spin w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span> {t('common.loading').toLowerCase()}</div>}
-        {myMeetups.length === 0 && !meetupsLoading && (
+        {meetupsError && <div className="text-red-600 text-center">{meetupsError}</div>}
+        {myMeetups.length === 0 && !meetupsLoading && !meetupsError && (
           <div className="text-gray-600 text-center">{t('dashboard.noMeetups').toLowerCase() || 'Nog geen meetups gepland. Waarom niet?'}</div>
         )}
         <ul className="space-y-3">
