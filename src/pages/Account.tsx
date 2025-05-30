@@ -80,15 +80,16 @@ const Account = () => {
         return;
       }
       // Haal profiel op
-      const { data: profile } = await supabase.from('profiles').select('id, full_name, email, emoji, gender, age, wants_updates, is_private').eq('id', session.user.id).single<Profile>();
-      if (profile) {
-        setUser(profile);
-        setDisplayName(profile.full_name || generateRandomName());
-        if (profile.emoji) setSelectedEmoji(profile.emoji);
-        if (profile.gender) setGender(profile.gender);
-        if (profile.age !== undefined && profile.age !== null) setAge(profile.age);
-        setWantsUpdates(!!profile.wants_updates);
-        setIsPrivate(!!profile.is_private);
+      const { data: testProfiles, error: testProfilesError } = await supabase.from('profiles').select('*').limit(1);
+      console.log('TEST PROFILES:', testProfiles, testProfilesError);
+      if (testProfiles) {
+        setUser(testProfiles[0] as Profile);
+        setDisplayName(testProfiles[0].full_name || generateRandomName());
+        if (testProfiles[0].emoji) setSelectedEmoji(testProfiles[0].emoji);
+        if (testProfiles[0].gender) setGender(testProfiles[0].gender);
+        if (testProfiles[0].age !== undefined && testProfiles[0].age !== null) setAge(testProfiles[0].age);
+        setWantsUpdates(!!testProfiles[0].wants_updates);
+        setIsPrivate(!!testProfiles[0].is_private);
       } else {
         setUser(null);
         setDisplayName(generateRandomName());
