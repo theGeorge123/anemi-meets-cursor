@@ -60,14 +60,6 @@ const Account = () => {
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
   const genderOptions = t('common.genderOptions', { returnObjects: true }) as { value: string, label: string }[];
 
-  function generateRandomName() {
-    const adjectives = ['Blije', 'Snelle', 'Slimme', 'Vrolijke', 'Stoere', 'Lieve', 'Dappere', 'Grappige', 'Knappe', 'Zonnige'];
-    const animals = ['Panda', 'Leeuw', 'Uil', 'Vos', 'Olifant', 'Aap', 'Egel', 'Hond', 'Kat', 'Vogel'];
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const animal = animals[Math.floor(Math.random() * animals.length)];
-    return `${adj} ${animal}`;
-  }
-
   useEffect(() => {
     const getUser = async () => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
