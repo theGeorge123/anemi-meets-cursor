@@ -354,6 +354,23 @@ const Account = () => {
       {/* Profile Card */}
       <div className="bg-gradient-to-br from-[#fff7f3] to-[#b2dfdb]/30 rounded-3xl shadow-xl p-8 flex flex-col items-center gap-2 border border-[#ff914d]/20">
         <div className="text-6xl mb-2">{selectedEmoji || '👤'}</div>
+        {/* Emoji Picker */}
+        <div className="flex flex-col items-center mb-2">
+          <span className="text-xs text-gray-500 mb-1">kies je emoji</span>
+          <div className="flex gap-1 flex-wrap justify-center">
+            {EMOJI_OPTIONS.map(emoji => (
+              <button
+                key={emoji}
+                className={`text-2xl px-1 py-0.5 rounded-lg border-2 transition-all ${selectedEmoji === emoji ? 'border-[#ff914d] bg-[#fff7f3]' : 'border-transparent hover:border-[#b2dfdb]'}`}
+                onClick={() => handleEmojiSelect(emoji)}
+                aria-label={`emoji ${emoji}`}
+                type="button"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="text-2xl font-bold text-primary-700 flex items-center gap-2">{displayName}</div>
         <div className="text-base text-gray-600 mb-2">{email}</div>
         <button
