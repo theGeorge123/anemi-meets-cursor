@@ -52,6 +52,8 @@ const Account = () => {
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [pendingGender, setPendingGender] = useState<string>('');
+  const [pendingAge, setPendingAge] = useState<number | ''>('');
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
   const genderOptions = t('common.genderOptions', { returnObjects: true }) as { value: string, label: string }[];
@@ -100,6 +102,8 @@ const Account = () => {
       setMeetupsLoading(false);
     };
     getUser();
+    setPendingGender(gender);
+    setPendingAge(age);
   }, [navigate]);
 
   const handleLogout = async () => {
@@ -141,17 +145,18 @@ const Account = () => {
     setEmojiSaving(false);
   };
 
-  const handleGenderChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newGender = e.target.value;
-    setGender(newGender);
-    setGenderSaving(true);
+  const handleGenderSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPendingGender(e.target.value);
     setGenderMsg(null);
+  };
+
+  const handleGenderSave = async () => {
     if (!user || !user.id) {
       setGenderMsg(t('account.errorNotLoggedIn'));
-      setGenderSaving(false);
       return;
     }
-    const { error } = await supabase.from('profiles').update({ gender: newGender }).eq('id', user.id);
+    setGenderSaving(true);
+    const { error } = await supabase.from('profiles').update({ gender: pendingGender }).eq('id', user.id);
     if (error) {
       let msg = t('account.errorSaveFailed');
       const code = error.code || '';
@@ -172,23 +177,25 @@ const Account = () => {
       }
       setGenderMsg(msg);
     } else {
+      setGender(pendingGender);
       setGenderMsg(t('account.saveSuccess'));
       setShowGenderDropdown(false);
     }
     setGenderSaving(false);
   };
 
-  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAgeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    if (val === '') setAge('');
-    else if (/^\d{0,3}$/.test(val)) setAge(Number(val));
+    if (val === '') setPendingAge('');
+    else if (/^\d{0,3}$/.test(val)) setPendingAge(Number(val));
+    setAgeMsg(null);
   };
 
-  const handleAgeBlur = async () => {
+  const handleAgeSave = async () => {
     if (!user || !user.id) return;
     setAgeSaving(true);
     setAgeMsg(null);
-    const value = age === '' ? null : age;
+    const value = pendingAge === '' ? null : pendingAge;
     const { error } = await supabase.from('profiles').update({ age: value }).eq('id', user.id);
     if (error) {
       let msg = t('account.errorSaveFailed');
@@ -210,6 +217,7 @@ const Account = () => {
       }
       setAgeMsg(msg);
     } else {
+      setAge(pendingAge);
       setAgeMsg(t('account.saveSuccess'));
     }
     setAgeSaving(false);
@@ -528,8 +536,8 @@ const Account = () => {
                 </label>
                 <select
                   id="gender-select"
-                  value={gender}
-                  onChange={handleGenderChange}
+                  value={pendingGender}
+                  onChange={handleGenderSelect}
                   className="input-field mt-1 w-full max-w-xs"
                   disabled={genderSaving}
                 >
@@ -538,7 +546,17 @@ const Account = () => {
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
-                {genderSaving && <div className="text-xs text-gray-500 mt-2">{t('common.loading')}</div>}
+                <button
+                  className="btn-secondary mt-2 flex items-center justify-center"
+                  type="button"
+                  onClick={handleGenderSave}
+                  disabled={genderSaving || pendingGender === gender}
+                >
+                  {genderSaving ? (
+                    <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
+                  ) : null}
+                  {genderSaving ? t('common.loading') : t('account.save')}
+                </button>
                 {genderMsg && <div className="text-sm mt-2 text-green-700">{genderMsg}</div>}
               </div>
             )}
@@ -554,13 +572,22 @@ const Account = () => {
               min="0"
               max="120"
               className="input-field mt-1 w-full max-w-xs"
-              value={age}
-              onChange={handleAgeChange}
-              onBlur={handleAgeBlur}
+              value={pendingAge}
+              onChange={handleAgeInput}
               disabled={ageSaving}
               placeholder={t('common.age')}
             />
-            {ageSaving && <div className="text-xs text-gray-500 mt-2">{t('common.loading')}</div>}
+            <button
+              className="btn-secondary mt-2 flex items-center justify-center"
+              type="button"
+              onClick={handleAgeSave}
+              disabled={ageSaving || pendingAge === age}
+            >
+              {ageSaving ? (
+                <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
+              ) : null}
+              {ageSaving ? t('common.loading') : t('account.save')}
+            </button>
             {ageMsg && <div className="text-sm mt-2 text-green-700">{ageMsg}</div>}
           </div>
           {/* Meetups lijst */}

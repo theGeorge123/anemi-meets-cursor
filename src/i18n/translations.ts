@@ -121,6 +121,7 @@ export const translations = {
       deleteAccountSuccess: 'Your account has been deleted.',
       deleteAccountError: 'Failed to delete account. Please try again.',
       deleteAccountCancel: 'Cancel',
+      sessionExpiresSoon: 'Your session will expire soon. Please save your work and log in again.',
     },
     home: {
       mission: 'Help people easily coordinate real-life meetings in a relaxing, low-friction way.',
@@ -258,6 +259,7 @@ export const translations = {
       deleteAccountSuccess: 'Your account has been deleted.',
       deleteAccountError: 'Failed to delete account. Please try again.',
       deleteAccountCancel: 'Cancel',
+      sessionExpiresSoon: 'Your session will expire soon. Please save your work and log in again.',
     },
     login: {
       welcomeBack: 'Welcome back!',
@@ -416,6 +418,7 @@ export const translations = {
       deleteAccountSuccess: 'Je account is verwijderd.',
       deleteAccountError: 'Account verwijderen is mislukt. Probeer het opnieuw.',
       deleteAccountCancel: 'Annuleren',
+      sessionExpiresSoon: 'Je sessie verloopt bijna. Sla je werk op en log opnieuw in.',
     },
     home: {
       mission: 'Help mensen eenvoudig afspraken te maken op een ontspannen, laagdrempelige manier.',
@@ -553,6 +556,7 @@ export const translations = {
       deleteAccountSuccess: 'Je account is verwijderd.',
       deleteAccountError: 'Account verwijderen is mislukt. Probeer het opnieuw.',
       deleteAccountCancel: 'Annuleren',
+      sessionExpiresSoon: 'Je sessie verloopt bijna. Sla je werk op en log opnieuw in.',
     },
     login: {
       welcomeBack: 'Welkom terug!',

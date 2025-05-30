@@ -16,32 +16,45 @@ import Confirmed from './pages/Confirmed';
 import Account from './pages/Account';
 
 function App() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [language, setLanguage] = useState('nl');
   const [profileEmoji, setProfileEmoji] = useState<string | null>(null);
+  const [sessionUser, setSessionUser] = useState<{ name: string; emoji?: string } | null>(null);
+  const [sessionExpiresSoon, setSessionExpiresSoon] = useState(false);
 
   useEffect(() => {
     i18n.changeLanguage('nl');
   }, [i18n]);
 
   useEffect(() => {
-    const fetchEmoji = async () => {
+    const fetchUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data: profile } = await supabase.from('profiles').select('emoji').eq('id', session.user.id).single();
-        setProfileEmoji(profile?.emoji || null);
+        const metaName = session.user.user_metadata?.full_name;
+        const { data: profile } = await supabase.from('profiles').select('emoji, full_name').eq('id', session.user.id).single();
+        setSessionUser({
+          name: metaName || profile?.full_name || 'Account',
+          emoji: profile?.emoji || null,
+        });
+        if (session.expires_at) {
+          const expiresIn = session.expires_at * 1000 - Date.now();
+          setSessionExpiresSoon(expiresIn < 2 * 60 * 1000);
+        }
       } else {
-        setProfileEmoji(null);
+        setSessionUser(null);
+        setSessionExpiresSoon(false);
       }
     };
-    fetchEmoji();
+    fetchUser();
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      fetchEmoji();
+      fetchUser();
     });
-    window.addEventListener('profile-emoji-updated', fetchEmoji);
+    window.addEventListener('profile-emoji-updated', fetchUser);
+    const interval = setInterval(fetchUser, 60 * 1000);
     return () => {
       listener?.subscription.unsubscribe();
-      window.removeEventListener('profile-emoji-updated', fetchEmoji);
+      window.removeEventListener('profile-emoji-updated', fetchUser);
+      clearInterval(interval);
     };
   }, []);
 
@@ -102,6 +115,12 @@ function App() {
         </nav>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {sessionExpiresSoon && (
+            <div className="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-900 text-center py-2 z-50 font-semibold shadow-lg">
+              {t('common.sessionExpiresSoon')}
+              <Link to="/login" className="ml-4 underline text-primary-700">{t('common.login')}</Link>
+            </div>
+          )}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/create-meetup" element={<CreateMeetup />} />
