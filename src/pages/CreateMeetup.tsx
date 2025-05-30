@@ -6,9 +6,21 @@ import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import { nl, enUS } from 'date-fns/locale';
 import Confetti from 'react-confetti';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
+
+const TOTAL_STEPS = 5;
+
+const getLastCity = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('lastCity') || '';
+  }
+  return '';
+};
 
 const CreateMeetup = () => {
   const { t, i18n } = useTranslation();
@@ -36,6 +48,26 @@ const CreateMeetup = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Yup schema binnen de component zodat t() werkt
+  const contactSchema = yup.object().shape({
+    name: yup.string().required(t('createMeetup.errorNameRequired')).min(2, t('createMeetup.errorNameShort')),
+    email: yup.string()
+      .email(t('createMeetup.errorEmailInvalid'))
+      .test('required-if-no-user', t('createMeetup.errorEmailRequired'), function (value) {
+        // Alleen verplicht als user niet is ingelogd
+        return !!user ? true : !!value;
+      }),
+  });
+
+  const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, watch, setValue, trigger } = useForm({
+    mode: 'onChange',
+    resolver: yupResolver(contactSchema),
+    defaultValues: {
+      name: formData.name,
+      email: email,
+    },
+  });
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -106,6 +138,20 @@ const CreateMeetup = () => {
     };
     checkSession();
   }, []);
+
+  useEffect(() => {
+    // Prefill stad uit localStorage
+    const lastCity = getLastCity();
+    if (lastCity && !formData.city) {
+      setFormData(prev => ({ ...prev, city: lastCity }));
+    }
+  }, []);
+
+  // Synchroniseer formData met react-hook-form
+  useEffect(() => {
+    setValue('name', formData.name);
+    setValue('email', email);
+  }, [formData.name, email, setValue]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,6 +247,9 @@ const CreateMeetup = () => {
 
   const handleCityChange = (city: string) => {
     setFormData(prev => ({ ...prev, city }));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('lastCity', city);
+    }
     // Zoek cafés voor deze stad en selecteer er direct één (random)
     supabase.from('cafes').select('*').eq('city', city).then(({ data }) => {
       if (data && data.length > 0) {
@@ -304,119 +353,107 @@ const CreateMeetup = () => {
       <p className="text-gray-700 mb-8 text-lg">
         {t('createMeetup.subtitle')}
       </p>
-
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-              1
-            </div>
-            <span className="ml-2 font-medium">{t('createMeetup.step1')}</span>
-          </div>
-          <div className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-              2
-            </div>
-            <span className="ml-2 font-medium">{t('createMeetup.step2')}</span>
-          </div>
-          <div className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-              3
-            </div>
-            <span className="ml-2 font-medium">{t('createMeetup.step3')}</span>
-          </div>
+      {/* Voortgangsindicatie */}
+      <div className="mb-8 flex items-center gap-4">
+        <span className="text-primary-700 font-semibold">{t('createMeetup.progress', { step, total: TOTAL_STEPS })}</span>
+        <div className="flex gap-1">
+          {[...Array(TOTAL_STEPS)].map((_, i) => (
+            <div key={i} className={`w-3 h-3 rounded-full ${step === i + 1 ? 'bg-primary-600' : 'bg-primary-200'}`}></div>
+          ))}
         </div>
       </div>
-
+      {/* Stap 1: Contactpersoon */}
       {step === 1 && (
-        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold text-primary-700 mb-4">
-            {t('createMeetup.chooseCityInfo')}
-          </h2>
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2">
-              {t('common.name')}
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4"
-              placeholder={t('common.name')}
-            />
-            {/* Email for non-logged-in users */}
-            {!user && (
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">{t('common.email')}</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder={t('common.email')}
-                  required
-                />
-                {emailError && <div className="text-red-500 text-sm mt-1">{emailError}</div>}
-              </div>
-            )}
-            <label className="block text-gray-700 mb-2">
-              {t('createMeetup.chooseCityLabel')}
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {cities.map((city) => (
-                <button
-                  key={city.id}
-                  type="button"
-                  onClick={() => handleCityChange(city.name)}
-                  className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center
-                    ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
-                  aria-pressed={formData.city === city.name}
-                >
-                  {city.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              // Basic email validation for non-logged-in users
-              if (!user) {
-                if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-                  setEmailError(t('common.error_invalid_email'));
-                  return;
-                } else {
-                  setEmailError('');
-                }
-              }
-              setStep(2);
+        <form className="card bg-primary-50 p-6 rounded-xl shadow-md" onSubmit={rhfHandleSubmit(() => setStep(2))} autoComplete="off">
+          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.contactInfo')}</h2>
+          <label className="block text-gray-700 mb-2" htmlFor="name">{t('common.name')}</label>
+          <input
+            id="name"
+            type="text"
+            {...register('name')}
+            value={formData.name}
+            onChange={e => {
+              setFormData(prev => ({ ...prev, name: e.target.value }));
+              setValue('name', e.target.value);
+              trigger('name');
             }}
-            disabled={!formData.city || !formData.name || (!user && !email)}
+            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.name ? 'border-red-500' : formData.name ? 'border-green-500' : 'border-primary-200'}`}
+            placeholder={t('common.name')}
+            autoComplete="off"
+          />
+          {errors.name && <div className="text-red-500 text-sm mb-2">{errors.name.message}</div>}
+          {!user && (
+            <div className="mb-2">
+              <label className="block text-gray-700 mb-2" htmlFor="email">{t('common.email')}</label>
+              <input
+                id="email"
+                type="email"
+                {...register('email')}
+                value={email}
+                onChange={e => {
+                  setEmail(e.target.value);
+                  setValue('email', e.target.value);
+                  trigger('email');
+                }}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.email ? 'border-red-500' : email ? 'border-green-500' : 'border-primary-200'}`}
+                placeholder={t('common.email')}
+                autoComplete="off"
+                required
+              />
+              {errors.email && <div className="text-red-500 text-sm mb-2">{errors.email.message}</div>}
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={!isValid}
             className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           >
             {t('common.continue')}
           </button>
+          {/* Suggesties */}
+          {errors.name && <div className="text-xs text-gray-500 mt-1">{t('createMeetup.suggestionName')}</div>}
+          {errors.email && <div className="text-xs text-gray-500 mt-1">{t('createMeetup.suggestionEmail')}</div>}
+        </form>
+      )}
+      {/* Stap 2: Stad kiezen */}
+      {step === 2 && (
+        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.chooseCityLabel')}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {cities.map((city) => (
+              <button
+                key={city.id}
+                type="button"
+                onClick={() => handleCityChange(city.name)}
+                className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center
+                  ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
+                aria-pressed={formData.city === city.name}
+              >
+                {city.name}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-4">
+            <button type="button" onClick={() => setStep(1)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={() => setStep(3)} className="btn-primary flex-1" disabled={!formData.city}>{t('common.continue')}</button>
+          </div>
         </div>
       )}
-
-      {step === 2 && (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('common.date')}
-            </label>
-            <div className="relative">
-              <DatePicker
-                selected={null}
-                onChange={handleDatePickerChange}
-                locale={dateLocale}
-                inline
-                minDate={new Date()}
-                customInput={<CustomInput />}
-              />
-            </div>
+      {/* Stap 3: Datum/tijd kiezen */}
+      {step === 3 && (
+        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.chooseDateTime')}</h2>
+          <div className="mb-6">
+            <DatePicker
+              selected={null}
+              onChange={handleDatePickerChange}
+              locale={dateLocale}
+              inline
+              minDate={new Date()}
+              customInput={<CustomInput />}
+            />
             <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
           </div>
-
           {formData.dates.length > 0 && (
             <div className="space-y-4">
               <h3 className="font-medium text-gray-700">{t('common.selectedDates')}</h3>
@@ -459,86 +496,76 @@ const CreateMeetup = () => {
               })}
             </div>
           )}
-
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="btn-secondary flex-1"
-            >
-              {t('common.back')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep(3)}
-              className="btn-primary flex-1"
-              disabled={!hasValidDateTimeSelection()}
-            >
-              {t('common.continue')}
-            </button>
+          <div className="flex gap-4 mt-6">
+            <button type="button" onClick={() => setStep(2)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={() => setStep(4)} className="btn-primary flex-1" disabled={!hasValidDateTimeSelection()}>{t('common.continue')}</button>
           </div>
         </div>
       )}
-
-      {step === 3 && (
-        <div className="space-y-6">
-          <div className="bg-primary-50 p-6 rounded-xl shadow-md">
-            <h2 className="text-xl font-semibold text-primary-700 mb-4">
-              {t('createMeetup.chooseCityLabel')}
-            </h2>
-            
-            {selectedCafe && (
-              <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
-                {selectedCafe.image_url && (
-                  <img
-                    src={selectedCafe.image_url}
-                    alt={selectedCafe.name}
-                    className="w-full h-48 object-cover"
-                  />
+      {/* Stap 4: Café kiezen */}
+      {step === 4 && (
+        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.chooseCafe')}</h2>
+          {selectedCafe && (
+            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+              {selectedCafe.image_url && (
+                <img
+                  src={selectedCafe.image_url}
+                  alt={selectedCafe.name}
+                  className="w-full h-48 object-cover"
+                />
+              )}
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{selectedCafe.name}</h3>
+                <p className="text-gray-600 mb-2">{selectedCafe.address}</p>
+                {selectedCafe.description && (
+                  <p className="text-gray-500 text-sm">{selectedCafe.description}</p>
                 )}
-                <div className="p-4">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{selectedCafe.name}</h3>
-                  <p className="text-gray-600 mb-2">{selectedCafe.address}</p>
-                  {selectedCafe.description && (
-                    <p className="text-gray-500 text-sm">{selectedCafe.description}</p>
-                  )}
-                </div>
               </div>
-            )}
-
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={shuffleCafe}
-                disabled={shuffleCooldown || cafes.length <= 1}
-                className="btn-secondary flex-1"
-              >
-                {t('common.shuffle')}
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="btn-primary flex-1"
-                disabled={!selectedCafe || !hasValidDateTimeSelection()}
-              >
-                {t('common.submit')}
-              </button>
             </div>
+          )}
+          <div className="flex gap-4 mb-4">
+            <button type="button" onClick={shuffleCafe} disabled={shuffleCooldown || cafes.length <= 1} className="btn-secondary flex-1">{t('common.shuffle')}</button>
           </div>
-
           <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="btn-secondary flex-1"
-            >
-              {t('common.back')}
-            </button>
+            <button type="button" onClick={() => setStep(3)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={() => setStep(5)} className="btn-primary flex-1" disabled={!selectedCafe}>{t('common.continue')}</button>
           </div>
         </div>
       )}
-
-      {/* Show confetti only during redirect, not on confirmation page */}
-      {showConfetti && step !== 3 && (
+      {/* Stap 5: Samenvatting & bevestigen */}
+      {step === 5 && (
+        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.summary')}</h2>
+          <div className="mb-4">
+            <div className="mb-2"><span className="font-medium">{t('common.name')}:</span> {formData.name}</div>
+            {!user && <div className="mb-2"><span className="font-medium">{t('common.email')}:</span> {email}</div>}
+            <div className="mb-2"><span className="font-medium">{t('common.city')}:</span> {formData.city}</div>
+            <div className="mb-2"><span className="font-medium">{t('common.selectedDates')}:</span>
+              <ul className="list-disc ml-6">
+                {formData.dates.map((date, idx) => {
+                  const dateStr = getLocalDateString(date);
+                  const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
+                  return (
+                    <li key={idx}>
+                      {date.toLocaleDateString()} ({(dateOpt?.times || []).map(ti => t(`common.${ti}`)).join(', ')})
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            {selectedCafe && (
+              <div className="mb-2"><span className="font-medium">{t('common.cafe')}:</span> {selectedCafe.name}, {selectedCafe.address}</div>
+            )}
+          </div>
+          <div className="flex gap-4">
+            <button type="button" onClick={() => setStep(4)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={handleSubmit} className="btn-primary flex-1">{t('common.submit')}</button>
+          </div>
+        </div>
+      )}
+      {/* Confetti bij succes */}
+      {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50">
           <Confetti
             width={windowSize.width}
@@ -551,7 +578,6 @@ const CreateMeetup = () => {
           />
         </div>
       )}
-
       {formError && <div className="text-red-500 text-sm mb-2">{formError}</div>}
     </div>
   );

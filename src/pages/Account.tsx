@@ -77,22 +77,30 @@ const Account = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Fout bij ophalen sessie:', sessionError);
+        setMeetupsError(t('account.errorSession'));
+        setMeetupsLoading(false);
+        return;
+      }
       if (!session?.user) {
         navigate('/login');
         return;
       }
       // Haal profiel op
-      const { data: testProfiles, error: testProfilesError } = await supabase.from('profiles').select('*').limit(1);
-      console.log('TEST PROFILES:', testProfiles, testProfilesError);
+      const { data: testProfiles, error: testProfilesError } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+      if (testProfilesError) {
+        console.error('Fout bij ophalen profiel:', testProfilesError);
+      }
       if (testProfiles) {
-        setUser(testProfiles[0] as Profile);
-        setDisplayName(testProfiles[0].full_name || generateRandomName());
-        if (testProfiles[0].emoji) setSelectedEmoji(testProfiles[0].emoji);
-        if (testProfiles[0].gender) setGender(testProfiles[0].gender);
-        if (testProfiles[0].age !== undefined && testProfiles[0].age !== null) setAge(testProfiles[0].age);
-        setWantsUpdates(!!testProfiles[0].wants_updates);
-        setIsPrivate(!!testProfiles[0].is_private);
+        setUser(testProfiles as Profile);
+        setDisplayName(testProfiles.full_name || generateRandomName());
+        if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
+        if (testProfiles.gender) setGender(testProfiles.gender);
+        if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
+        setWantsUpdates(!!testProfiles.wants_updates);
+        setIsPrivate(!!testProfiles.is_private);
       } else {
         setUser(null);
         setDisplayName(generateRandomName());
@@ -102,21 +110,29 @@ const Account = () => {
       // Haal meetups op
       setMeetupsLoading(true);
       setMeetupsError(null);
-      const { data: meetups, error: meetupsError } = await supabase
-        .from('invitations')
-        .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
-        .or(`invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}"`);
-      if (meetupsError) {
-        setMeetupsError(t('account.errorLoadingMeetups'));
-      } else {
-        setMyMeetups((meetups || []) as Invitation[]);
+      try {
+        const { data: meetups, error: meetupsError } = await supabase
+          .from('invitations')
+          .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
+          .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
+        if (meetupsError) {
+          console.error('Fout bij ophalen meetups:', meetupsError.message);
+          setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: meetupsError.message }));
+          setMyMeetups([]);
+        } else {
+          setMyMeetups((meetups || []) as Invitation[]);
+        }
+      } catch (err: any) {
+        console.error('Onverwachte fout bij ophalen meetups:', err);
+        setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: err.message || err.toString() }));
+        setMyMeetups([]);
       }
       setMeetupsLoading(false);
     };
     getUser();
     setPendingGender(gender);
     setPendingAge(age);
-  }, [navigate]);
+  }, [navigate, t]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -591,25 +607,25 @@ const Account = () => {
 
       {/* Meetups Section */}
       <div className="bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-4 border border-[#b2dfdb]/30">
-        <h2 className="text-xl font-bold text-primary-700 mb-2 flex items-center gap-2">☕️ {t('account.myMeetups').toLowerCase()}</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+          <h2 className="text-xl font-bold text-primary-700 flex items-center gap-2">☕️ {t('account.myMeetups').toLowerCase()}</h2>
+          <button
+            className="btn-primary flex items-center gap-2 px-5 py-2 rounded-xl shadow font-semibold text-base transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-400"
+            onClick={() => navigate('/create-meetup')}
+            type="button"
+          >
+            <span className="text-lg">☕️</span>
+            {t('account.newMeetupBtn')}
+          </button>
+        </div>
         {meetupsLoading && <div className="text-gray-500 flex items-center gap-2"><span className="animate-spin w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span> {t('common.loading').toLowerCase()}</div>}
         {meetupsError && <div className="text-red-600 text-center">{meetupsError}</div>}
-        {myMeetups.length === 0 && !meetupsLoading && !meetupsError && (
-          <div className="text-gray-600 text-center">{t('dashboard.noMeetups').toLowerCase() || 'Nog geen meetups gepland. Waarom niet?'}</div>
+        {!meetupsLoading && !meetupsError && myMeetups.length === 0 && (
+          <div className="text-gray-600 text-center">{t('dashboard.noMeetups').toLowerCase() || 'nog geen meetups gepland. waarom niet?'}</div>
         )}
-        <ul className="space-y-3">
-          {myMeetups.map(m => (
-            <li key={m.id} className="bg-[#fff7f3] rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-[#ff914d]/10">
-              <div>
-                <span className="font-semibold text-primary-700">{m.selected_date}</span>
-                {m.selected_time && <span> &bull; {m.selected_time}</span>}
-                {m.cafe_name && <span> &bull; {m.cafe_name}</span>}
-                {!m.cafe_name && m.cafe_id && <span> &bull; Café {m.cafe_id}</span>}
-              </div>
-              <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === 'confirmed' ? 'bg-green-100 text-green-700' : m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}>{m.status}</span>
-            </li>
-          ))}
-        </ul>
+        {!meetupsLoading && !meetupsError && myMeetups.length > 0 && (
+          <MeetupsList meetups={myMeetups} t={t} />
+        )}
       </div>
 
       {/* Danger Zone Section */}
@@ -645,6 +661,67 @@ const Account = () => {
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
+  // Helper om datum te parsen en te vergelijken
+  const parseDate = (dateStr: string) => {
+    // Verwacht formaat: YYYY-MM-DD
+    return new Date(dateStr + 'T00:00:00');
+  };
+  const now = new Date();
+  // Splitsen in aankomend en voltooid
+  const upcoming = meetups.filter(m => {
+    const d = parseDate(m.selected_date);
+    return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  });
+  const past = meetups.filter(m => {
+    const d = parseDate(m.selected_date);
+    return d < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  });
+  // Sorteer op datum, nieuwste eerst
+  const sortDesc = (a: Invitation, b: Invitation) => parseDate(b.selected_date).getTime() - parseDate(a.selected_date).getTime();
+  upcoming.sort(sortDesc);
+  past.sort(sortDesc);
+
+  const renderMeetup = (m: Invitation) => (
+    <li key={m.id} className="bg-[#fff7f3] rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-[#ff914d]/10 mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
+        <div className="font-semibold text-primary-700 min-w-[110px]">{m.selected_date}{m.selected_time && <span> &bull; {m.selected_time}</span>}</div>
+        <div className="text-gray-700 flex-1 truncate">
+          <span className="font-medium">{t('common.cafe').toLowerCase()}:</span> {m.cafe_name || (m.cafe_id ? t('common.unknownCafe') : t('common.noCafe'))}
+        </div>
+        <div className="text-gray-700 flex-1 truncate">
+          <span className="font-medium">{t('account.contactPerson').toLowerCase()}:</span> {m.email_b || t('account.unknownContact')}
+        </div>
+      </div>
+      <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === 'confirmed' ? 'bg-green-100 text-green-700' : m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}>{t(`account.status.${m.status}`)}</span>
+    </li>
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      {upcoming.length > 0 && (
+        <div>
+          <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.upcomingMeetups')}</h3>
+          <ul className="space-y-2">
+            {upcoming.map(renderMeetup)}
+          </ul>
+        </div>
+      )}
+      {past.length > 0 && (
+        <div>
+          <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.pastMeetups')}</h3>
+          <ul className="space-y-2">
+            {past.map(renderMeetup)}
+          </ul>
+        </div>
+      )}
+      {upcoming.length === 0 && past.length === 0 && (
+        <div className="text-gray-600 text-center">{t('dashboard.noMeetups').toLowerCase() || 'nog geen meetups gepland. waarom niet?'}</div>
+      )}
     </div>
   );
 };

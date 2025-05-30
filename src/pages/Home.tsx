@@ -7,7 +7,7 @@ const Home = () => {
   const { t } = useTranslation();
 
   const handleStartMeetup = () => {
-    navigate('/create-meetup');
+      navigate('/create-meetup');
   };
 
   return (

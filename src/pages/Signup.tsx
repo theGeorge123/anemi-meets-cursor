@@ -112,14 +112,14 @@ const Signup = () => {
           }
       }
       setError(msg);
-      setLoading(false);
-      return;
-    }
-    // Updates-subscribers opslaan als vinkje aanstaat
+        setLoading(false);
+        return;
+      }
+      // Updates-subscribers opslaan als vinkje aanstaat
     if (data.user && wantsUpdates) {
-      const { error: updatesError } = await supabase.from('updates_subscribers').upsert({ email: form.email });
-      if (updatesError) {
-        setError('Account aangemaakt, maar aanmelden voor updates is mislukt: ' + updatesError.message);
+        const { error: updatesError } = await supabase.from('updates_subscribers').upsert({ email: form.email });
+        if (updatesError) {
+          setError('Account aangemaakt, maar aanmelden voor updates is mislukt: ' + updatesError.message);
       }
     }
     if (wantsUpdates) {
@@ -221,17 +221,17 @@ const Signup = () => {
         </div>
         )}
         {step === 2 && (
-          <div>
+        <div>
             <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
-            </label>
-            <input
-              type="password"
-              id="signup-password"
+          </label>
+          <input
+            type="password"
+            id="signup-password"
               className="input-field mt-1 mb-4"
-              value={form.password}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-              required
+            value={form.password}
+            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            required
               placeholder={t('common.password') + ' (min. 8, hoofdletter, cijfer, speciaal)'}
               autoFocus
             />
@@ -264,31 +264,31 @@ const Signup = () => {
               <div><b>{t('common.name')}:</b> {form.name}</div>
               <div><b>{t('common.email')}:</b> {form.email}</div>
             </div>
-            <div className="flex items-center mb-4">
-              <input
-                type="checkbox"
-                id="updates-checkbox"
-                checked={wantsUpdates}
-                onChange={() => setWantsUpdates((v) => !v)}
-                className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
-              />
-              <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
-                {t('signup.updatesCta')}
-              </label>
-            </div>
+        <div className="flex items-center mb-4">
+          <input
+            type="checkbox"
+            id="updates-checkbox"
+            checked={wantsUpdates}
+            onChange={() => setWantsUpdates((v) => !v)}
+            className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
+          />
+          <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
+            {t('signup.updatesCta')}
+          </label>
+        </div>
           </div>
         )}
         {step === 3 && (
-          <button
-            type="submit"
+        <button
+          type="submit"
             className={`btn-primary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={loading || !isStepValid()}
-          >
+          disabled={loading || !isStepValid()}
+        >
             {loading ? (
               <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
             ) : null}
             {loading ? t('common.loading') : t('common.createAccount')}
-          </button>
+        </button>
         )}
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
         {success && <div className="text-green-600 text-sm mt-2">{success}</div>}
