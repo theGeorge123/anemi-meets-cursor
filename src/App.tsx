@@ -28,8 +28,6 @@ function App() {
     const fetchUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const metaName = session.user.user_metadata?.full_name;
-        const { data: profile } = await supabase.from('profiles').select('emoji, full_name').eq('id', session.user.id).single();
         if (session.expires_at) {
           const expiresIn = session.expires_at * 1000 - Date.now();
           setSessionExpiresSoon(expiresIn < 2 * 60 * 1000);
