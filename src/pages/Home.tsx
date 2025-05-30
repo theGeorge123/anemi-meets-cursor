@@ -13,7 +13,7 @@ const Home = () => {
   return (
     <div className="space-y-12">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-primary-600">anemi meets</h1>
+        <h1 className="text-4xl font-bold text-primary-600">{t('home.title')}</h1>
         <div className="flex flex-col md:flex-row gap-4 justify-center mt-6 mb-8">
           <button
             type="button"

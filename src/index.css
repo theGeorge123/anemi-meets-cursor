@@ -8,16 +8,46 @@
   body {
     @apply bg-transparent text-gray-800 min-h-screen font-["Quicksand","Inter","system-ui","Avenir","Helvetica","Arial",sans-serif];
     letter-spacing: 0.01em;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Mobile-optimized form elements */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    @apply text-base;
+    min-height: 44px; /* Minimum touch target size */
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+
+  /* Improve button touch targets */
+  button, 
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Improve checkbox and radio touch targets */
+  input[type="checkbox"],
+  input[type="radio"] {
+    @apply w-5 h-5;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 bg-[#b2dfdb] text-[#37474f] rounded-2xl shadow-2xl shadow-[#b2dfdb]/30 hover:bg-[#80cbc4] transition-colors duration-300 font-semibold;
+    @apply px-6 py-3 bg-[#b2dfdb] text-[#37474f] rounded-2xl shadow-2xl shadow-[#b2dfdb]/30 hover:bg-[#80cbc4] transition-colors duration-300 font-semibold active:scale-95;
   }
   
   .btn-secondary {
-    @apply px-6 py-3 bg-[#e0e0e0] text-[#37474f] rounded-2xl shadow hover:bg-[#bdbdbd] transition-colors duration-300 font-semibold;
+    @apply px-6 py-3 bg-[#e0e0e0] text-[#37474f] rounded-2xl shadow hover:bg-[#bdbdbd] transition-colors duration-300 font-semibold active:scale-95;
   }
 
   .input-field {
@@ -25,7 +55,7 @@
   }
 
   .card {
-    @apply bg-white/60 rounded-3xl shadow-2xl shadow-[#b2dfdb]/20 p-8 mb-4 backdrop-blur-lg border border-[#e0e0e0]/60;
+    @apply bg-white/60 rounded-3xl shadow-2xl shadow-[#b2dfdb]/20 p-4 sm:p-8 mb-4 backdrop-blur-lg border border-[#e0e0e0]/60;
   }
 
   .abstract-bg {
@@ -34,6 +64,25 @@
     z-index: -1;
     pointer-events: none;
     overflow: hidden;
+  }
+
+  /* Mobile-optimized grid layouts */
+  .grid-mobile {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+
+  /* Mobile-optimized spacing */
+  .mobile-padding {
+    @apply px-4 sm:px-6 py-4 sm:py-6;
+  }
+
+  /* Mobile-optimized text */
+  .mobile-text {
+    @apply text-base sm:text-lg;
+  }
+
+  .mobile-heading {
+    @apply text-2xl sm:text-3xl font-bold;
   }
 }
 
@@ -141,6 +190,47 @@
   margin-top: 0.25rem;
 }
 .city-select:focus {
+  border-color: #1573ff;
+  box-shadow: 0 0 0 2px #b2dfdb55;
+  background: #e0f2f1;
+}
+
+/* Mobile-optimized datepicker */
+@media (max-width: 640px) {
+  .anemi-datepicker {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 16px !important;
+  }
+  
+  .anemi-datepicker .react-datepicker__month-container {
+    width: 100% !important;
+  }
+  
+  .anemi-datepicker .react-datepicker__day {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    line-height: 2.5rem !important;
+    margin: 0.2rem !important;
+  }
+}
+
+select {
+  min-height: 44px;
+  font-size: 18px;
+  padding-left: 1.25rem;
+  padding-right: 2.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-radius: 1.5rem;
+  background: #f5f7fa;
+  color: #37474f;
+  font-family: 'Quicksand', 'Inter', sans-serif;
+  box-shadow: 0 2px 8px #b2dfdb22;
+  border: 1.5px solid #b2dfdb;
+  margin-top: 0.25rem;
+}
+select:focus {
   border-color: #1573ff;
   box-shadow: 0 0 0 2px #b2dfdb55;
   background: #e0f2f1;

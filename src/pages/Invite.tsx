@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 import Confetti from 'react-confetti';
+import LoadingIndicator from '../components/LoadingIndicator';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 type InvitationWithCafe = {
   selected_date: string;
@@ -128,7 +130,12 @@ const Invite = () => {
         {t('invite.titleStepCloser')} 🎉
       </h1>
       {/* <img src={happyGif} alt="Happy connect" className="mx-auto mb-6 w-40 sm:w-56 rounded-xl shadow-lg" style={{maxWidth:'100%'}} /> */}
-      {loading && <div className="text-lg text-primary-700">{t('common.loading')}</div>}
+      {loading && (
+        <>
+          <LoadingIndicator label={t('common.loading')} size="md" className="my-4" />
+          <SkeletonLoader count={1} height="h-24" className="my-2" ariaLabel={t('common.loading')} />
+        </>
+      )}
       {error && <div className="text-red-600 font-semibold text-lg mb-4">{error}</div>}
       {invitation && (
         <div className="mb-6 bg-primary-50 rounded-xl p-4 shadow-md">

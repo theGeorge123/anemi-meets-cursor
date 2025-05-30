@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef, useRef } from 'react';
+import { useState, useEffect, forwardRef, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
@@ -9,6 +9,8 @@ import Confetti from 'react-confetti';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import Toast from '../components/Toast';
+import React from 'react';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
@@ -21,6 +23,24 @@ const getLastCity = () => {
   }
   return '';
 };
+
+// Memoizeer tijdslotknop
+const TimeSlotButton = React.memo(function TimeSlotButton({ time, isSelected, isPast, onClick, t }: { time: string, isSelected: boolean, isPast: boolean, onClick: () => void, t: any }) {
+  return (
+    <button
+      key={time}
+      type="button"
+      onClick={onClick}
+      disabled={isPast}
+      className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150
+        ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}
+        ${isPast ? 'opacity-50 cursor-not-allowed' : ''}`}
+      aria-pressed={isSelected}
+    >
+      {t(`common.${time}`)}
+    </button>
+  );
+});
 
 const CreateMeetup = () => {
   const { t, i18n } = useTranslation();
@@ -48,6 +68,8 @@ const CreateMeetup = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successSummary, setSuccessSummary] = useState<{date: string, time: string, cafe: string} | null>(null);
 
   // Yup schema binnen de component zodat t() werkt
   const contactSchema = yup.object().shape({
@@ -233,13 +255,17 @@ const CreateMeetup = () => {
       }
       const createdInvite = insertData[0];
       const responseToken = createdInvite.token;
-      if (responseToken) {
-        setShowConfetti(true);
-        setTimeout(() => {
-          setShowConfetti(false);
-          navigate(`/invite/${responseToken}`);
-        }, 2000);
-      }
+      // Succes: samenvatting tonen
+      setSuccessSummary({
+        date: selected_date,
+        time: selected_time,
+        cafe: selectedCafe?.name || '',
+      });
+      setShowSuccess(true);
+      setShowConfetti(true);
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 2000);
     } catch (err) {
       setFormError(t('common.errorNetwork'));
     }
@@ -303,13 +329,13 @@ const CreateMeetup = () => {
   };
 
   // Tijdvak checkbox toggle
-  const handleTimeToggle = (date: string, time: string) => {
+  const handleTimeToggle = useCallback((dateStr: string, time: string) => {
     setDateTimeOptions(prev => prev.map(opt =>
-      opt.date === date
+      opt.date === dateStr
         ? { ...opt, times: opt.times.includes(time) ? opt.times.filter(t => t !== time) : [...opt.times, time] }
         : opt
     ));
-  };
+  }, []);
 
   // Datum verwijderen
   const handleRemoveDate = (dateStr: string) => {
@@ -475,19 +501,16 @@ const CreateMeetup = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
                       {['morning', 'afternoon', 'evening'].map(time => {
                         const isSelected = dateOpt?.times.includes(time) || false;
+                        const isPast = isTimeSlotPast(dateStr, time);
                         return (
-                          <button
+                          <TimeSlotButton
                             key={time}
-                            type="button"
+                            time={time}
+                            isSelected={isSelected}
+                            isPast={isPast}
                             onClick={() => handleTimeToggle(dateStr, time)}
-                            disabled={isTimeSlotPast(dateStr, time)}
-                            className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150
-                              ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}
-                              ${isTimeSlotPast(dateStr, time) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            aria-pressed={isSelected}
-                          >
-                            {t(`common.${time}`)}
-                          </button>
+                            t={t}
+                          />
                         );
                       })}
                     </div>
@@ -563,6 +586,30 @@ const CreateMeetup = () => {
             <button type="button" onClick={handleSubmit} className="btn-primary flex-1">{t('common.submit')}</button>
           </div>
         </div>
+      )}
+      {showSuccess && successSummary && (
+        <Toast
+          message={
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-green-600 text-2xl">🎉</span>
+                <span className="font-bold">{t('createMeetup.successTitle')}</span>
+              </div>
+              <div className="text-sm text-green-900 mb-1">{t('createMeetup.successSummary', {
+                date: successSummary.date,
+                time: successSummary.time,
+                cafe: successSummary.cafe
+              })}</div>
+              <div className="flex gap-2 mt-2">
+                <button onClick={() => navigate('/dashboard')} className="btn-secondary px-3 py-1 text-sm">{t('createMeetup.toDashboard')}</button>
+                <button onClick={() => { setShowSuccess(false); setStep(1); }} className="btn-primary px-3 py-1 text-sm">{t('createMeetup.newMeetup')}</button>
+              </div>
+            </div>
+          }
+          icon={<span>✅</span>}
+          onClose={() => setShowSuccess(false)}
+          duration={4000}
+        />
       )}
       {/* Confetti bij succes */}
       {showConfetti && (

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -284,10 +285,10 @@ const Signup = () => {
             className={`btn-primary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={loading || !isStepValid()}
         >
-            {loading ? (
-              <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
-            ) : null}
-            {loading ? t('common.loading') : t('common.createAccount')}
+          {loading ? (
+            <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
+          ) : null}
+          {loading ? t('common.loading') : t('common.createAccount')}
         </button>
         )}
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}

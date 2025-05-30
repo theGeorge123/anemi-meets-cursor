@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
+import LoadingIndicator from '../components/LoadingIndicator';
+import SkeletonLoader from '../components/SkeletonLoader';
+import React from 'react';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -366,327 +369,362 @@ const Account = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-2 flex flex-col gap-8">
-      {/* Profile Card */}
-      <div className="bg-gradient-to-br from-[#fff7f3] to-[#b2dfdb]/30 rounded-3xl shadow-xl p-8 flex flex-col items-center gap-2 border border-[#ff914d]/20">
-        <div className="text-6xl mb-2">{selectedEmoji || '👤'}</div>
-        {/* Emoji Picker */}
-        <div className="flex flex-col items-center mb-2">
-          <span className="text-xs text-gray-500 mb-1">kies je emoji</span>
-          <div className="flex gap-1 flex-wrap justify-center">
-            {EMOJI_OPTIONS.map(emoji => (
-              <button
-                key={emoji}
-                className={`text-2xl px-1 py-0.5 rounded-lg border-2 transition-all ${selectedEmoji === emoji ? 'border-[#ff914d] bg-[#fff7f3]' : 'border-transparent hover:border-[#b2dfdb]'}`}
-                onClick={() => handleEmojiSelect(emoji)}
-                aria-label={`emoji ${emoji}`}
-                type="button"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="text-2xl font-bold text-primary-700 flex items-center gap-2">{displayName}</div>
-        <div className="text-base text-gray-600 mb-2">{email}</div>
-        <button
-          className="btn-secondary flex items-center gap-2 px-4 py-2 rounded-xl mt-2"
-          onClick={handleLogout}
-        >
-          <span>🚪</span> {t('account.logout')}
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
+      <div className="container mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="mobile-heading text-[#37474f] mb-8">{t('account.title')}</h1>
 
-      {/* Profile Info Section */}
-      <div className="bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-6 border border-[#b2dfdb]/30">
-        <h2 className="text-xl font-bold text-primary-700 mb-2 flex items-center gap-2">📝 {t('account.profileInfo').toLowerCase() || 'Profielinformatie'}</h2>
-        {/* Name */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-700">{t('account.nameLabel').toLowerCase()}:</span>
-            {!editName ? (
-              <>
-                <span className="text-primary-700 font-semibold">{name}</span>
-                <button className="btn-secondary px-3 py-1 ml-2" onClick={() => setEditName(true)}>naam wijzigen</button>
-              </>
-            ) : (
-              <>
-                <input
-                  type="text"
-                  className="input-field rounded-xl"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  disabled={nameSaving}
-                  autoFocus
-                />
-                <div className="text-xs text-gray-500 mt-1">{t('account.nameEditHint').toLowerCase() || 'Naam verkeerd gespeld? Pas hier aan!'}</div>
-                <div className="flex gap-2 mt-1">
-                  <button className="btn-primary px-4 py-1" onClick={handleNameSave} disabled={nameSaving}>opslaan</button>
-                  <button className="btn-secondary px-4 py-1" onClick={() => setEditName(false)}>annuleren</button>
-                </div>
-                {nameMsg && <div className="text-sm mt-1 text-green-700">✅ {nameMsg}</div>}
-              </>
-            )}
-          </div>
-        </div>
-        {/* Email */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-700">{t('account.emailLabel').toLowerCase()}:</span>
-            {!editEmail ? (
-              <>
-                <span className="text-primary-700 font-semibold">{email}</span>
-                <button className="btn-secondary px-3 py-1 ml-2" onClick={() => setEditEmail(true)}>e-mail wijzigen</button>
-              </>
-            ) : (
-              <>
-                <input
-                  type="email"
-                  className="input-field rounded-xl"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  disabled={emailSaving}
-                  autoFocus
-                />
-                <div className="text-xs text-gray-500 mt-1">{t('account.emailEditHint').toLowerCase() || 'E-mail verkeerd? Pas hier aan!'}</div>
-                <div className="flex gap-2 mt-1">
-                  <button className="btn-primary px-4 py-1" onClick={handleEmailSave} disabled={emailSaving}>opslaan</button>
-                  <button className="btn-secondary px-4 py-1" onClick={() => setEditEmail(false)}>annuleren</button>
-                </div>
-                {emailMsg && <div className="text-sm mt-1 text-green-700">✅ {emailMsg}</div>}
-              </>
-            )}
-          </div>
-        </div>
-        {/* Gender */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-700">{t('account.genderLabel').toLowerCase()}:</span>
-            {!editGender ? (
-              <>
-                <span className="text-primary-700 font-semibold">{genderOptions.find(opt => opt.value === gender)?.label || gender || t('account.noGender').toLowerCase()}</span>
-                <button className="btn-secondary px-3 py-1 ml-2" onClick={() => setEditGender(true)}>toch wijzigen?</button>
-              </>
-            ) : (
-              <>
-                <div className="flex gap-3 mt-1">
-                  {genderOptions.map(opt => (
-                    <label key={opt.value} className={`cursor-pointer px-4 py-2 rounded-xl border-2 font-medium ${pendingGender === opt.value ? 'bg-[#b2dfdb]/60 border-[#ff914d] text-primary-700' : 'bg-white border-gray-300 text-gray-700'} transition`}>
-                      <input
-                        type="radio"
-                        name="gender"
-                        value={opt.value}
-                        checked={pendingGender === opt.value}
-                        onChange={() => setPendingGender(opt.value)}
-                        className="hidden"
-                      />
-                      {opt.label}
-                    </label>
+          {/* Profile Section */}
+          <div className="card mb-8">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex flex-col items-center">
+                <div className="text-6xl mb-4">{selectedEmoji || '👤'}</div>
+                <div className="grid grid-cols-5 gap-2">
+                  {EMOJI_OPTIONS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => handleEmojiSelect(emoji)}
+                      className="w-10 h-10 text-2xl hover:scale-110 transition-transform"
+                    >
+                      {emoji}
+                    </button>
                   ))}
                 </div>
-                <div className="flex gap-2 mt-1">
-                  <button className="btn-primary px-4 py-1" onClick={handleGenderSave} disabled={genderSaving}>opslaan</button>
-                  <button className="btn-secondary px-4 py-1" onClick={() => setEditGender(false)}>annuleren</button>
+              </div>
+
+              <div className="flex-1 w-full">
+                <div className="space-y-6">
+                  {/* Name */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <label className="w-full sm:w-32 font-semibold">{t('account.name')}</label>
+                    {editName ? (
+                      <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="input-field flex-1"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleNameSave}
+                            disabled={nameSaving}
+                            className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                          >
+                            {nameSaving ? t('common.saving') : t('common.save')}
+                          </button>
+                          <button
+                            onClick={() => setEditName(false)}
+                            className="btn-secondary"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <span className="mobile-text">{name}</span>
+                        <button
+                          onClick={() => setEditName(true)}
+                          className="btn-secondary"
+                        >
+                          {t('common.edit')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Email */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <label className="w-full sm:w-32 font-semibold">{t('account.email')}</label>
+                    {editEmail ? (
+                      <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="input-field flex-1"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleEmailSave}
+                            disabled={emailSaving}
+                            className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                          >
+                            {emailSaving ? t('common.saving') : t('common.save')}
+                          </button>
+                          <button
+                            onClick={() => setEditEmail(false)}
+                            className="btn-secondary"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <span className="mobile-text">{email}</span>
+                        <button
+                          onClick={() => setEditEmail(true)}
+                          className="btn-secondary"
+                        >
+                          {t('common.edit')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Gender */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <label className="w-full sm:w-32 font-semibold">{t('account.gender')}</label>
+                    {editGender ? (
+                      <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                        <select
+                          value={pendingGender}
+                          onChange={(e) => setPendingGender(e.target.value)}
+                          className="input-field flex-1"
+                        >
+                          <option value="">{t('common.select')}</option>
+                          {genderOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleGenderSave}
+                            disabled={genderSaving}
+                            className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                          >
+                            {genderSaving ? t('common.saving') : t('common.save')}
+                          </button>
+                          <button
+                            onClick={() => setEditGender(false)}
+                            className="btn-secondary"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <span className="mobile-text">
+                          {genderOptions.find((opt) => opt.value === gender)?.label || t('common.notSpecified')}
+                        </span>
+                        <button
+                          onClick={() => setEditGender(true)}
+                          className="btn-secondary"
+                        >
+                          {t('common.edit')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Age */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <label className="w-full sm:w-32 font-semibold">{t('account.age')}</label>
+                    {editAge ? (
+                      <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="number"
+                          value={pendingAge}
+                          onChange={handleAgeInput}
+                          className="input-field flex-1"
+                          min="0"
+                          max="120"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleAgeSave}
+                            disabled={ageSaving}
+                            className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                          >
+                            {ageSaving ? t('common.saving') : t('common.save')}
+                          </button>
+                          <button
+                            onClick={() => setEditAge(false)}
+                            className="btn-secondary"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <span className="mobile-text">{age || t('common.notSpecified')}</span>
+                        <button
+                          onClick={() => setEditAge(true)}
+                          className="btn-secondary"
+                        >
+                          {t('common.edit')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {genderMsg && <div className="text-sm mt-1 text-green-700">✅ {genderMsg}</div>}
-              </>
-            )}
+              </div>
+            </div>
           </div>
-        </div>
-        {/* Age */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-700">{t('common.age').toLowerCase()}:</span>
-            {!editAge ? (
-              <>
-                <span className="text-primary-700 font-semibold">{age || t('account.noAge').toLowerCase()}</span>
-                <button className="btn-secondary px-3 py-1 ml-2" onClick={() => setEditAge(true)}>leeftijd wijzigen</button>
-              </>
-            ) : (
-              <>
+
+          {/* Preferences Section */}
+          <div className="card mb-8">
+            <h2 className="mobile-heading text-[#37474f] mb-6">{t('account.preferences')}</h2>
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
                 <input
-                  type="number"
-                  min="0"
-                  max="120"
-                  className="input-field rounded-xl w-24"
-                  value={pendingAge}
-                  onChange={handleAgeInput}
-                  disabled={ageSaving}
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
+                  type="checkbox"
+                  id="wantsUpdates"
+                  checked={wantsUpdates}
+                  onChange={(e) => setWantsUpdates(e.target.checked)}
+                  className="w-5 h-5"
                 />
-                <div className="text-xs text-gray-500 mt-1">{t('account.ageEditHint').toLowerCase() || 'Leeftijd aanpassen? Scroll of typ hier.'}</div>
-                <div className="flex gap-2 mt-1">
-                  <button className="btn-primary px-4 py-1" onClick={handleAgeSave} disabled={ageSaving}>opslaan</button>
-                  <button className="btn-secondary px-4 py-1" onClick={() => setEditAge(false)}>annuleren</button>
+                <label htmlFor="wantsUpdates" className="mobile-text">
+                  {t('account.wantsUpdates')}
+                </label>
+              </div>
+              <div className="flex items-center gap-4">
+                <input
+                  type="checkbox"
+                  id="isPrivate"
+                  checked={isPrivate}
+                  onChange={(e) => setIsPrivate(e.target.checked)}
+                  className="w-5 h-5"
+                />
+                <label htmlFor="isPrivate" className="mobile-text">
+                  {t('account.isPrivate')}
+                </label>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={handlePrefsSave}
+                  disabled={prefsSaving}
+                  className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                >
+                  {prefsSaving ? t('common.saving') : t('common.save')}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Password Section */}
+          <div className="card mb-8">
+            <h2 className="mobile-heading text-[#37474f] mb-6">{t('account.password')}</h2>
+            {showPwForm ? (
+              <form onSubmit={handlePasswordSave} className="space-y-6">
+                <div className="flex flex-col gap-4">
+                  <input
+                    type="password"
+                    placeholder={t('account.currentPassword')}
+                    value={pwForm.current}
+                    onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
+                    className="input-field"
+                  />
+                  <input
+                    type="password"
+                    placeholder={t('account.newPassword')}
+                    value={pwForm.new}
+                    onChange={(e) => setPwForm({ ...pwForm, new: e.target.value })}
+                    className="input-field"
+                  />
+                  <input
+                    type="password"
+                    placeholder={t('account.confirmPassword')}
+                    value={pwForm.confirm}
+                    onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
+                    className="input-field"
+                  />
                 </div>
-                {ageMsg && <div className="text-sm mt-1 text-green-700">✅ {ageMsg}</div>}
-              </>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="submit"
+                    disabled={pwSaving}
+                    className="btn-primary active:scale-95 active:bg-[#b2dfdb] flex-1"
+                  >
+                    {pwSaving ? t('common.saving') : t('common.save')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPwForm(false)}
+                    className="btn-secondary active:scale-95 active:bg-[#b2dfdb] flex-1"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                onClick={() => setShowPwForm(true)}
+                className="btn-secondary active:scale-95 active:bg-[#b2dfdb]"
+              >
+                {t('account.changePassword')}
+              </button>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Change Password Section */}
-      <div className="bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-4 border border-[#b2dfdb]/30">
-        <h2 className="text-xl font-bold text-primary-700 mb-2 flex items-center gap-2">🔑 {t('account.changePassword').toLowerCase()}</h2>
-        {!showPwForm ? (
-          <button className="btn-secondary px-4 py-2 w-fit" onClick={() => setShowPwForm(true)}>{t('account.changePassword').toLowerCase()}</button>
-        ) : (
-          <form className="flex flex-col gap-2" onSubmit={handlePasswordSave} autoComplete="off">
-            <input
-              type="password"
-              className="input-field w-full rounded-xl"
-              placeholder={t('account.currentPassword').toLowerCase()}
-              value={pwForm.current}
-              onChange={e => setPwForm(f => ({ ...f, current: e.target.value }))}
-              autoComplete="current-password"
-              disabled={pwSaving}
-            />
-            <input
-              type="password"
-              className="input-field w-full rounded-xl"
-              placeholder={t('account.newPassword').toLowerCase()}
-              value={pwForm.new}
-              onChange={e => setPwForm(f => ({ ...f, new: e.target.value }))}
-              autoComplete="new-password"
-              disabled={pwSaving}
-            />
-            <input
-              type="password"
-              className="input-field w-full rounded-xl"
-              placeholder={t('account.confirmNewPassword').toLowerCase()}
-              value={pwForm.confirm}
-              onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))}
-              autoComplete="new-password"
-              disabled={pwSaving}
-            />
-            <div className="flex gap-2 mt-1">
-              <button className="btn-primary px-4 py-1" type="submit" disabled={pwSaving}>{t('account.saveChanges').toLowerCase()}</button>
-              <button className="btn-secondary px-4 py-1" type="button" onClick={() => setShowPwForm(false)}>{t('account.cancel').toLowerCase()}</button>
-            </div>
-            {pwMsg && <div className="text-sm mt-1 text-green-700">✅ {pwMsg}</div>}
-          </form>
-        )}
-      </div>
-
-      {/* Preferences Section */}
-      <div className="bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-4 border border-[#b2dfdb]/30">
-        <h2 className="text-xl font-bold text-primary-700 mb-2 flex items-center gap-2">⚙️ {t('account.preferencesTitle').toLowerCase()}</h2>
-        <div className="flex flex-col gap-4 items-start max-w-xs mx-auto">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={wantsUpdates}
-              onChange={e => setWantsUpdates(e.target.checked)}
-              className="h-5 w-5 text-primary-600 rounded"
-              disabled={prefsSaving}
-            />
-            <span>{t('account.prefUpdates').toLowerCase()}</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={isPrivate}
-              onChange={e => setIsPrivate(e.target.checked)}
-              className="h-5 w-5 text-primary-600 rounded"
-              disabled={prefsSaving}
-            />
-            <span>{t('account.prefPrivate').toLowerCase()}</span>
-          </label>
-          <button
-            className="btn-secondary mt-2 flex items-center gap-2 px-4 py-2 rounded-xl"
-            type="button"
-            onClick={handlePrefsSave}
-            disabled={prefsSaving}
-          >
-            <span>💾</span> {prefsSaving ? t('common.loading').toLowerCase() : t('account.save').toLowerCase()}
-          </button>
-          {prefsMsg && <div className="text-sm mt-2 text-green-700 flex items-center gap-1">✅ {prefsMsg}</div>}
-        </div>
-      </div>
-
-      {/* Meetups Section */}
-      <div className="bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-4 border border-[#b2dfdb]/30">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
-          <h2 className="text-xl font-bold text-primary-700 flex items-center gap-2">☕️ {t('account.myMeetups').toLowerCase()}</h2>
-          <button
-            className="btn-primary flex items-center gap-2 px-5 py-2 rounded-xl shadow font-semibold text-base transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-400"
-            onClick={() => navigate('/create-meetup')}
-            type="button"
-          >
-            <span className="text-lg">☕️</span>
-            {t('account.newMeetupBtn')}
-          </button>
-        </div>
-        {meetupsLoading && <div className="text-gray-500 flex items-center gap-2"><span className="animate-spin w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span> {t('common.loading').toLowerCase()}</div>}
-        {meetupsError && <div className="text-red-600 text-center">{meetupsError}</div>}
-        {!meetupsLoading && !meetupsError && myMeetups.length === 0 && (
-          <div className="text-gray-600 text-center">{t('dashboard.noMeetups').toLowerCase() || 'nog geen meetups gepland. waarom niet?'}</div>
-        )}
-        {!meetupsLoading && !meetupsError && myMeetups.length > 0 && (
-          <MeetupsList meetups={myMeetups} t={t} />
-        )}
-      </div>
-
-      {/* Danger Zone Section */}
-      <div className="bg-red-50 border border-red-200 rounded-2xl shadow p-6 flex flex-col gap-4 items-center">
-        <h2 className="text-xl font-bold text-red-700 mb-2 flex items-center gap-2">⚠️ {t('account.deleteAccount').toLowerCase()}</h2>
-        <button
-          className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all text-base flex items-center gap-2 justify-center"
-          onClick={() => setShowDeleteConfirm(true)}
-          disabled={deleting}
-        >
-          <span>🗑️</span> {deleting ? t('common.loading').toLowerCase() : t('account.deleteAccount').toLowerCase()}
-        </button>
-        {showDeleteConfirm && (
-          <div className="bg-white border border-red-300 rounded-xl p-6 mt-4 max-w-md w-full text-center shadow-xl">
-            <div className="text-red-700 font-semibold mb-4">{t('account.deleteAccountConfirm').toLowerCase()}</div>
-            <div className="flex gap-4 justify-center">
-              <button
-                className="btn-secondary"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={deleting}
-              >
-                {t('account.deleteAccountCancel').toLowerCase()}
-              </button>
-              <button
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all text-base flex items-center gap-2 justify-center"
-                onClick={handleDeleteAccount}
-                disabled={deleting}
-              >
-                <span>🗑️</span> {deleting ? t('common.loading').toLowerCase() : t('account.deleteAccount').toLowerCase()}
-              </button>
-            </div>
-            {deleteMsg && <div className="mt-4 text-sm text-red-700">{deleteMsg}</div>}
+          {/* My Meetups Section */}
+          <div className="card mb-8">
+            <h2 className="mobile-heading text-[#37474f] mb-6">{t('account.myMeetups')}</h2>
+            {meetupsLoading ? (
+              <SkeletonLoader />
+            ) : meetupsError ? (
+              <div className="text-red-500">{meetupsError}</div>
+            ) : (
+              <MeetupsList meetups={myMeetups} t={t} />
+            )}
           </div>
-        )}
+
+          {/* Danger Zone */}
+          <div className="card border-2 border-red-500">
+            <h2 className="mobile-heading text-red-500 mb-6">{t('account.dangerZone')}</h2>
+            {showDeleteConfirm ? (
+              <div className="space-y-4">
+                <p className="mobile-text text-red-500">{t('account.deleteConfirm')}</p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deleting}
+                    className="btn-primary bg-red-500 hover:bg-red-600 active:scale-95 active:bg-[#b2dfdb] flex-1"
+                  >
+                    {deleting ? t('common.deleting') : t('account.confirmDelete')}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="btn-secondary active:scale-95 active:bg-[#b2dfdb] flex-1"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-[#b2dfdb]"
+              >
+                {t('account.deleteAccount')}
+              </button>
+            )}
+          </div>
+
+          {/* Logout Button */}
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={handleLogout}
+              className="btn-secondary active:scale-95 active:bg-[#b2dfdb]"
+            >
+              {t('account.logout')}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
-  // Helper om datum te parsen en te vergelijken
-  const parseDate = (dateStr: string) => {
-    // Verwacht formaat: YYYY-MM-DD
-    return new Date(dateStr + 'T00:00:00');
-  };
-  const now = new Date();
-  // Splitsen in aankomend en voltooid
-  const upcoming = meetups.filter(m => {
-    const d = parseDate(m.selected_date);
-    return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  });
-  const past = meetups.filter(m => {
-    const d = parseDate(m.selected_date);
-    return d < new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  });
-  // Sorteer op datum, nieuwste eerst
-  const sortDesc = (a: Invitation, b: Invitation) => parseDate(b.selected_date).getTime() - parseDate(a.selected_date).getTime();
-  upcoming.sort(sortDesc);
-  past.sort(sortDesc);
-
-  const renderMeetup = (m: Invitation) => (
+// Gememoizeerd lijstitem
+const MeetupListItem = React.memo(function MeetupListItem({ m, t }: { m: Invitation, t: any }) {
+  return (
     <li key={m.id} className="bg-[#fff7f3] rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-[#ff914d]/10 mb-2">
       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
         <div className="font-semibold text-primary-700 min-w-[110px]">{m.selected_date}{m.selected_time && <span> &bull; {m.selected_time}</span>}</div>
@@ -700,6 +738,38 @@ const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
       <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === 'confirmed' ? 'bg-green-100 text-green-700' : m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}>{t(`account.status.${m.status}`)}</span>
     </li>
   );
+});
+
+const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
+  // Helper om datum te parsen en te vergelijken
+  const parseDate = (dateStr: string) => {
+    // Verwacht formaat: YYYY-MM-DD
+    return new Date(dateStr + 'T00:00:00');
+  };
+  const now = new Date();
+
+  // useMemo voor gefilterde/sorteerde lijsten
+  const upcoming = useMemo(() =>
+    meetups
+      .filter(m => parseDate(m.selected_date) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+      .sort((a, b) => parseDate(b.selected_date).getTime() - parseDate(a.selected_date).getTime())
+  , [meetups]);
+
+  const past = useMemo(() =>
+    meetups
+      .filter(m => parseDate(m.selected_date) < new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+      .sort((a, b) => parseDate(b.selected_date).getTime() - parseDate(a.selected_date).getTime())
+  , [meetups]);
+
+  // Voorbeeld virtualisatie (optioneel, alleen bij grote lijsten):
+  // import { FixedSizeList as List } from 'react-window';
+  // <List height={400} itemCount={upcoming.length} itemSize={80} width="100%">
+  //   {({ index, style }) => (
+  //     <div style={style}>
+  //       <MeetupListItem m={upcoming[index]} t={t} />
+  //     </div>
+  //   )}
+  // </List>
 
   return (
     <div className="flex flex-col gap-6">
@@ -707,7 +777,7 @@ const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
         <div>
           <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.upcomingMeetups')}</h3>
           <ul className="space-y-2">
-            {upcoming.map(renderMeetup)}
+            {upcoming.map(m => <MeetupListItem key={m.id} m={m} t={t} />)}
           </ul>
         </div>
       )}
@@ -715,7 +785,7 @@ const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
         <div>
           <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.pastMeetups')}</h3>
           <ul className="space-y-2">
-            {past.map(renderMeetup)}
+            {past.map(m => <MeetupListItem key={m.id} m={m} t={t} />)}
           </ul>
         </div>
       )}

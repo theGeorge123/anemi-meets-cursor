@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import LoadingIndicator from '../components/LoadingIndicator';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 // TypeScript interfaces voor typeveiligheid
 interface Invitation {
@@ -249,7 +251,12 @@ const Respond = () => {
   }
 
   if (loading) {
-    return <div className="max-w-2xl mx-auto text-center py-12">{t('common.loading')}</div>;
+    return (
+      <div className="max-w-2xl mx-auto text-center py-12">
+        <LoadingIndicator label={t('common.loading')} size="md" className="my-4" />
+        <SkeletonLoader count={2} height="h-12" className="my-2" ariaLabel={t('common.loading')} />
+      </div>
+    );
   }
   if (error) {
     return <div className="max-w-2xl mx-auto text-center py-12 text-red-500">{error}</div>;
@@ -340,7 +347,7 @@ const Respond = () => {
           disabled={status === 'loading'}
         >
           {status === 'loading' ? (
-            <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
+            <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
           ) : null}
           {status === 'loading' ? t('common.loading') : t('respond.sending')}
         </button>

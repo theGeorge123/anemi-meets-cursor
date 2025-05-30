@@ -1,0 +1,14 @@
+{
+  "welcome": {
+    "title": "Welcome to Anemi Meets",
+    "description": "Your new platform for connecting with others and sharing experiences. Let's get you started with a quick tour of what we offer."
+  },
+  "features": {
+    "title": "Discover Our Features",
+    "description": "Explore our powerful features including real-time chat, event creation, and community engagement tools. Everything you need to connect and collaborate."
+  },
+  "getting_started": {
+    "title": "Ready to Begin",
+    "description": "You're all set to start your journey! Create your first event, join a community, or start chatting with other members."
+  }
+} 

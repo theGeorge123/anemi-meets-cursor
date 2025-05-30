@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -77,7 +78,7 @@ const Login = () => {
       }
       setError(msg);
     } else {
-      navigate('/account');
+      navigate('/dashboard');
     }
     setLoading(false);
   };
@@ -181,7 +182,7 @@ const Login = () => {
               disabled={resetLoading}
             >
               {resetLoading ? (
-                <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
+                <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
               ) : null}
               {resetLoading ? t('common.loading') : t('login.forgotPassword')}
             </button>
@@ -197,7 +198,7 @@ const Login = () => {
           disabled={loading}
         >
           {loading ? (
-            <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
+            <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
           ) : null}
           {loading ? t('common.loading') : t('common.login')}
         </button>
