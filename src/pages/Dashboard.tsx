@@ -15,7 +15,6 @@ interface Invitation {
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  const [user, setUser] = useState<any>(null);
   const [meetups, setMeetups] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +29,6 @@ const Dashboard = () => {
         navigate('/login');
         return;
       }
-      setUser(session.user);
       const { data, error } = await supabase
         .from('invitations')
         .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
