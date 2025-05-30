@@ -1,54 +1,12 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
-import Home from './pages/Home';
-import CreateMeetup from './pages/CreateMeetup';
-import Invite from './pages/Invite';
-import Respond from './pages/Respond';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
+import { useState } from 'react';
 import Footer from './components/Footer';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import CookiePolicy from './pages/CookiePolicy';
-import Terms from './pages/Terms';
-import Confirmed from './pages/Confirmed';
-import Account from './pages/Account';
-import Dashboard from './pages/Dashboard';
+import AppRoutes from './AppRoutes';
 
 function App() {
-  const { i18n, t } = useTranslation();
+  const { i18n } = useTranslation();
   const [language, setLanguage] = useState('nl');
-  const [sessionExpiresSoon, setSessionExpiresSoon] = useState(false);
-
-  useEffect(() => {
-    i18n.changeLanguage('nl');
-  }, [i18n]);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        if (session.expires_at) {
-          const expiresIn = session.expires_at * 1000 - Date.now();
-          setSessionExpiresSoon(expiresIn < 2 * 60 * 1000);
-        }
-      } else {
-        setSessionExpiresSoon(false);
-      }
-    };
-    fetchUser();
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      fetchUser();
-    });
-    window.addEventListener('profile-emoji-updated', fetchUser);
-    const interval = setInterval(fetchUser, 60 * 1000);
-    return () => {
-      listener?.subscription.unsubscribe();
-      window.removeEventListener('profile-emoji-updated', fetchUser);
-      clearInterval(interval);
-    };
-  }, []);
 
   const toggleLanguage = () => {
     const newLang = language === 'en' ? 'nl' : 'en';
@@ -105,28 +63,8 @@ function App() {
             </div>
           </div>
         </nav>
-
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {sessionExpiresSoon && (
-            <div className="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-900 text-center py-2 z-50 font-semibold shadow-lg">
-              {t('common.sessionExpiresSoon')}
-              <Link to="/login" className="ml-4 underline text-primary-700">{t('common.login')}</Link>
-            </div>
-          )}
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/create-meetup" element={<CreateMeetup />} />
-            <Route path="/invite/:token" element={<Invite />} />
-            <Route path="/respond" element={<Respond />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/cookies" element={<CookiePolicy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/confirmed" element={<Confirmed />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Routes>
+          <AppRoutes />
         </main>
         <Footer />
       </div>

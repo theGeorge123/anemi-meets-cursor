@@ -101,7 +101,7 @@ const Account = () => {
       const { data: meetups, error: meetupsError } = await supabase
         .from('invitations')
         .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
-        .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
+        .or(`invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}"`);
       if (meetupsError) {
         setMeetupsError(t('account.errorLoadingMeetups'));
       } else {
