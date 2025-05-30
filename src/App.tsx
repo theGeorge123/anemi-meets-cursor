@@ -1,4 +1,4 @@
-import { BrowserRouter, Link } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import Footer from './components/Footer';
@@ -27,12 +27,6 @@ function App() {
     window.addEventListener('profile-emoji-updated', fetchEmoji);
     return () => window.removeEventListener('profile-emoji-updated', fetchEmoji);
   }, []);
-
-  const toggleLanguage = () => {
-    const newLang = language === 'en' ? 'nl' : 'en';
-    setLanguage(newLang);
-    i18n.changeLanguage(newLang);
-  };
 
   return (
     <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>

@@ -1,7 +1,6 @@
 import { useState, useContext } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../supabaseClient';
 import logo from '../../assets/logo.svg';
 import { NavigationContext } from '../context/NavigationContext';
 
@@ -13,7 +12,6 @@ const NAV_LINKS = [
 
 const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
   const { t, i18n } = useTranslation();
-  const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const { activePath, isAuthenticated } = useContext(NavigationContext);
@@ -21,12 +19,6 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
   // Taalwissel
   const toggleLang = () => {
     i18n.changeLanguage(i18n.language === 'nl' ? 'en' : 'nl');
-  };
-
-  // Sluit menu bij navigatie
-  const handleNav = (to: string) => {
-    setMenuOpen(false);
-    navigate(to);
   };
 
   // Filter links op authenticatie

@@ -35,7 +35,6 @@ Uitleg in code-comments zodat een beginner snapt wat er gebeurt.
 
 import React, { useState } from 'react';
 import { Player } from '@lottiefiles/react-lottie-player';
-import LoadingIndicator from './LoadingIndicator';
 import { useSwipeable } from 'react-swipeable';
 // Confetti animatie-bestand (bijv. public/confetti.json)
 // Download een confetti lottie van lottiefiles.com en plaats in public/confetti.json
