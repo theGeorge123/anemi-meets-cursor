@@ -252,7 +252,6 @@ const CreateMeetup = () => {
         setFormError(msg);
         return;
       }
-      const createdInvite = insertData[0];
       // Succes: samenvatting tonen
       setSuccessSummary({
         date: selected_date,

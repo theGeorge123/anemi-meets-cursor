@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next'; // Verwijderd, niet gebruikt
 import { useState, useEffect } from 'react';
 import Footer from './components/Footer';
 import AppRoutes from './AppRoutes';

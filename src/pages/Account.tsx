@@ -32,7 +32,6 @@ const Account = () => {
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [genderSaving, setGenderSaving] = useState(false);
-  const [displayName, setDisplayName] = useState('');
   const [age, setAge] = useState<number | ''>('');
   const [ageSaving, setAgeSaving] = useState(false);
   const [myMeetups, setMyMeetups] = useState<Invitation[]>([]);
@@ -89,7 +88,6 @@ const Account = () => {
       }
       if (testProfiles) {
         setUser(testProfiles as Profile);
-        setDisplayName(testProfiles.full_name || generateRandomName());
         if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
         if (testProfiles.gender) setGender(testProfiles.gender);
         if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
@@ -97,7 +95,6 @@ const Account = () => {
         setIsPrivate(!!testProfiles.is_private);
       } else {
         setUser(null);
-        setDisplayName(generateRandomName());
       }
       setEmail(session.user.email || '');
       setName(session.user.user_metadata?.full_name || '');
@@ -193,8 +190,6 @@ const Account = () => {
     const { error: metaError } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
     if (error || metaError) {
       console.error('Fout bij opslaan naam:', error || metaError);
-    } else {
-      setDisplayName(name.trim());
     }
     setNameSaving(false);
   };
