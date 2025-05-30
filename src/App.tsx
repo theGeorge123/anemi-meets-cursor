@@ -14,6 +14,7 @@ import CookiePolicy from './pages/CookiePolicy';
 import Terms from './pages/Terms';
 import Confirmed from './pages/Confirmed';
 import Account from './pages/Account';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   const { i18n, t } = useTranslation();
@@ -124,6 +125,7 @@ function App() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/confirmed" element={<Confirmed />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </main>
         <Footer />

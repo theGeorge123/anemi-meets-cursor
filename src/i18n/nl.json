@@ -1,0 +1,7 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "noMeetups": "Je hebt nog geen ontmoetingen.",
+    "errorLoadingMeetups": "Fout bij het laden van je ontmoetingen."
+  }
+} 
