@@ -35,12 +35,14 @@ const CreateMeetup = () => {
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
     const fetchCities = async () => {
       const { data } = await supabase.from('cities').select('*').eq('name', 'Rotterdam');
-      if (data) setCities(data);
+      if (data) setCities(data as City[]);
     };
     fetchCities();
   }, []);
@@ -50,7 +52,7 @@ const CreateMeetup = () => {
     const fetchCafes = async () => {
       if (!formData.city) return setCafes([]);
       const { data } = await supabase.from('cafes').select('*').eq('city', formData.city);
-      if (data) setCafes(data);
+      if (data) setCafes(data as Cafe[]);
     };
     fetchCafes();
   }, [formData.city]);
@@ -108,19 +110,23 @@ const CreateMeetup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setFormError(null);
+    setLoading(true);
     // Validatie
     if (formData.dates.length === 0) {
-      alert(t('common.requiredTime'));
+      setFormError(t('common.requiredTime'));
+      setLoading(false);
       return;
     }
     const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
     if (!hasAnyTime) {
-      alert(t('common.requiredTime'));
+      setFormError(t('common.requiredTime'));
+      setLoading(false);
       return;
     }
     if (!formData.name || !formData.city || !selectedCafe) {
-      alert(t('common.errorCreatingInvite'));
+      setFormError(t('common.errorMissingFields', { fields: [!formData.name ? t('common.name') : '', !formData.city ? t('common.city') : '', !selectedCafe ? t('common.cafe') : ''].filter(Boolean).join(', ') }));
+      setLoading(false);
       return;
     }
 
@@ -135,7 +141,8 @@ const CreateMeetup = () => {
 
     const firstDateOpt = filteredDateTimeOptions.find(opt => opt.times.length > 0);
     if (!firstDateOpt) {
-      alert(t('common.requiredTime'));
+      setFormError(t('common.requiredTime'));
+      setLoading(false);
       return;
     }
 
@@ -162,7 +169,27 @@ const CreateMeetup = () => {
         .insert(payload)
         .select();
       if (insertError || !insertData || insertData.length === 0) {
-        alert(insertError?.message || 'Er ging iets mis bij het aanmaken van de uitnodiging.');
+        let msg = t('common.errorCreatingInvite');
+        if (insertError) {
+          const code = insertError.code || '';
+          switch (code) {
+            case 'error_network':
+              msg = t('common.errorNetwork');
+              break;
+            case 'validation_failed':
+              msg = t('common.errorValidationFailed');
+              break;
+            default:
+              const errMsg = insertError.message?.toLowerCase() || '';
+              if (errMsg.includes('network')) {
+                msg = t('common.errorNetwork');
+              } else if (errMsg.includes('valid')) {
+                msg = t('common.errorValidationFailed');
+              }
+          }
+        }
+        setFormError(msg);
+        setLoading(false);
         return;
       }
       const createdInvite = insertData[0];
@@ -175,8 +202,9 @@ const CreateMeetup = () => {
         }, 2000);
       }
     } catch (err) {
-      alert('Er ging iets mis met de verbinding. Probeer het opnieuw.');
+      setFormError(t('common.errorNetwork'));
     }
+    setLoading(false);
   };
 
   const handleCityChange = (city: string) => {
@@ -184,8 +212,8 @@ const CreateMeetup = () => {
     // Zoek cafés voor deze stad en selecteer er direct één (random)
     supabase.from('cafes').select('*').eq('city', city).then(({ data }) => {
       if (data && data.length > 0) {
-        setCafes(data);
-        setSelectedCafe(data[Math.floor(Math.random() * data.length)]);
+        setCafes(data as Cafe[]);
+        setSelectedCafe((data as Cafe[])[Math.floor(Math.random() * data.length)]);
       } else {
         setCafes([]);
         setSelectedCafe(null);
@@ -362,7 +390,7 @@ const CreateMeetup = () => {
               // Basic email validation for non-logged-in users
               if (!user) {
                 if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-                  setEmailError('Vul een geldig e-mailadres in.');
+                  setEmailError(t('common.error_invalid_email'));
                   return;
                 } else {
                   setEmailError('');
@@ -531,6 +559,8 @@ const CreateMeetup = () => {
           />
         </div>
       )}
+
+      {formError && <div className="text-red-500 text-sm mb-2">{formError}</div>}
     </div>
   );
 };

@@ -3,6 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
+// TypeScript interfaces voor typeveiligheid
+interface Invitation {
+  token: string;
+  cafe_id?: string;
+  cafe_name?: string;
+  cafe_address?: string;
+  date_time_options?: { date: string; times: string[] }[];
+}
+interface Cafe { name: string; address: string; image_url?: string; }
+
 const Respond = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -13,11 +23,11 @@ const Respond = () => {
   const [availableTimes, setAvailableTimes] = useState<{date: string, time: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [cafe, setCafe] = useState<any>(null);
+  const [cafe, setCafe] = useState<Cafe | null>(null);
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [status, setStatus] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
-  const [invitation, setInvitation] = useState<any>(null);
+  const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [confirmationInfo, setConfirmationInfo] = useState<any>(null);
 
@@ -39,12 +49,12 @@ const Respond = () => {
         setLoading(false);
         return;
       }
-      setInvitation(invitation);
+      setInvitation(invitation as Invitation);
       // Haal cafe details op via cafe_id
       if (invitation.cafe_id) {
         const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address, image_url').eq('id', invitation.cafe_id).single();
         if (!cafeError && cafeData) {
-          setCafe({ name: cafeData.name, address: cafeData.address, image_url: cafeData.image_url });
+          setCafe({ name: cafeData.name, address: cafeData.address, image_url: cafeData.image_url } as Cafe);
         } else {
           setCafe(null);
         }
@@ -148,7 +158,37 @@ const Respond = () => {
       const data = await res.json();
       if (!res.ok || !data.success) {
         setStatus("error");
-        setErrorMsg(data.error || t('respond.genericError'));
+        // Herkenbare foutmeldingen netjes vertalen
+        let msg = t('respond.genericError');
+        const code = data.error_code || '';
+        switch (code) {
+          case 'missing_cafe_id':
+            msg = t('common.errorMissingFields', { fields: t('common.cafe') });
+            break;
+          case 'missing_email':
+            msg = t('common.errorMissingFields', { fields: t('common.email') });
+            break;
+          case 'authorization':
+            msg = t('respond.errorSendMail');
+            break;
+          case 'expired_or_missing':
+            msg = t('respond.expiredOrMissing');
+            break;
+          default:
+            if (data && typeof data.error === 'string') {
+              const err = data.error.toLowerCase();
+              if (err.includes('missing cafe id')) {
+                msg = t('common.errorMissingFields', { fields: t('common.cafe') });
+              } else if (err.includes('missing email')) {
+                msg = t('common.errorMissingFields', { fields: t('common.email') });
+              } else if (err.includes('authorization')) {
+                msg = t('respond.errorSendMail');
+              } else if (err.includes('expired') || err.includes('not found')) {
+                msg = t('respond.expiredOrMissing');
+              }
+            }
+        }
+        setErrorMsg(msg);
         console.error("Supabase error:", data.error || data);
       } else {
         setStatus("done");
@@ -290,11 +330,14 @@ const Respond = () => {
         </div>
 
         <button
+          className="btn-primary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium"
           type="submit"
-          className="btn-primary w-full"
-          disabled={status === "sending"}
+          disabled={status === 'loading'}
         >
-          {status === "sending" ? t('respond.sending') : t('common.submit')}
+          {status === 'loading' ? (
+            <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
+          ) : null}
+          {status === 'loading' ? t('common.loading') : t('respond.sending')}
         </button>
       </form>
     </div>

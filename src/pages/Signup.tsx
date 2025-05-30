@@ -5,12 +5,20 @@ import { useTranslation } from 'react-i18next';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
+// TypeScript interface voor typeveiligheid
+interface SignupForm {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 const Signup = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const steps = [t('signup.steps')[0], t('signup.steps')[1], t('signup.steps')[2], t('signup.overviewTitle')];
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<SignupForm>({
     name: '',
     email: '',
     password: '',
@@ -24,13 +32,29 @@ const Signup = () => {
   const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
+  // Helper voor sterke wachtwoordvalidatie
+  const validatePassword = (pw: string) => {
+    if (pw.length < 8) return t('common.passwordTooShort');
+    if (!/[A-Z]/.test(pw)) return t('common.passwordNoUpper');
+    if (!/[a-z]/.test(pw)) return t('common.passwordNoLower');
+    if (!/[0-9]/.test(pw)) return t('common.passwordNoNumber');
+    if (!/[!@#$%^&*(),.?":{}|<>\[\]\\/;'+=_-]/.test(pw)) return t('common.passwordNoSpecial');
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
     setLoading(true);
+    const pwError = validatePassword(form.password);
+    if (pwError) {
+      setError(pwError);
+      setLoading(false);
+      return;
+    }
     if (form.password !== form.confirmPassword) {
-      setError('Wachtwoorden komen niet overeen.');
+      setError(t('signup.passwordsNoMatch'));
       setLoading(false);
       return;
     }
@@ -43,11 +67,51 @@ const Signup = () => {
       }
     });
     if (signUpError) {
-      if (signUpError.message && signUpError.message.toLowerCase().includes('user already registered')) {
-        setError('Dit e-mailadres is al geregistreerd. Log in of gebruik een ander e-mailadres.');
-      } else {
-        setError('Registratie mislukt. Probeer het later opnieuw.');
+      let msg = t('signup.errorGeneric');
+      // Gebruik error.code als die er is
+      const code = signUpError.code || '';
+      switch (code) {
+        case 'user_already_exists':
+        case 'email_exists':
+          msg = t('signup.errorAlreadyRegistered');
+          break;
+        case 'email_address_invalid':
+        case 'invalid_email':
+          msg = t('common.error_invalid_email');
+          break;
+        case 'weak_password':
+          msg = t('common.passwordTooShort');
+          break;
+        case 'over_email_send_rate_limit':
+        case 'over_request_rate_limit':
+          msg = t('signup.errorRateLimit');
+          break;
+        case 'signup_disabled':
+          msg = t('signup.errorSignupDisabled');
+          break;
+        case 'validation_failed':
+          msg = t('signup.errorValidationFailed');
+          break;
+        case 'unexpected_failure':
+        case 'internal_server_error':
+          msg = t('signup.errorServer');
+          break;
+        default:
+          // Fallback op message string als code ontbreekt
+          const errMsg = signUpError.message?.toLowerCase() || '';
+          if (errMsg.includes('user already registered')) {
+            msg = t('signup.errorAlreadyRegistered');
+          } else if (errMsg.includes('invalid email')) {
+            msg = t('common.error_invalid_email');
+          } else if (errMsg.includes('weak password')) {
+            msg = t('common.passwordTooShort');
+          } else if (errMsg.includes('rate limit')) {
+            msg = t('signup.errorRateLimit');
+          } else if (errMsg.includes('password')) {
+            msg = t('common.passwordNoSpecial');
+          }
       }
+      setError(msg);
       setLoading(false);
       return;
     }
@@ -75,8 +139,9 @@ const Signup = () => {
         return /.+@.+\..+/.test(form.email);
       case 2:
         return (
-          form.password.length >= 6 &&
-          form.confirmPassword.length >= 6 &&
+          form.password.length >= 8 &&
+          form.confirmPassword.length >= 8 &&
+          !validatePassword(form.password) &&
           form.password === form.confirmPassword
         );
       case 3:
@@ -167,7 +232,7 @@ const Signup = () => {
               value={form.password}
               onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
               required
-              placeholder={t('common.password') + ' (min. 6)'}
+              placeholder={t('common.password') + ' (min. 8, hoofdletter, cijfer, speciaal)'}
               autoFocus
             />
             <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
@@ -182,8 +247,12 @@ const Signup = () => {
               required
               placeholder={t('signup.confirmPassword')}
             />
+            {/* Toon wachtwoordvalidatie live */}
+            {form.password && validatePassword(form.password) && (
+              <div className="text-red-500 text-sm mt-2">{validatePassword(form.password)}</div>
+            )}
             {form.password && form.confirmPassword && form.password !== form.confirmPassword && (
-              <div className="text-red-500 text-sm mt-2">Wachtwoorden komen niet overeen.</div>
+              <div className="text-red-500 text-sm mt-2">{t('signup.passwordsNoMatch')}</div>
             )}
           </div>
         )}
@@ -215,8 +284,10 @@ const Signup = () => {
             className={`btn-primary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             disabled={loading || !isStepValid()}
           >
-            {loading ? <span className="animate-spin mr-2 w-5 h-5 border-2 border-white border-t-[#ff914d] rounded-full inline-block"></span> : null}
-            {t('common.createAccount')}
+            {loading ? (
+              <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
+            ) : null}
+            {loading ? t('common.loading') : t('common.createAccount')}
           </button>
         )}
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
