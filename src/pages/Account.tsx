@@ -52,7 +52,6 @@ const Account = () => {
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
-  const [prefsMsg, setPrefsMsg] = useState<string | null>(null);
   const [editName, setEditName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
   const [editGender, setEditGender] = useState(false);

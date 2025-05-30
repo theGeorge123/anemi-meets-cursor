@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import logo from '../../assets/logo.svg';
 import { NavigationContext } from '../context/NavigationContext';
@@ -12,7 +12,6 @@ const NAV_LINKS = [
 
 const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const { activePath, isAuthenticated } = useContext(NavigationContext);
 

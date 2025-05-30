@@ -7,7 +7,7 @@ interface UseApiReturn<T> {
   data: T | null;
   loading: boolean;
   error: Error | null;
-  execute: (config?: AxiosRequestConfig) => Promise<void>;
+  execute: (config?: AxiosRequestConfig) => Promise<T>;
   reset: () => void;
 }
 

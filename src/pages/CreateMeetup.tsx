@@ -253,7 +253,6 @@ const CreateMeetup = () => {
         return;
       }
       const createdInvite = insertData[0];
-      const responseToken = createdInvite.token;
       // Succes: samenvatting tonen
       setSuccessSummary({
         date: selected_date,
