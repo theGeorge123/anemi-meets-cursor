@@ -1,2 +1,12 @@
 node_modules
+dist
 .env
+.env.local
+.DS_Store
+*.log
+# Vercel
+.vercel
+# Mac
+.DS_Store
+# VSCode
+.vscode/ 
