@@ -43,8 +43,13 @@ const Respond = () => {
         return;
       }
       // Haal invitation op
-      const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).single();
-      if (invitationError || !invitation) {
+      const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).maybeSingle();
+      if (invitationError) {
+        setError(t('respond.expiredOrMissing'));
+        setLoading(false);
+        return;
+      }
+      if (!invitation) {
         setError(t('respond.expiredOrMissing'));
         setLoading(false);
         return;
@@ -52,7 +57,7 @@ const Respond = () => {
       setInvitation(invitation as Invitation);
       // Haal cafe details op via cafe_id
       if (invitation.cafe_id) {
-        const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address, image_url').eq('id', invitation.cafe_id).single();
+        const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address, image_url').eq('id', invitation.cafe_id).maybeSingle();
         if (!cafeError && cafeData) {
           setCafe({ name: cafeData.name, address: cafeData.address, image_url: cafeData.image_url } as Cafe);
         } else {

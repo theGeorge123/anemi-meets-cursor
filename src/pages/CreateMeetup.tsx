@@ -72,12 +72,12 @@ const CreateMeetup = () => {
           return;
         }
         // Fallback: try profiles table
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('full_name')
           .eq('id', session.user.id)
-          .single();
-        if (profile && profile.full_name && !formData.name) {
+          .maybeSingle();
+        if (!profileError && profile && profile.full_name && !formData.name) {
           setFormData(prev => ({ ...prev, name: profile.full_name }));
         }
       }

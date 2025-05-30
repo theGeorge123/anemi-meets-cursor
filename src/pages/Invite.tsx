@@ -39,8 +39,10 @@ const Invite = () => {
           .from('invitations')
           .select('selected_date, selected_time, cafe_id')
           .eq('token', token)
-          .single();
-        if (inviteError || !inviteData) {
+          .maybeSingle();
+        if (inviteError) {
+          setError(t('invite.errorNotFound'));
+        } else if (!inviteData) {
           setError(t('invite.errorNotFound'));
         } else {
           // If a cafe is linked, fetch its details for display
@@ -49,7 +51,7 @@ const Invite = () => {
               .from('cafes')
               .select('name, address')
               .eq('id', inviteData.cafe_id)
-              .single();
+              .maybeSingle();
             if (!cafeError && cafeData) {
               (inviteData as InvitationWithCafe).cafe_name = cafeData.name;
               (inviteData as InvitationWithCafe).cafe_address = cafeData.address;

@@ -3,5 +3,19 @@
     "title": "Dashboard",
     "noMeetups": "Je hebt nog geen ontmoetingen.",
     "errorLoadingMeetups": "Fout bij het laden van je ontmoetingen."
+  },
+  "account": {
+    "profileinfo": "profielinformatie",
+    "changename": "naam wijzigen",
+    "changeemail": "e-mail wijzigen",
+    "changegender": "geslacht wijzigen",
+    "changeage": "leeftijd wijzigen",
+    "noage": "geen leeftijd ingevuld",
+    "noGender": "geen geslacht ingevuld",
+    "nameEditHint": "naam verkeerd gespeld? pas hier aan",
+    "emailEditHint": "e-mail verkeerd? pas hier aan",
+    "ageEditHint": "leeftijd aanpassen? scroll of typ hier",
+    "cancel": "annuleren",
+    "save": "opslaan"
   }
 } 

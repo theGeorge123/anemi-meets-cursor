@@ -1,0 +1,16 @@
+{
+  "account": {
+    "profileinfo": "profile info",
+    "changename": "change name",
+    "changeemail": "change email",
+    "changegender": "change gender",
+    "changeage": "change age",
+    "noage": "no age entered",
+    "noGender": "no gender entered",
+    "nameEditHint": "spelled your name wrong? change it here",
+    "emailEditHint": "wrong email? change it here",
+    "ageEditHint": "want to change your age? scroll or type here",
+    "cancel": "cancel",
+    "save": "save"
+  }
+} 
