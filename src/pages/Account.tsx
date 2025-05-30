@@ -11,6 +11,8 @@ interface Profile {
   emoji?: string;
   gender?: string;
   age?: number;
+  wants_updates: boolean;
+  is_private: boolean;
 }
 
 interface Invitation {
@@ -54,6 +56,10 @@ const Account = () => {
   const { t } = useTranslation();
   const [pendingGender, setPendingGender] = useState<string>('');
   const [pendingAge, setPendingAge] = useState<number | ''>('');
+  const [wantsUpdates, setWantsUpdates] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [prefsSaving, setPrefsSaving] = useState(false);
+  const [prefsMsg, setPrefsMsg] = useState<string | null>(null);
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
   const genderOptions = t('common.genderOptions', { returnObjects: true }) as { value: string, label: string }[];
@@ -74,13 +80,15 @@ const Account = () => {
         return;
       }
       // Haal profiel op
-      const { data: profile } = await supabase.from('profiles').select('id, full_name, email, emoji, gender, age').eq('id', session.user.id).single<Profile>();
+      const { data: profile } = await supabase.from('profiles').select('id, full_name, email, emoji, gender, age, wants_updates, is_private').eq('id', session.user.id).single<Profile>();
       if (profile) {
         setUser(profile);
         setDisplayName(profile.full_name || generateRandomName());
         if (profile.emoji) setSelectedEmoji(profile.emoji);
         if (profile.gender) setGender(profile.gender);
         if (profile.age !== undefined && profile.age !== null) setAge(profile.age);
+        setWantsUpdates(!!profile.wants_updates);
+        setIsPrivate(!!profile.is_private);
       } else {
         setUser(null);
         setDisplayName(generateRandomName());
@@ -338,6 +346,20 @@ const Account = () => {
       setDeleteMsg(t('account.deleteAccountError'));
       setDeleting(false);
     }
+  };
+
+  // Notificatie- en privacyvoorkeuren opslaan
+  const handlePrefsSave = async () => {
+    if (!user || !user.id) return;
+    setPrefsSaving(true);
+    setPrefsMsg(null);
+    const { error } = await supabase.from('profiles').update({ wants_updates: wantsUpdates, is_private: isPrivate }).eq('id', user.id);
+    if (error) {
+      setPrefsMsg(t('account.errorSaveFailed'));
+    } else {
+      setPrefsMsg(t('account.saveSuccess'));
+    }
+    setPrefsSaving(false);
   };
 
   return (
@@ -648,6 +670,44 @@ const Account = () => {
                 {deleteMsg && <div className="mt-4 text-sm text-red-700">{deleteMsg}</div>}
               </div>
             )}
+          </div>
+          {/* Notificatie- en privacyvoorkeuren */}
+          <div className="bg-white/70 rounded-3xl p-6 shadow text-center mt-8 w-full border-2 border-[#b2dfdb]/40">
+            <h2 className="text-xl font-bold text-primary-700 mb-2">{t('account.preferencesTitle')}</h2>
+            <div className="flex flex-col gap-4 items-start max-w-xs mx-auto">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={wantsUpdates}
+                  onChange={e => setWantsUpdates(e.target.checked)}
+                  className="h-5 w-5 text-primary-600 rounded"
+                  disabled={prefsSaving}
+                />
+                <span>{t('account.prefUpdates')}</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={isPrivate}
+                  onChange={e => setIsPrivate(e.target.checked)}
+                  className="h-5 w-5 text-primary-600 rounded"
+                  disabled={prefsSaving}
+                />
+                <span>{t('account.prefPrivate')}</span>
+              </label>
+              <button
+                className="btn-secondary mt-2 flex items-center justify-center"
+                type="button"
+                onClick={handlePrefsSave}
+                disabled={prefsSaving}
+              >
+                {prefsSaving ? (
+                  <span className="animate-spin mr-2 w-5 h-5 border-2 border-primary-600 border-t-[#ff914d] rounded-full inline-block"></span>
+                ) : null}
+                {prefsSaving ? t('common.loading') : t('account.save')}
+              </button>
+              {prefsMsg && <div className="text-sm mt-2 text-green-700">{prefsMsg}</div>}
+            </div>
           </div>
         </div>
       )}

@@ -18,8 +18,6 @@ import Account from './pages/Account';
 function App() {
   const { i18n, t } = useTranslation();
   const [language, setLanguage] = useState('nl');
-  const [profileEmoji, setProfileEmoji] = useState<string | null>(null);
-  const [sessionUser, setSessionUser] = useState<{ name: string; emoji?: string } | null>(null);
   const [sessionExpiresSoon, setSessionExpiresSoon] = useState(false);
 
   useEffect(() => {
@@ -32,16 +30,11 @@ function App() {
       if (session?.user) {
         const metaName = session.user.user_metadata?.full_name;
         const { data: profile } = await supabase.from('profiles').select('emoji, full_name').eq('id', session.user.id).single();
-        setSessionUser({
-          name: metaName || profile?.full_name || 'Account',
-          emoji: profile?.emoji || null,
-        });
         if (session.expires_at) {
           const expiresIn = session.expires_at * 1000 - Date.now();
           setSessionExpiresSoon(expiresIn < 2 * 60 * 1000);
         }
       } else {
-        setSessionUser(null);
         setSessionExpiresSoon(false);
       }
     };
@@ -107,7 +100,7 @@ function App() {
                   {language === 'en' ? 'NL' : 'EN'}
                 </button>
                 <Link to="/account" className="ml-2 text-2xl hover:text-primary-600 transition-colors" title="Account">
-                  <span role="img" aria-label="account">{profileEmoji || '👤'}</span>
+                  <span role="img" aria-label="account">👤</span>
                 </Link>
               </div>
             </div>

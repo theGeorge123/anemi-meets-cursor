@@ -36,7 +36,6 @@ const CreateMeetup = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   // Fetch cities (only Rotterdam)
   useEffect(() => {
@@ -111,22 +110,18 @@ const CreateMeetup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    setLoading(true);
     // Validatie
     if (formData.dates.length === 0) {
       setFormError(t('common.requiredTime'));
-      setLoading(false);
       return;
     }
     const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
     if (!hasAnyTime) {
       setFormError(t('common.requiredTime'));
-      setLoading(false);
       return;
     }
     if (!formData.name || !formData.city || !selectedCafe) {
       setFormError(t('common.errorMissingFields', { fields: [!formData.name ? t('common.name') : '', !formData.city ? t('common.city') : '', !selectedCafe ? t('common.cafe') : ''].filter(Boolean).join(', ') }));
-      setLoading(false);
       return;
     }
 
@@ -142,7 +137,6 @@ const CreateMeetup = () => {
     const firstDateOpt = filteredDateTimeOptions.find(opt => opt.times.length > 0);
     if (!firstDateOpt) {
       setFormError(t('common.requiredTime'));
-      setLoading(false);
       return;
     }
 
@@ -189,7 +183,6 @@ const CreateMeetup = () => {
           }
         }
         setFormError(msg);
-        setLoading(false);
         return;
       }
       const createdInvite = insertData[0];
@@ -204,7 +197,6 @@ const CreateMeetup = () => {
     } catch (err) {
       setFormError(t('common.errorNetwork'));
     }
-    setLoading(false);
   };
 
   const handleCityChange = (city: string) => {
