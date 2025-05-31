@@ -68,7 +68,7 @@ const CreateMeetup = () => {
   const [email, setEmail] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [successSummary, setSuccessSummary] = useState<{date: string, time: string, cafe: string} | null>(null);
+  const [successSummary, setSuccessSummary] = useState<{date: string, time: string, cafe: string, token?: string} | null>(null);
 
   // Yup schema binnen de component zodat t() werkt
   const contactSchema = yup.object().shape({
@@ -121,7 +121,10 @@ const CreateMeetup = () => {
       if (session?.user) {
         const metaName = session.user.user_metadata?.full_name;
         if (metaName && !formData.name) {
-          setFormData(prev => ({ ...prev, name: metaName }));
+          setFormData(prev => {
+            setTimeout(() => { trigger('name'); }, 0);
+            return { ...prev, name: metaName };
+          });
           return;
         }
         // Fallback: try profiles table
@@ -131,12 +134,15 @@ const CreateMeetup = () => {
           .eq('id', session.user.id)
           .maybeSingle();
         if (!profileError && profile && profile.full_name && !formData.name) {
-          setFormData(prev => ({ ...prev, name: profile.full_name }));
+          setFormData(prev => {
+            setTimeout(() => { trigger('name'); }, 0);
+            return { ...prev, name: profile.full_name };
+          });
         }
       }
     };
     fetchProfileName();
-  }, []);
+  }, [formData.name, trigger]);
 
   // Update window size for confetti
   useEffect(() => {
@@ -253,10 +259,12 @@ const CreateMeetup = () => {
         return;
       }
       // Succes: samenvatting tonen
+      const inviteToken = (insertData && insertData[0] && insertData[0].token) || token;
       setSuccessSummary({
         date: selected_date,
         time: selected_time,
         cafe: selectedCafe?.name || '',
+        token: inviteToken,
       });
       setShowSuccess(true);
       setShowConfetti(true);
@@ -377,34 +385,46 @@ const CreateMeetup = () => {
         {t('createMeetup.subtitle')}
       </p>
       {/* Voortgangsindicatie */}
-      <div className="mb-8 flex items-center gap-4">
-        <span className="text-primary-700 font-semibold">{t('createMeetup.progress', { step, total: TOTAL_STEPS })}</span>
-        <div className="flex gap-1">
-          {[...Array(TOTAL_STEPS)].map((_, i) => (
-            <div key={i} className={`w-3 h-3 rounded-full ${step === i + 1 ? 'bg-primary-600' : 'bg-primary-200'}`}></div>
+      <div className="mb-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+        <div className="flex gap-2 items-center">
+          {[1,2,3,4,5].map((s, i) => (
+            <React.Fragment key={s}>
+              <div className={`flex flex-col items-center mx-1`}>
+                <div className={`w-7 h-7 flex items-center justify-center rounded-full font-bold text-base border-2 ${step === s ? 'bg-primary-600 text-white border-primary-600' : 'bg-primary-100 text-primary-700 border-primary-200'}`}>{s}</div>
+                <span className={`text-xs mt-1 ${step === s ? 'text-primary-700 font-semibold' : 'text-gray-400'}`}>{[
+                  'Who are you?',
+                  'Pick a city',
+                  'Pick dates',
+                  'Pick a café',
+                  'Summary',
+                ][i]}</span>
+              </div>
+              {i < 4 && <div className="w-6 h-1 bg-primary-200 rounded-full mx-1" />}
+            </React.Fragment>
           ))}
         </div>
       </div>
       {/* Stap 1: Contactpersoon */}
       {step === 1 && (
         <form className="card bg-primary-50 p-6 rounded-xl shadow-md" onSubmit={rhfHandleSubmit(() => setStep(2))} autoComplete="off">
-          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.contactInfo')}</h2>
-          <label className="block text-gray-700 mb-2" htmlFor="name">{t('common.name')}</label>
-          <input
-            id="name"
-            type="text"
-            {...register('name')}
-            value={formData.name}
-            onChange={e => {
-              setFormData(prev => ({ ...prev, name: e.target.value }));
-              setValue('name', e.target.value);
-              trigger('name');
-            }}
-            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.name ? 'border-red-500' : formData.name ? 'border-green-500' : 'border-primary-200'}`}
-            placeholder={t('common.name')}
-            autoComplete="off"
-          />
-          {errors.name && <div className="text-red-500 text-sm mb-2">{errors.name.message}</div>}
+          <h2 className="text-xl font-semibold text-primary-700 mb-4">Who are you meeting up as today?</h2>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2" htmlFor="name">Your name or nickname <span className='italic'>(make it fun!)</span></label>
+            <input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={e => {
+                setFormData(prev => ({ ...prev, name: e.target.value }));
+                setValue('name', e.target.value);
+                trigger('name');
+              }}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.name ? 'border-red-500' : formData.name ? 'border-green-500' : 'border-primary-200'}`}
+              placeholder={t('common.name')}
+              autoComplete="off"
+            />
+            {errors.name && <div className="text-red-500 text-sm mb-2">{errors.name.message}</div>}
+          </div>
           {!user && (
             <div className="mb-2">
               <label className="block text-gray-700 mb-2" htmlFor="email">{t('common.email')}</label>
@@ -597,6 +617,26 @@ const CreateMeetup = () => {
                 time: successSummary.time,
                 cafe: successSummary.cafe
               })}</div>
+              {successSummary.token && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-2 my-2 flex flex-col gap-2">
+                  <span className="text-xs text-green-800">{t('createMeetup.inviteLink')}:</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={window.location.origin + '/invite/' + successSummary.token}
+                      readOnly
+                      className="flex-1 px-2 py-1 border border-green-200 rounded text-xs bg-green-100 text-green-900"
+                      style={{ minWidth: 0 }}
+                    />
+                    <button
+                      className="btn-secondary px-2 py-1 text-xs"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.origin + '/invite/' + successSummary.token);
+                      }}
+                    >{t('createMeetup.copyLink')}</button>
+                  </div>
+                </div>
+              )}
               <div className="flex gap-2 mt-2">
                 <button onClick={() => navigate('/dashboard')} className="btn-secondary px-3 py-1 text-sm">{t('createMeetup.toDashboard')}</button>
                 <button onClick={() => { setShowSuccess(false); setStep(1); }} className="btn-primary px-3 py-1 text-sm">{t('createMeetup.newMeetup')}</button>
@@ -605,7 +645,7 @@ const CreateMeetup = () => {
           }
           icon={<span>✅</span>}
           onClose={() => setShowSuccess(false)}
-          duration={4000}
+          duration={8000}
         />
       )}
       {/* Confetti bij succes */}

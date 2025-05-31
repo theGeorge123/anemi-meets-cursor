@@ -259,7 +259,7 @@ const Account = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="mobile-heading text-[#37474f] mb-8">{t('account.title')}</h1>
+          <h1 className="mobile-heading text-[#37474f] mb-8">{t('accountTitle')}</h1>
 
           {/* Profile Section */}
           <div className="card mb-8">
@@ -283,7 +283,7 @@ const Account = () => {
                 <div className="space-y-6">
                   {/* Name */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('account.name')}</label>
+                    <label className="w-full sm:w-32 font-semibold">{t('accountName')}</label>
                     {editName ? (
                       <div className="flex-1 flex flex-col sm:flex-row gap-2">
                         <input
@@ -323,7 +323,7 @@ const Account = () => {
 
                   {/* Email */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('account.email')}</label>
+                    <label className="w-full sm:w-32 font-semibold">{t('accountEmail')}</label>
                     {editEmail ? (
                       <div className="flex-1 flex flex-col sm:flex-row gap-2">
                         <input
@@ -363,7 +363,7 @@ const Account = () => {
 
                   {/* Gender */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('account.gender')}</label>
+                    <label className="w-full sm:w-32 font-semibold">{t('accountGender')}</label>
                     {editGender ? (
                       <div className="flex-1 flex flex-col sm:flex-row gap-2">
                         <select
@@ -411,7 +411,7 @@ const Account = () => {
 
                   {/* Age */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('account.age')}</label>
+                    <label className="w-full sm:w-32 font-semibold">{t('accountAge')}</label>
                     {editAge ? (
                       <div className="flex-1 flex flex-col sm:flex-row gap-2">
                         <input
@@ -608,62 +608,47 @@ const Account = () => {
   );
 };
 
-// Gememoizeerd lijstitem
-const MeetupListItem = React.memo(function MeetupListItem({ m, t }: { m: Invitation, t: any }) {
+const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels }: { m: Invitation, t: any, statusLabels: Record<string, string> }) {
   return (
-    <li key={m.id} className="bg-[#fff7f3] rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-[#ff914d]/10 mb-2">
+    <li key={m.id} className="bg-white rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100 mb-2 transition hover:shadow-md">
       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
         <div className="font-semibold text-primary-700 min-w-[110px]">{m.selected_date}{m.selected_time && <span> &bull; {m.selected_time}</span>}</div>
         <div className="text-gray-700 flex-1 truncate">
-          <span className="font-medium">{t('common.cafe').toLowerCase()}:</span> {m.cafe_name || (m.cafe_id ? t('common.unknownCafe') : t('common.noCafe'))}
+          <span className="font-medium">{t('common.cafe').toLowerCase()}:</span> {m.cafe_name || t('common.unknownCafe')}
         </div>
         <div className="text-gray-700 flex-1 truncate">
           <span className="font-medium">{t('account.contactPerson').toLowerCase()}:</span> {m.email_b || t('account.unknownContact')}
         </div>
       </div>
-      <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === 'confirmed' ? 'bg-green-100 text-green-700' : m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}>{t(`account.status.${m.status}`)}</span>
+      <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === 'confirmed' ? 'bg-green-100 text-green-700' : m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : m.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-700'}`}>{statusLabels[m.status] || m.status}</span>
     </li>
   );
 });
 
 const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
-  // Helper om datum te parsen en te vergelijken
-  const parseDate = (dateStr: string) => {
-    // Verwacht formaat: YYYY-MM-DD
-    return new Date(dateStr + 'T00:00:00');
+  const statusLabels: Record<string, string> = {
+    confirmed: t('account.status.confirmed', 'Confirmed'),
+    pending: t('account.status.pending', 'Pending'),
+    cancelled: t('account.status.cancelled', 'Cancelled'),
+    declined: t('account.status.declined', 'Declined'),
   };
+  const parseDate = (dateStr: string) => new Date(dateStr + 'T00:00:00');
   const now = new Date();
-
-  // useMemo voor gefilterde/sorteerde lijsten
   const upcoming = useMemo(() =>
-    meetups
-      .filter(m => parseDate(m.selected_date) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()))
-      .sort((a, b) => parseDate(b.selected_date).getTime() - parseDate(a.selected_date).getTime())
+    meetups.filter(m => parseDate(m.selected_date) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+      .sort((a, b) => parseDate(a.selected_date).getTime() - parseDate(b.selected_date).getTime())
   , [meetups]);
-
   const past = useMemo(() =>
-    meetups
-      .filter(m => parseDate(m.selected_date) < new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+    meetups.filter(m => parseDate(m.selected_date) < new Date(now.getFullYear(), now.getMonth(), now.getDate()))
       .sort((a, b) => parseDate(b.selected_date).getTime() - parseDate(a.selected_date).getTime())
   , [meetups]);
-
-  // Voorbeeld virtualisatie (optioneel, alleen bij grote lijsten):
-  // import { FixedSizeList as List } from 'react-window';
-  // <List height={400} itemCount={upcoming.length} itemSize={80} width="100%">
-  //   {({ index, style }) => (
-  //     <div style={style}>
-  //       <MeetupListItem m={upcoming[index]} t={t} />
-  //     </div>
-  //   )}
-  // </List>
-
   return (
     <div className="flex flex-col gap-6">
       {upcoming.length > 0 && (
         <div>
           <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.upcomingMeetups')}</h3>
           <ul className="space-y-2">
-            {upcoming.map(m => <MeetupListItem key={m.id} m={m} t={t} />)}
+            {upcoming.map(m => <MeetupListItem key={m.id} m={m} t={t} statusLabels={statusLabels} />)}
           </ul>
         </div>
       )}
@@ -671,12 +656,12 @@ const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
         <div>
           <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.pastMeetups')}</h3>
           <ul className="space-y-2">
-            {past.map(m => <MeetupListItem key={m.id} m={m} t={t} />)}
+            {past.map(m => <MeetupListItem key={m.id} m={m} t={t} statusLabels={statusLabels} />)}
           </ul>
         </div>
       )}
       {upcoming.length === 0 && past.length === 0 && (
-        <div className="text-gray-600 text-center">{t('dashboard.noMeetups').toLowerCase() || 'nog geen meetups gepland. waarom niet?'}</div>
+        <div className="text-gray-600 text-center py-8">{t('dashboard.noMeetups')}</div>
       )}
     </div>
   );
