@@ -320,6 +320,13 @@ export const translations = {
       skip: "Skip",
       finishCta: "Get started!",
     },
+    toast: {
+      loginSuccess: 'Welcome back! You have successfully logged in.',
+      signupSuccess: 'Account created! Check your email for confirmation.',
+      profileUpdated: 'Your profile has been updated.',
+      meetupCreated: 'Meetup created successfully!',
+      passwordChanged: 'Password changed successfully.'
+    },
   },
   nl: {
     common: {
@@ -639,6 +646,13 @@ export const translations = {
       next: "Volgende",
       skip: "Overslaan",
       finishCta: "Aan de slag!",
+    },
+    toast: {
+      loginSuccess: 'Welkom terug! Je bent succesvol ingelogd.',
+      signupSuccess: 'Account aangemaakt! Check je e-mail voor bevestiging.',
+      profileUpdated: 'Je profiel is bijgewerkt.',
+      meetupCreated: 'Meetup succesvol aangemaakt!',
+      passwordChanged: 'Wachtwoord succesvol gewijzigd.'
     },
   },
 }; 

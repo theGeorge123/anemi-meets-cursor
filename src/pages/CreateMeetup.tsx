@@ -69,45 +69,109 @@ const CreateMeetup = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successSummary, setSuccessSummary] = useState<{date: string, time: string, cafe: string, token?: string} | null>(null);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [citiesError, setCitiesError] = useState<string | null>(null);
+  const [loadingCafes, setLoadingCafes] = useState(false);
+  const [cafesError, setCafesError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [showMeetupToast, setShowMeetupToast] = useState(false);
 
-  // Yup schema binnen de component zodat t() werkt
-  const contactSchema = yup.object().shape({
+  // 1. Extend Yup schema for all steps
+  const fullSchema = yup.object().shape({
     name: yup.string().required(t('createMeetup.errorNameRequired')).min(2, t('createMeetup.errorNameShort')),
     email: yup.string()
       .email(t('createMeetup.errorEmailInvalid'))
       .test('required-if-no-user', t('createMeetup.errorEmailRequired'), function (value) {
-        // Alleen verplicht als user niet is ingelogd
         return !!user ? true : !!value;
       }),
+    city: yup.string().required(t('createMeetup.errorCityRequired')),
+    dates: yup.array().of(yup.date()).min(1, t('createMeetup.errorDatesRequired')),
+    dateTimeOptions: yup.array().of(
+      yup.object().shape({
+        date: yup.string().required(),
+        times: yup.array().of(yup.string()).min(1, t('createMeetup.errorTimesRequired')),
+      })
+    ).min(1, t('createMeetup.errorTimesRequired')),
+    cafe: yup.object().nullable().required(t('createMeetup.errorCafeRequired')),
   });
 
   const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, setValue, trigger } = useForm({
     mode: 'onChange',
-    resolver: yupResolver(contactSchema),
+    resolver: yupResolver(fullSchema),
     defaultValues: {
       name: formData.name,
       email: email,
     },
   });
 
+  // 2. Add step validation logic
+  const validateStep = async (currentStep: number) => {
+    try {
+      if (currentStep === 1) {
+        await fullSchema.validateAt('name', { name: formData.name });
+        if (!user) await fullSchema.validateAt('email', { email });
+      } else if (currentStep === 2) {
+        await fullSchema.validateAt('city', { city: formData.city });
+      } else if (currentStep === 3) {
+        await fullSchema.validateAt('dates', { dates: formData.dates });
+        await fullSchema.validateAt('dateTimeOptions', { dateTimeOptions });
+      } else if (currentStep === 4) {
+        await fullSchema.validateAt('cafe', { cafe: selectedCafe });
+      }
+      setFormError(null);
+      return true;
+    } catch (err: any) {
+      setFormError(err.message);
+      return false;
+    }
+  };
+
+  // 3. Update navigation to trigger validation
+  const goToStep = async (nextStep: number) => {
+    const valid = await validateStep(step);
+    if (valid) setStep(nextStep);
+  };
+
   // Fetch cities (only Rotterdam)
   useEffect(() => {
     const fetchCities = async () => {
-      const { data } = await supabase.from('cities').select('*').eq('name', 'Rotterdam');
-      if (data) setCities(data as City[]);
+      setLoadingCities(true);
+      setCitiesError(null);
+      try {
+        const { data, error } = await supabase.from('cities').select('*').eq('name', 'Rotterdam');
+        if (error) throw error;
+        if (data) setCities(data as City[]);
+      } catch (err: any) {
+        setCitiesError(t('createMeetup.errorCitiesFetch'));
+      } finally {
+        setLoadingCities(false);
+      }
     };
     fetchCities();
-  }, []);
+  }, [t]);
 
   // Fetch cafes for selected city
   useEffect(() => {
     const fetchCafes = async () => {
-      if (!formData.city) return setCafes([]);
-      const { data } = await supabase.from('cafes').select('*').eq('city', formData.city);
-      if (data) setCafes(data as Cafe[]);
+      setLoadingCafes(true);
+      setCafesError(null);
+      if (!formData.city) {
+        setCafes([]);
+        setLoadingCafes(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
+        if (error) throw error;
+        if (data) setCafes(data as Cafe[]);
+      } catch (err: any) {
+        setCafesError(t('createMeetup.errorCafesFetch'));
+      } finally {
+        setLoadingCafes(false);
+      }
     };
     fetchCafes();
-  }, [formData.city]);
+  }, [formData.city, t]);
 
   useEffect(() => {
     // Scroll naar boven bij laden
@@ -268,6 +332,7 @@ const CreateMeetup = () => {
       });
       setShowSuccess(true);
       setShowConfetti(true);
+      setShowMeetupToast(true);
       setTimeout(() => {
         setShowConfetti(false);
       }, 2000);
@@ -376,9 +441,19 @@ const CreateMeetup = () => {
     <input type="text" style={{ position: 'absolute', left: '-9999px', width: 0, height: 0, opacity: 0 }} ref={ref} {...props} />
   ));
 
+  useEffect(() => {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      const content = viewport.getAttribute('content');
+      if (content && !content.includes('maximum-scale')) {
+        viewport.setAttribute('content', content + ', maximum-scale=1.0');
+      }
+    }
+  }, []);
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-4">
+      <h1 className="text-4xl font-extrabold text-primary-600 mb-8">
         {t('createMeetup.title')}
       </h1>
       <p className="text-gray-700 mb-8 text-lg">
@@ -406,8 +481,8 @@ const CreateMeetup = () => {
       </div>
       {/* Stap 1: Contactpersoon */}
       {step === 1 && (
-        <form className="card bg-primary-50 p-6 rounded-xl shadow-md" onSubmit={rhfHandleSubmit(() => setStep(2))} autoComplete="off">
-          <h2 className="text-xl font-semibold text-primary-700 mb-4">Who are you meeting up as today?</h2>
+        <form className="card bg-primary-50 p-6 rounded-xl shadow-md" onSubmit={rhfHandleSubmit(() => goToStep(2))} autoComplete="off">
+          <h2 className="text-2xl font-bold text-primary-700 mb-6">Who are you meeting up as today?</h2>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2" htmlFor="name">Your name or nickname <span className='italic'>(make it fun!)</span></label>
             <input
@@ -461,7 +536,7 @@ const CreateMeetup = () => {
       {/* Stap 2: Stad kiezen */}
       {step === 2 && (
         <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.chooseCityLabel')}</h2>
+          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.chooseCityLabel')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             {cities.map((city) => (
               <button
@@ -477,15 +552,18 @@ const CreateMeetup = () => {
             ))}
           </div>
           <div className="flex gap-4">
-            <button type="button" onClick={() => setStep(1)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={() => setStep(3)} className="btn-primary flex-1" disabled={!formData.city}>{t('common.continue')}</button>
+            <button type="button" onClick={() => goToStep(1)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={() => goToStep(3)} className="btn-primary flex-1" disabled={!formData.city}>{t('common.continue')}</button>
           </div>
+          {loadingCities && <div className="text-sm text-gray-500 mb-2">{t('createMeetup.loadingCities')}</div>}
+          {citiesError && <div className="text-red-500 text-sm mb-2">{citiesError}</div>}
+          <p className="text-sm text-gray-500 mb-4">{t('createMeetup.chooseCityInfo')}</p>
         </div>
       )}
       {/* Stap 3: Datum/tijd kiezen */}
       {step === 3 && (
         <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.chooseDateTime')}</h2>
+          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.chooseDateTime')}</h2>
           <div className="mb-6">
             <DatePicker
               selected={null}
@@ -536,16 +614,17 @@ const CreateMeetup = () => {
               })}
             </div>
           )}
+          {formData.dates.length === 0 && <div className="text-red-500 text-sm mb-2">{t('createMeetup.errorDatesRequired')}</div>}
           <div className="flex gap-4 mt-6">
-            <button type="button" onClick={() => setStep(2)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={() => setStep(4)} className="btn-primary flex-1" disabled={!hasValidDateTimeSelection()}>{t('common.continue')}</button>
+            <button type="button" onClick={() => goToStep(2)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={() => goToStep(4)} className="btn-primary flex-1" disabled={!hasValidDateTimeSelection()}>{t('common.continue')}</button>
           </div>
         </div>
       )}
       {/* Stap 4: Café kiezen */}
       {step === 4 && (
         <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.chooseCafe')}</h2>
+          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.chooseCafe')}</h2>
           {selectedCafe && (
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
               {selectedCafe.image_url && (
@@ -568,15 +647,19 @@ const CreateMeetup = () => {
             <button type="button" onClick={shuffleCafe} disabled={shuffleCooldown || cafes.length <= 1} className="btn-secondary flex-1">{t('common.shuffle')}</button>
           </div>
           <div className="flex gap-4">
-            <button type="button" onClick={() => setStep(3)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={() => setStep(5)} className="btn-primary flex-1" disabled={!selectedCafe}>{t('common.continue')}</button>
+            <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={() => goToStep(5)} className="btn-primary flex-1" disabled={!selectedCafe}>{t('common.continue')}</button>
           </div>
+          {loadingCafes && <div className="text-sm text-gray-500 mb-2">{t('createMeetup.loadingCafes')}</div>}
+          {cafesError && <div className="text-red-500 text-sm mb-2">{cafesError}</div>}
+          {!selectedCafe && <div className="text-red-500 text-sm mb-2">{t('createMeetup.errorCafeRequired')}</div>}
+          <p className="text-sm text-gray-500 mb-4">{t('createMeetup.chooseCafeInfo')}</p>
         </div>
       )}
       {/* Stap 5: Samenvatting & bevestigen */}
       {step === 5 && (
-        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold text-primary-700 mb-4">{t('createMeetup.summary')}</h2>
+        <div className="card bg-white border-2 border-primary-200 p-6 rounded-xl shadow-lg">
+          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.summary')}</h2>
           <div className="mb-4">
             <div className="mb-2"><span className="font-medium">{t('common.name')}:</span> {formData.name}</div>
             {!user && <div className="mb-2"><span className="font-medium">{t('common.email')}:</span> {email}</div>}
@@ -599,53 +682,16 @@ const CreateMeetup = () => {
             )}
           </div>
           <div className="flex gap-4">
-            <button type="button" onClick={() => setStep(4)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={handleSubmit} className="btn-primary flex-1">{t('common.submit')}</button>
+            <button type="button" onClick={() => goToStep(4)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={handleSubmit} className="btn-primary flex-1" disabled={submitting}>{submitting ? t('common.loading') : t('common.submit')}</button>
           </div>
         </div>
       )}
       {showSuccess && successSummary && (
         <Toast
-          message={
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-green-600 text-2xl">🎉</span>
-                <span className="font-bold">{t('createMeetup.successTitle')}</span>
-              </div>
-              <div className="text-sm text-green-900 mb-1">{t('createMeetup.successSummary', {
-                date: successSummary.date,
-                time: successSummary.time,
-                cafe: successSummary.cafe
-              })}</div>
-              {successSummary.token && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-2 my-2 flex flex-col gap-2">
-                  <span className="text-xs text-green-800">{t('createMeetup.inviteLink')}:</span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={window.location.origin + '/invite/' + successSummary.token}
-                      readOnly
-                      className="flex-1 px-2 py-1 border border-green-200 rounded text-xs bg-green-100 text-green-900"
-                      style={{ minWidth: 0 }}
-                    />
-                    <button
-                      className="btn-secondary px-2 py-1 text-xs"
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.origin + '/invite/' + successSummary.token);
-                      }}
-                    >{t('createMeetup.copyLink')}</button>
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-2 mt-2">
-                <button onClick={() => navigate('/dashboard')} className="btn-secondary px-3 py-1 text-sm">{t('createMeetup.toDashboard')}</button>
-                <button onClick={() => { setShowSuccess(false); setStep(1); }} className="btn-primary px-3 py-1 text-sm">{t('createMeetup.newMeetup')}</button>
-              </div>
-            </div>
-          }
-          icon={<span>✅</span>}
+          message={t('toast.meetupCreated')}
+          type="success"
           onClose={() => setShowSuccess(false)}
-          duration={8000}
         />
       )}
       {/* Confetti bij succes */}
@@ -661,6 +707,13 @@ const CreateMeetup = () => {
             tweenDuration={2000}
           />
         </div>
+      )}
+      {showMeetupToast && (
+        <Toast
+          message={t('toast.meetupCreated')}
+          type="success"
+          onClose={() => setShowMeetupToast(false)}
+        />
       )}
       {formError && <div className="text-red-500 text-sm mb-2">{formError}</div>}
     </div>

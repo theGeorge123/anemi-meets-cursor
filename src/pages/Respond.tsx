@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
+import FormStatus from '../components/FormStatus';
 
 // TypeScript interfaces voor typeveiligheid
 interface Invitation {
@@ -91,6 +92,16 @@ const Respond = () => {
       setWantsUpdates(true);
     }
   }, [location.search, t]);
+
+  useEffect(() => {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      const content = viewport.getAttribute('content');
+      if (content && !content.includes('maximum-scale')) {
+        viewport.setAttribute('content', content + ', maximum-scale=1.0');
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,7 +299,7 @@ const Respond = () => {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {errorMsg && <div className="text-red-600 mb-2">{errorMsg}</div>}
+        {errorMsg && <FormStatus status="error" message={errorMsg} />}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-4">
             {t('respond.availableTimes')}
@@ -325,6 +336,10 @@ const Respond = () => {
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
+            autoFocus
+            placeholder={t('common.emailPlaceholder')}
+            inputMode="email"
+            autoComplete="email"
           />
         </div>
 
@@ -341,16 +356,8 @@ const Respond = () => {
           </label>
         </div>
 
-        <button
-          className="btn-primary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium"
-          type="submit"
-          disabled={status === 'loading'}
-        >
-          {status === 'loading' ? (
-            <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
-          ) : null}
-          {status === 'loading' ? t('common.loading') : t('respond.sending')}
-        </button>
+        <button type="submit" className="btn-primary" disabled={loading}>{loading ? t('common.loading') : t('respond.cta')}</button>
+        <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') : errorMsg || undefined} />
       </form>
     </div>
   );

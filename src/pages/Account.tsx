@@ -4,6 +4,8 @@ import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import SkeletonLoader from '../components/SkeletonLoader';
 import React from 'react';
+import FormStatus from '../components/FormStatus';
+import Toast from '../components/Toast';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -56,6 +58,8 @@ const Account = () => {
   const [editGender, setEditGender] = useState(false);
   const [editAge, setEditAge] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
+  const [showProfileToast, setShowProfileToast] = useState(false);
+  const [showPasswordToast, setShowPasswordToast] = useState(false);
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
   const genderOptions = t('common.genderOptions', { returnObjects: true }) as { value: string, label: string }[];
@@ -117,6 +121,16 @@ const Account = () => {
     setPendingAge(age);
   }, [navigate, t]);
 
+  useEffect(() => {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      const content = viewport.getAttribute('content');
+      if (content && !content.includes('maximum-scale')) {
+        viewport.setAttribute('content', content + ', maximum-scale=1.0');
+      }
+    }
+  }, []);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/login');
@@ -146,6 +160,7 @@ const Account = () => {
     } else {
       setGender(pendingGender);
       setEditGender(false);
+      setShowProfileToast(true);
     }
     setGenderSaving(false);
   };
@@ -165,6 +180,7 @@ const Account = () => {
       console.error('Fout bij opslaan age:', error);
     } else {
       setAge(pendingAge);
+      setShowProfileToast(true);
     }
     setAgeSaving(false);
   };
@@ -182,6 +198,8 @@ const Account = () => {
     const { error: metaError } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
     if (error || metaError) {
       console.error('Fout bij opslaan naam:', error || metaError);
+    } else {
+      setShowProfileToast(true);
     }
     setNameSaving(false);
   };
@@ -197,6 +215,7 @@ const Account = () => {
     if (error) {
       console.error('Fout bij opslaan email:', error);
     } else {
+      setShowProfileToast(true);
     }
     setEmailSaving(false);
   };
@@ -211,6 +230,7 @@ const Account = () => {
       return;
     }
     setPwForm({ current: '', new: '', confirm: '' });
+    setShowPasswordToast(true);
   };
 
   // Account verwijderen
@@ -251,6 +271,8 @@ const Account = () => {
     const { error } = await supabase.from('profiles').update({ wants_updates: wantsUpdates, is_private: isPrivate }).eq('id', user.id);
     if (error) {
       console.error('Fout bij opslaan voorkeuren:', error);
+    } else {
+      setShowProfileToast(true);
     }
     setPrefsSaving(false);
   };
@@ -259,7 +281,7 @@ const Account = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="mobile-heading text-[#37474f] mb-8">{t('accountTitle')}</h1>
+          <h1 className="text-4xl font-extrabold text-[#37474f] mb-8">{t('account.accountTitle')}</h1>
 
           {/* Profile Section */}
           <div className="card mb-8">
@@ -283,7 +305,7 @@ const Account = () => {
                 <div className="space-y-6">
                   {/* Name */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('accountName')}</label>
+                    <label className="w-full sm:w-32 font-semibold">{t('account.name')}</label>
                     {editName ? (
                       <div className="flex-1 flex flex-col sm:flex-row gap-2">
                         <input
@@ -323,7 +345,7 @@ const Account = () => {
 
                   {/* Email */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('accountEmail')}</label>
+                    <label className="w-full sm:w-32 font-semibold">{t('account.email')}</label>
                     {editEmail ? (
                       <div className="flex-1 flex flex-col sm:flex-row gap-2">
                         <input
@@ -363,7 +385,7 @@ const Account = () => {
 
                   {/* Gender */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('accountGender')}</label>
+                    <label className="w-full sm:w-32 font-semibold">{t('account.gender')}</label>
                     {editGender ? (
                       <div className="flex-1 flex flex-col sm:flex-row gap-2">
                         <select
@@ -411,7 +433,7 @@ const Account = () => {
 
                   {/* Age */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('accountAge')}</label>
+                    <label className="w-full sm:w-32 font-semibold">{t('account.age')}</label>
                     {editAge ? (
                       <div className="flex-1 flex flex-col sm:flex-row gap-2">
                         <input
@@ -457,7 +479,7 @@ const Account = () => {
 
           {/* Preferences Section */}
           <div className="card mb-8">
-            <h2 className="mobile-heading text-[#37474f] mb-6">{t('account.preferences')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.preferences')}</h2>
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <input
@@ -497,7 +519,7 @@ const Account = () => {
 
           {/* Password Section */}
           <div className="card mb-8">
-            <h2 className="mobile-heading text-[#37474f] mb-6">{t('account.password')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.password')}</h2>
             {showPwForm ? (
               <form onSubmit={handlePasswordSave} className="space-y-6">
                 <div className="flex flex-col gap-4">
@@ -507,6 +529,7 @@ const Account = () => {
                     value={pwForm.current}
                     onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
                     className="input-field"
+                    autoFocus
                   />
                   <input
                     type="password"
@@ -523,6 +546,7 @@ const Account = () => {
                     className="input-field"
                   />
                 </div>
+                <FormStatus status={nameSaving ? 'loading' : nameSaving === false && pwForm.current && pwForm.new && pwForm.confirm ? 'success' : 'idle'} message={t('account.passwordChangeSuccess')} />
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="submit"
@@ -551,7 +575,7 @@ const Account = () => {
 
           {/* My Meetups Section */}
           <div className="card mb-8">
-            <h2 className="mobile-heading text-[#37474f] mb-6">{t('account.myMeetups')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.myMeetups')}</h2>
             {meetupsLoading ? (
               <SkeletonLoader />
             ) : meetupsError ? (
@@ -563,7 +587,7 @@ const Account = () => {
 
           {/* Danger Zone */}
           <div className="card border-2 border-red-500">
-            <h2 className="mobile-heading text-red-500 mb-6">{t('account.dangerZone')}</h2>
+            <h2 className="text-2xl font-bold text-red-500 mb-6">{t('account.dangerZone')}</h2>
             {showDeleteConfirm ? (
               <div className="space-y-4">
                 <p className="mobile-text text-red-500">{t('account.deleteConfirm')}</p>
@@ -599,9 +623,24 @@ const Account = () => {
               onClick={handleLogout}
               className="btn-secondary active:scale-95 active:bg-[#b2dfdb]"
             >
-              {t('account.logout')}
+              {t('auth.logout')}
             </button>
           </div>
+
+          {showProfileToast && (
+            <Toast
+              message={t('toast.profileUpdated')}
+              type="success"
+              onClose={() => setShowProfileToast(false)}
+            />
+          )}
+          {showPasswordToast && (
+            <Toast
+              message={t('toast.passwordChanged')}
+              type="success"
+              onClose={() => setShowPasswordToast(false)}
+            />
+          )}
         </div>
       </div>
     </div>

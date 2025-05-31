@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
+import FormStatus from '../components/FormStatus';
+import Toast from '../components/Toast';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -29,6 +31,7 @@ const Signup = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const prevStep = () => setStep((s) => Math.max(s - 1, 0));
@@ -113,20 +116,21 @@ const Signup = () => {
           }
       }
       setError(msg);
-        setLoading(false);
-        return;
-      }
-      // Updates-subscribers opslaan als vinkje aanstaat
+      setLoading(false);
+      return;
+    }
+    // Updates-subscribers opslaan als vinkje aanstaat
     if (data.user && wantsUpdates) {
-        const { error: updatesError } = await supabase.from('updates_subscribers').upsert({ email: form.email });
-        if (updatesError) {
-          setError('Account aangemaakt, maar aanmelden voor updates is mislukt: ' + updatesError.message);
+      const { error: updatesError } = await supabase.from('updates_subscribers').upsert({ email: form.email });
+      if (updatesError) {
+        setError('Account aangemaakt, maar aanmelden voor updates is mislukt: ' + updatesError.message);
       }
     }
     if (wantsUpdates) {
       localStorage.setItem(UPDATES_EMAIL_KEY, form.email);
     }
     setSuccess('Account aangemaakt! Check je e-mail voor een bevestigingslink. Zo houden we het veilig en blijven spammers buiten. Je wordt doorgestuurd naar je accountpagina...');
+    setShowSuccess(true);
     setLoading(false);
     setTimeout(() => navigate('/account'), 2000);
   };
@@ -157,6 +161,17 @@ const Signup = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Prevent iOS auto-zoom on input focus
+  useEffect(() => {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      const content = viewport.getAttribute('content');
+      if (content && !content.includes('maximum-scale')) {
+        viewport.setAttribute('content', content + ', maximum-scale=1.0');
+      }
+    }
+  }, []);
+
   return (
     <div className="max-w-md mx-auto">
       <div className="flex justify-end mb-2">
@@ -186,7 +201,7 @@ const Signup = () => {
         ))}
       </div>
       <form onSubmit={step === steps.length - 1 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }}
-        className="space-y-4 bg-white/90 p-3 rounded-xl shadow-2xl border border-primary-100 flex flex-col justify-between mt-2">
+        className="space-y-4 bg-white/90 p-3 rounded-xl shadow-2xl border border-primary-100 flex flex-col justify-between mt-2 px-2 sm:px-0">
         {step === 0 && (
           <div>
             <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
@@ -195,124 +210,86 @@ const Signup = () => {
             <input
               type="text"
               id="signup-name"
-              className="input-field mt-1"
+              className="input-field mt-1 min-h-[48px] text-base"
               value={form.name}
-              onChange={(e) => handleFieldChange('name', e.target.value)}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               required
-              placeholder={t('common.name')}
               autoFocus
+              placeholder={t('signup.namePlaceholder')}
+              inputMode="text"
+              autoComplete="name"
             />
           </div>
         )}
         {step === 1 && (
-        <div>
+          <div>
             <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">📧</span> {t('signup.emailPrompt')}
-          </label>
-          <input
-            type="email"
-            id="signup-email"
-            className="input-field mt-1"
-            value={form.email}
-              onChange={(e) => handleFieldChange('email', e.target.value)}
-            required
-              placeholder={t('common.email')}
-              autoFocus
-          />
-        </div>
+            </label>
+            <input
+              type="email"
+              id="signup-email"
+              className="input-field mt-1 min-h-[48px] text-base"
+              value={form.email}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              required
+              placeholder={t('signup.emailPlaceholder')}
+              inputMode="email"
+              autoComplete="email"
+            />
+          </div>
         )}
         {step === 2 && (
-        <div>
+          <div>
             <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
-          </label>
-          <input
-            type="password"
-            id="signup-password"
-              className="input-field mt-1 mb-4"
-            value={form.password}
-            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-            required
-              placeholder={t('common.password') + ' (min. 8, hoofdletter, cijfer, speciaal)'}
-              autoFocus
-            />
-            <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
-              <span className="text-lg">😅</span> {t('signup.confirmPasswordPrompt')}
             </label>
             <input
               type="password"
-              id="signup-confirm-password"
-              className="input-field mt-1"
-              value={form.confirmPassword}
-              onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+              id="signup-password"
+              className="input-field mt-1 min-h-[48px] text-base"
+              value={form.password}
+              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
               required
-              placeholder={t('signup.confirmPassword')}
+              placeholder={t('signup.passwordPlaceholder')}
+              inputMode="text"
+              autoComplete="new-password"
             />
-            {/* Toon wachtwoordvalidatie live */}
-            {form.password && validatePassword(form.password) && (
-              <div className="text-red-500 text-sm mt-2">{validatePassword(form.password)}</div>
-            )}
-            {form.password && form.confirmPassword && form.password !== form.confirmPassword && (
-              <div className="text-red-500 text-sm mt-2">{t('signup.passwordsNoMatch')}</div>
-            )}
           </div>
         )}
         {step === 3 && (
           <div>
-            <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('common.createAccount')}</h1>
-            <h2 className="text-xl font-bold mb-4">{t('signup.overviewTitle')}</h2>
-            <div className="mb-4">
-              <div><b>{t('common.name')}:</b> {form.name}</div>
-              <div><b>{t('common.email')}:</b> {form.email}</div>
-            </div>
-        <div className="flex items-center mb-4">
-          <input
-            type="checkbox"
-            id="updates-checkbox"
-            checked={wantsUpdates}
-            onChange={() => setWantsUpdates((v) => !v)}
-            className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
-          />
-          <label htmlFor="updates-checkbox" className="text-sm text-gray-700 select-none">
-            {t('signup.updatesCta')}
-          </label>
-        </div>
+            <label htmlFor="signup-confirm-password" className="block text-lg font-medium text-gray-700 mb-2">
+              <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
+            </label>
+            <input
+              type="password"
+              id="signup-confirm-password"
+              className="input-field mt-1 min-h-[48px] text-base"
+              value={form.confirmPassword}
+              onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
+              required
+              placeholder={t('signup.confirmPasswordPlaceholder')}
+              inputMode="text"
+              autoComplete="new-password"
+            />
           </div>
         )}
-        {step === 3 && (
         <button
           type="submit"
-            className={`btn-primary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={loading || !isStepValid()}
+          className="btn-primary w-full min-h-[48px] text-base mt-2"
+          disabled={loading}
         >
-          {loading ? (
-            <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
-          ) : null}
-          {loading ? t('common.loading') : t('common.createAccount')}
+          {step === steps.length - 1 ? t('signup.submit') : t('common.next')}
         </button>
+        <FormStatus status={loading ? 'loading' : error ? 'error' : 'idle'} message={error || undefined} />
+        {showSuccess && (
+          <Toast
+            message={t('toast.signupSuccess')}
+            type="success"
+            onClose={() => setShowSuccess(false)}
+          />
         )}
-        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-        {success && <div className="text-green-600 text-sm mt-2">{success}</div>}
-        <div className="flex justify-between mt-8">
-          {step > 0 && step < steps.length && (
-            <button
-              type="button"
-              onClick={prevStep}
-              className="px-6 py-2 rounded-2xl font-medium bg-gray-200 text-gray-700 hover:scale-105 transition"
-            >
-              Terug
-            </button>
-          )}
-          {step < steps.length - 1 && (
-            <button
-              type="submit"
-              className={`flex-1 btn-primary py-2 text-base rounded-xl font-medium ${!isStepValid() ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={!isStepValid()}
-            >
-              Volgende
-            </button>
-          )}
-        </div>
       </form>
       <div className="text-center mt-6">
         <button

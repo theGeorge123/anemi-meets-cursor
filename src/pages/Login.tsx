@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
+import FormStatus from '../components/FormStatus';
+import Toast from '../components/Toast';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -19,12 +21,23 @@ const Login = () => {
   const [resetMsg, setResetMsg] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     // Prefill email if saved
     const savedEmail = localStorage.getItem(UPDATES_EMAIL_KEY);
     if (savedEmail) {
       setFormData((prev) => ({ ...prev, email: savedEmail }));
+    }
+  }, []);
+
+  useEffect(() => {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      const content = viewport.getAttribute('content');
+      if (content && !content.includes('maximum-scale')) {
+        viewport.setAttribute('content', content + ', maximum-scale=1.0');
+      }
     }
   }, []);
 
@@ -78,7 +91,8 @@ const Login = () => {
       }
       setError(msg);
     } else {
-      navigate('/dashboard');
+      setShowSuccess(true);
+      setTimeout(() => navigate('/dashboard'), 1200);
     }
     setLoading(false);
   };
@@ -130,7 +144,7 @@ const Login = () => {
         <div className="text-lg font-semibold text-primary-700 mb-1">{t('login.welcomeBack')}</div>
         <div className="text-gray-700 text-base">{t('login.welcomeDesc')}</div>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 px-2 sm:px-0">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             {t('common.email')}
@@ -138,10 +152,14 @@ const Login = () => {
           <input
             type="email"
             id="email"
-            className="input-field mt-1"
+            className="input-field mt-1 min-h-[48px] text-base"
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
+            autoFocus
+            placeholder={t('common.emailPlaceholder')}
+            inputMode="email"
+            autoComplete="email"
           />
         </div>
 
@@ -152,17 +170,20 @@ const Login = () => {
           <input
             type="password"
             id="password"
-            className="input-field mt-1"
+            className="input-field mt-1 min-h-[48px] text-base"
             value={formData.password}
             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
             required
+            placeholder={t('common.passwordPlaceholder')}
+            inputMode="text"
+            autoComplete="current-password"
           />
           <button
             type="button"
             className="text-primary-600 underline text-xs mt-2 ml-1 hover:text-primary-800"
             onClick={() => setShowReset(v => !v)}
           >
-            Wachtwoord vergeten?
+            {t('login.forgotPassword')}
           </button>
         </div>
 
@@ -190,17 +211,14 @@ const Login = () => {
           </form>
         )}
 
-        {error && <div className="text-red-500 text-sm">{error}</div>}
+        <FormStatus status={loading ? 'loading' : error ? 'error' : 'idle'} message={error || undefined} />
 
         <button
           type="submit"
-          className="btn-primary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium"
+          className="btn-primary w-full min-h-[48px] text-base mt-2"
           disabled={loading}
         >
-          {loading ? (
-            <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
-          ) : null}
-          {loading ? t('common.loading') : t('common.login')}
+          {t('common.login')}
         </button>
       </form>
 
@@ -212,6 +230,14 @@ const Login = () => {
           {t('login.noAccountCta')}
         </button>
       </div>
+
+      {showSuccess && (
+        <Toast
+          message={t('toast.loginSuccess')}
+          type="success"
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
     </div>
   );
 };
