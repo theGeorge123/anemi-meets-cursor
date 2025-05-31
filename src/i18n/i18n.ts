@@ -20,7 +20,7 @@ i18n
     interpolation: {
       escapeValue: false,
     },
-    missingKeyHandler: function(lng, ns, key, fallbackValue) {
+    missingKeyHandler: function(lng, ns, key) {
       if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.warn(`[i18n] Missing translation for key: "${key}" in namespace: "${ns}" and language: "${lng}"`);

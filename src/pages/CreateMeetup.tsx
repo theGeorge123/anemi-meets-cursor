@@ -1,6 +1,5 @@
 import { useState, useEffect, forwardRef, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
@@ -14,8 +13,6 @@ import React from 'react';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
-
-const TOTAL_STEPS = 5;
 
 const getLastCity = () => {
   if (typeof window !== 'undefined') {
@@ -44,7 +41,6 @@ const TimeSlotButton = React.memo(function TimeSlotButton({ time, isSelected, is
 
 const CreateMeetup = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     dates: [] as Date[],
@@ -73,7 +69,6 @@ const CreateMeetup = () => {
   const [citiesError, setCitiesError] = useState<string | null>(null);
   const [loadingCafes, setLoadingCafes] = useState(false);
   const [cafesError, setCafesError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [showMeetupToast, setShowMeetupToast] = useState(false);
 
   // 1. Extend Yup schema for all steps
@@ -683,7 +678,7 @@ const CreateMeetup = () => {
           </div>
           <div className="flex gap-4">
             <button type="button" onClick={() => goToStep(4)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={handleSubmit} className="btn-primary flex-1" disabled={submitting}>{submitting ? t('common.loading') : t('common.submit')}</button>
+            <button type="button" onClick={handleSubmit} className="btn-primary flex-1">Submit</button>
           </div>
         </div>
       )}

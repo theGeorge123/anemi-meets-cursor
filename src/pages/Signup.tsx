@@ -2,11 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
-import LoadingIndicator from '../components/LoadingIndicator';
-import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
-
-const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
 // TypeScript interface voor typeveiligheid
 interface SignupForm {
@@ -27,14 +23,10 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
   });
-  const [wantsUpdates, setWantsUpdates] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
-  const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
   // Helper voor sterke wachtwoordvalidatie
   const validatePassword = (pw: string) => {
@@ -48,22 +40,18 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
     setLoading(true);
     const pwError = validatePassword(form.password);
     if (pwError) {
-      setError(pwError);
       setLoading(false);
       return;
     }
     if (form.password !== form.confirmPassword) {
-      setError(t('signup.passwordsNoMatch'));
       setLoading(false);
       return;
     }
     // Probeer altijd te registreren, maar geef altijd dezelfde feedback
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
@@ -71,94 +59,58 @@ const Signup = () => {
       }
     });
     if (signUpError) {
-      let msg = t('signup.errorGeneric');
       // Gebruik error.code als die er is
       const code = signUpError.code || '';
       switch (code) {
         case 'user_already_exists':
         case 'email_exists':
-          msg = t('signup.errorAlreadyRegistered');
-          break;
+          setLoading(false);
+          return;
         case 'email_address_invalid':
         case 'invalid_email':
-          msg = t('common.error_invalid_email');
-          break;
+          setLoading(false);
+          return;
         case 'weak_password':
-          msg = t('common.passwordTooShort');
-          break;
+          setLoading(false);
+          return;
         case 'over_email_send_rate_limit':
         case 'over_request_rate_limit':
-          msg = t('signup.errorRateLimit');
-          break;
+          setLoading(false);
+          return;
         case 'signup_disabled':
-          msg = t('signup.errorSignupDisabled');
-          break;
+          setLoading(false);
+          return;
         case 'validation_failed':
-          msg = t('signup.errorValidationFailed');
-          break;
+          setLoading(false);
+          return;
         case 'unexpected_failure':
         case 'internal_server_error':
-          msg = t('signup.errorServer');
-          break;
+          setLoading(false);
+          return;
         default:
           // Fallback op message string als code ontbreekt
           const errMsg = signUpError.message?.toLowerCase() || '';
           if (errMsg.includes('user already registered')) {
-            msg = t('signup.errorAlreadyRegistered');
+            setLoading(false);
+            return;
           } else if (errMsg.includes('invalid email')) {
-            msg = t('common.error_invalid_email');
+            setLoading(false);
+            return;
           } else if (errMsg.includes('weak password')) {
-            msg = t('common.passwordTooShort');
+            setLoading(false);
+            return;
           } else if (errMsg.includes('rate limit')) {
-            msg = t('signup.errorRateLimit');
+            setLoading(false);
+            return;
           } else if (errMsg.includes('password')) {
-            msg = t('common.passwordNoSpecial');
+            setLoading(false);
+            return;
           }
       }
-      setError(msg);
-      setLoading(false);
-      return;
     }
-    // Updates-subscribers opslaan als vinkje aanstaat
-    if (data.user && wantsUpdates) {
-      const { error: updatesError } = await supabase.from('updates_subscribers').upsert({ email: form.email });
-      if (updatesError) {
-        setError('Account aangemaakt, maar aanmelden voor updates is mislukt: ' + updatesError.message);
-      }
-    }
-    if (wantsUpdates) {
-      localStorage.setItem(UPDATES_EMAIL_KEY, form.email);
-    }
-    setSuccess('Account aangemaakt! Check je e-mail voor een bevestigingslink. Zo houden we het veilig en blijven spammers buiten. Je wordt doorgestuurd naar je accountpagina...');
-    setShowSuccess(true);
     setLoading(false);
+    setShowSuccess(true);
     setTimeout(() => navigate('/account'), 2000);
-  };
-
-  // Validatie per stap
-  const isStepValid = () => {
-    switch (step) {
-      case 0:
-        return form.name.trim().length > 1;
-      case 1:
-        return /.+@.+\..+/.test(form.email);
-      case 2:
-        return (
-          form.password.length >= 8 &&
-          form.confirmPassword.length >= 8 &&
-          !validatePassword(form.password) &&
-          form.password === form.confirmPassword
-        );
-      case 3:
-        return true; // samenvatting
-      default:
-        return false;
-    }
-  };
-
-  // Automatisch door naar volgende stap als veld is ingevuld (behalve wachtwoord en emoji)
-  const handleFieldChange = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   // Prevent iOS auto-zoom on input focus
@@ -282,7 +234,6 @@ const Signup = () => {
         >
           {step === steps.length - 1 ? t('signup.submit') : t('common.next')}
         </button>
-        <FormStatus status={loading ? 'loading' : error ? 'error' : 'idle'} message={error || undefined} />
         {showSuccess && (
           <Toast
             message={t('toast.signupSuccess')}

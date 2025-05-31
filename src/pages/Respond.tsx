@@ -28,7 +28,6 @@ const Respond = () => {
   const [error, setError] = useState<string | null>(null);
   const [cafe, setCafe] = useState<Cafe | null>(null);
   const [wantsUpdates, setWantsUpdates] = useState(false);
-  const [status, setStatus] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -138,10 +137,8 @@ const Respond = () => {
       return;
     }
     setErrorMsg("");
-    setStatus("sending");
     if (!invitation) {
       setErrorMsg(t('respond.errorNoInvite'));
-      setStatus("error");
       return;
     }
     // Sla email op als updates gewenst
@@ -175,7 +172,6 @@ const Respond = () => {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setStatus("error");
         // Herkenbare foutmeldingen netjes vertalen
         let msg = t('respond.genericError');
         const code = data.error_code || '';
@@ -209,7 +205,6 @@ const Respond = () => {
         setErrorMsg(msg);
         console.error("Supabase error:", data.error || data);
       } else {
-        setStatus("done");
         setSubmitted(true);
         // Log en bewaar de response data
         console.log('Meeting bevestigd:', data);
@@ -225,7 +220,6 @@ const Respond = () => {
         }, 1200);
       }
     } catch (err) {
-      setStatus("error");
       setErrorMsg(t('respond.genericError'));
       console.error("Netwerkfout:", err);
     }
