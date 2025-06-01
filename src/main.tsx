@@ -9,8 +9,11 @@ Sentry.init({
   tracesSampleRate: 1.0,
   tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
   environment: import.meta.env.MODE,
+  release: 'anemi-meets@1.0.0',
   beforeSend(event) {
-    // Voeg extra context toe, filter PII, etc.
+    if (event.message?.includes("ResizeObserver") || event.message?.includes("test error")) {
+      return null;
+    }
     return event;
   }
 });
