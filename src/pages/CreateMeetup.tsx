@@ -40,6 +40,33 @@ const TimeSlotButton = React.memo(function TimeSlotButton({ time, isSelected, is
   );
 });
 
+const QUEUE_KEY = 'meetups_queue_v1';
+
+function queueMeetup(payload: any) {
+  const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+  queue.push(payload);
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+}
+
+async function flushMeetupQueue(supabase: any, t: any, onSuccess: () => void) {
+  const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+  if (!queue.length) return;
+  const newQueue = [];
+  for (const payload of queue) {
+    try {
+      const { error } = await supabase.from('invitations').insert(payload);
+      if (error) {
+        newQueue.push(payload); // niet gelukt, blijft in queue
+      } else {
+        onSuccess();
+      }
+    } catch {
+      newQueue.push(payload);
+    }
+  }
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(newQueue));
+}
+
 const CreateMeetup = () => {
   const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
@@ -71,6 +98,7 @@ const CreateMeetup = () => {
   const [loadingCafes, setLoadingCafes] = useState(false);
   const [cafesError, setCafesError] = useState<string | null>(null);
   const [showMeetupToast, setShowMeetupToast] = useState(false);
+  const [queueCount, setQueueCount] = useState(0);
 
   // 1. Extend Yup schema for all steps
   const fullSchema = yup.object().shape({
@@ -91,14 +119,17 @@ const CreateMeetup = () => {
     cafe: yup.object().nullable().required(t('createMeetup.errorCafeRequired')),
   });
 
-  const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, setValue, trigger } = useForm({
+  const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, setValue, trigger, watch } = useForm({
     mode: 'onChange',
     resolver: yupResolver(fullSchema),
     defaultValues: {
-      name: formData.name,
-      email: email,
+      name: '',
+      email: '',
     },
   });
+
+  const watchedName = watch('name');
+  const watchedEmail = watch('email');
 
   // 2. Add step validation logic
   const validateStep = async (currentStep: number) => {
@@ -234,11 +265,36 @@ const CreateMeetup = () => {
     }
   }, []);
 
-  // Synchroniseer formData met react-hook-form
+  // Synchroniseer formData met react-hook-form (en vice versa)
   useEffect(() => {
-    setValue('name', formData.name);
-    setValue('email', email);
-  }, [formData.name, email, setValue]);
+    setFormData(prev => ({ ...prev, name: watchedName }));
+  }, [watchedName]);
+  useEffect(() => {
+    setEmail(watchedEmail || '');
+  }, [watchedEmail]);
+
+  // Prefill name/email als user bekend is
+  useEffect(() => {
+    if (user && user.user_metadata?.full_name) {
+      setValue('name', user.user_metadata.full_name);
+      trigger('name');
+    }
+  }, [user, setValue, trigger]);
+
+  // Flush queue bij online komen
+  useEffect(() => {
+    const flush = () => flushMeetupQueue(supabase, t, () => setQueueCount(q => q - 1));
+    window.addEventListener('online', flush);
+    // Initieel ook proberen flushen
+    flush();
+    return () => window.removeEventListener('online', flush);
+  }, [t]);
+
+  // Update queueCount
+  useEffect(() => {
+    const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+    setQueueCount(queue.length);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,6 +344,15 @@ const CreateMeetup = () => {
     };
     if (!user) {
       payload.email_b = email;
+    }
+
+    if (!navigator.onLine) {
+      queueMeetup(payload);
+      setQueueCount(q => q + 1);
+      setShowSuccess(true);
+      setShowMeetupToast(true);
+      setTimeout(() => setShowConfetti(false), 2000);
+      return;
     }
 
     try {
@@ -484,13 +549,8 @@ const CreateMeetup = () => {
             <input
               id="name"
               type="text"
-              value={formData.name}
-              onChange={e => {
-                setFormData(prev => ({ ...prev, name: e.target.value }));
-                setValue('name', e.target.value);
-                trigger('name');
-              }}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.name ? 'border-red-500' : formData.name ? 'border-green-500' : 'border-primary-200'}`}
+              {...register('name')}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.name ? 'border-red-500' : watchedName ? 'border-green-500' : 'border-primary-200'}`}
               placeholder={t('common.name')}
               autoComplete="off"
             />
@@ -503,13 +563,7 @@ const CreateMeetup = () => {
                 id="email"
                 type="email"
                 {...register('email')}
-                value={email}
-                onChange={e => {
-                  setEmail(e.target.value);
-                  setValue('email', e.target.value);
-                  trigger('email');
-                }}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.email ? 'border-red-500' : email ? 'border-green-500' : 'border-primary-200'}`}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.email ? 'border-red-500' : watchedEmail ? 'border-green-500' : 'border-primary-200'}`}
                 placeholder={t('common.email')}
                 autoComplete="off"
                 required
@@ -712,6 +766,11 @@ const CreateMeetup = () => {
         />
       )}
       {formError && <div className="text-red-500 text-sm mb-2">{formError}</div>}
+      {queueCount > 0 && (
+        <div className="mb-4 p-3 rounded bg-yellow-200 text-yellow-900 text-center font-semibold">
+          {t('meetups:queueNotice', 'Er staan acties in de wachtrij. Ze worden verstuurd zodra je weer online bent.')}
+        </div>
+      )}
     </div>
   );
 };

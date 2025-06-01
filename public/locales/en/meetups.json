@@ -1,0 +1,28 @@
+{
+  "title": "Meetups",
+  "untitled": "Meetup",
+  "view": "View",
+  "join": "Join",
+  "searchPlaceholder": "Search meetups...",
+  "allStatus": "All statuses",
+  "upcoming": "Upcoming",
+  "pending": "Pending",
+  "confirmed": "Confirmed",
+  "cancelled": "Cancelled",
+  "declined": "Declined",
+  "past": "Past",
+  "noMeetups": "No meetups found",
+  "notLoggedIn": "You must be logged in to see your meetups.",
+  "errorLoading": "Error loading meetups: {{details}}",
+  "offlineNotice": "You are offline. Showing cached meetups.",
+  "cacheNotice": "Showing cached meetups.",
+  "queueNotice": "There are actions in the queue. They will be sent when you are back online.",
+  "status": {
+    "upcoming": "Upcoming",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "declined": "Declined",
+    "past": "Past"
+  }
+} 

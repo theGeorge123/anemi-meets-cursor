@@ -37,5 +37,17 @@
   "createAccount": "Create Account",
   "notFoundTitle": "Page not found",
   "notFoundDesc": "Sorry, this page does not exist or has moved.",
-  "backToHome": "Back to home"
+  "backToHome": "Back to home",
+  "cookies": "Cookies",
+  "privacy": "Privacy",
+  "terms": "Terms",
+  "reportIssue": "Report an issue",
+  "renderErrorTitle": "Something went wrong",
+  "renderErrorMessage": "Please try again later.",
+  "reload": "Reload",
+  "genderOptions": [
+    { "value": "male", "label": "Male" },
+    { "value": "female", "label": "Female" },
+    { "value": "other", "label": "Other" }
+  ]
 } 

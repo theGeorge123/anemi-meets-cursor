@@ -1,17 +1,25 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 interface Meetup {
   id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  location: string;
-  status: 'upcoming' | 'past';
+  title?: string;
+  description?: string;
+  selected_date: string;
+  selected_time: string;
+  cafe_id?: string;
+  cafe_name?: string;
+  status?: string;
+  email_b?: string;
+  invitee_id?: string;
 }
 
-const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin }: { meetup: Meetup, onView: (id: string) => void, onJoin: (id: string) => void }) {
+const LOCAL_CACHE_KEY = 'meetups_cache_v1';
+const QUEUE_KEY = 'meetups_queue_v1';
+
+const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin, t }: { meetup: Meetup, onView: (id: string) => void, onJoin: (id: string) => void, t: any }) {
   return (
     <div
       className="card hover:shadow-lg transition-shadow duration-300"
@@ -19,26 +27,29 @@ const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJo
     >
       <div className="flex flex-col h-full">
         <div className="flex-1">
-          <h2 className="mobile-heading text-[#37474f] mb-2">{meetup.title}</h2>
-          <p className="mobile-text text-gray-600 mb-4 line-clamp-2">{meetup.description}</p>
+          <h2 className="mobile-heading text-[#37474f] mb-2">{meetup.title || meetup.cafe_name || t('meetups.untitled', 'Meetup')}</h2>
+          <p className="mobile-text text-gray-600 mb-4 line-clamp-2">{meetup.description || ''}</p>
           <div className="space-y-3">
             <div className="flex items-center text-gray-600">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span className="mobile-text">{new Date(meetup.date).toLocaleDateString()}</span>
+              <span className="mobile-text">{new Date(meetup.selected_date).toLocaleDateString()}</span>
             </div>
             <div className="flex items-center text-gray-600">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="mobile-text">{meetup.time}</span>
+              <span className="mobile-text">{meetup.selected_time}</span>
             </div>
+            {meetup.status && (
+              <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${meetup.status === 'confirmed' ? 'bg-green-100 text-green-700' : meetup.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}>{t(`meetups.status.${meetup.status}`, meetup.status)}</span>
+            )}
           </div>
         </div>
         <div className="flex gap-2 mt-4">
-          <button className="btn-primary flex-1" onClick={() => onView(meetup.id)}>Bekijk</button>
-          <button className="btn-secondary flex-1" onClick={() => onJoin(meetup.id)}>Deelnemen</button>
+          <button className="btn-primary flex-1" onClick={() => onView(meetup.id)}>{t('meetups.view', 'Bekijk')}</button>
+          <button className="btn-secondary flex-1" onClick={() => onJoin(meetup.id)}>{t('meetups.join', 'Deelnemen')}</button>
         </div>
       </div>
     </div>
@@ -47,40 +58,81 @@ const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJo
 
 const Meetups: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation(['meetups', 'common']);
   const [meetups, setMeetups] = useState<Meetup[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [usingCache, setUsingCache] = useState(false);
 
+  // Detecteer online/offline status
   useEffect(() => {
-    // TODO: Fetch meetups from API
-    const mockMeetups: Meetup[] = [
-      {
-        id: '1',
-        title: 'Coffee & Code',
-        description: 'Join us for a casual coding session over coffee. Bring your laptop and your favorite coffee!',
-        date: '2024-04-15',
-        time: '10:00 AM',
-        location: 'Downtown Coffee Shop',
-        status: 'upcoming'
-      },
-      {
-        id: '2',
-        title: 'Web Development Workshop',
-        description: 'Learn the basics of web development with React and TypeScript.',
-        date: '2024-04-20',
-        time: '2:00 PM',
-        location: 'Tech Hub',
-        status: 'upcoming'
-      }
-    ];
-    setMeetups(mockMeetups);
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
+
+  // Ophalen en cachen van meetups
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    setUsingCache(false);
+    const fetchMeetups = async () => {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        setError(t('common:errorLoadingSession', 'Fout bij ophalen sessie.'));
+        setLoading(false);
+        return;
+      }
+      const session = sessionData?.session;
+      if (!session?.user) {
+        setError(t('meetups:notLoggedIn', 'Je moet ingelogd zijn om je meetups te zien.'));
+        setLoading(false);
+        return;
+      }
+      setUser(session.user);
+      const { id: userId, email: userEmail } = session.user;
+      try {
+        const { data, error } = await supabase
+          .from('invitations')
+          .select('*')
+          .or(`invitee_id.eq.${userId},email_b.eq.${userEmail}`)
+          .order('selected_date', { ascending: true });
+        if (error || !data) throw error || new Error('No data');
+        setMeetups(data || []);
+        setLoading(false);
+        setUsingCache(false);
+        // Cache in localStorage
+        localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(data));
+      } catch (err) {
+        // Bij fout: probeer cache
+        const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+        if (cached) {
+          setMeetups(JSON.parse(cached));
+          setUsingCache(true);
+        } else {
+          setMeetups([]);
+        }
+        setError(t('meetups:errorLoading', { details: typeof err === 'object' && err && 'message' in err ? (err as any).message : String(err) }));
+        setLoading(false);
+      }
+    };
+    fetchMeetups();
+  }, [t, isOffline]);
 
   const filteredMeetups = useMemo(() => {
     return meetups.filter(meetup => {
-      const matchesSearch = meetup.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        meetup.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = filterStatus === 'all' || meetup.status === filterStatus;
+      const matchesSearch = (meetup.title || meetup.cafe_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (meetup.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = filterStatus === 'all' || (meetup.status || 'upcoming') === filterStatus;
       return matchesSearch && matchesStatus;
     });
   }, [meetups, searchQuery, filterStatus]);
@@ -97,12 +149,17 @@ const Meetups: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
+        {(isOffline || usingCache) && (
+          <div className="mb-4 p-3 rounded bg-yellow-100 text-yellow-800 text-center font-semibold">
+            {isOffline ? t('meetups:offlineNotice', 'Je bent offline. Gecachte meetups worden getoond.') : t('meetups:cacheNotice', 'Gecachte meetups worden getoond.')}
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h1 className="mobile-heading text-[#37474f]">Meetups</h1>
+          <h1 className="mobile-heading text-[#37474f]">{t('meetups:title', 'Meetups')}</h1>
           <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-4">
             <input
               type="text"
-              placeholder="Search meetups..."
+              placeholder={t('meetups:searchPlaceholder', 'Zoek meetups...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input-field w-full sm:w-64"
@@ -112,22 +169,36 @@ const Meetups: React.FC = () => {
               onChange={(e) => setFilterStatus(e.target.value)}
               className="input-field w-full sm:w-48"
             >
-              <option value="all">All Status</option>
-              <option value="upcoming">Upcoming</option>
-              <option value="past">Past</option>
+              <option value="all">{t('meetups:allStatus', 'Alle statussen')}</option>
+              <option value="upcoming">{t('meetups:upcoming', 'Aankomend')}</option>
+              <option value="pending">{t('meetups:pending', 'In afwachting')}</option>
+              <option value="confirmed">{t('meetups:confirmed', 'Bevestigd')}</option>
+              <option value="cancelled">{t('meetups:cancelled', 'Geannuleerd')}</option>
+              <option value="declined">{t('meetups:declined', 'Geweigerd')}</option>
+              <option value="past">{t('meetups:past', 'Verlopen')}</option>
             </select>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMeetups.map(meetup => (
-            <MeetupListItem key={meetup.id} meetup={meetup} onView={handleViewMeetup} onJoin={handleJoinMeetup} />
-          ))}
-        </div>
-
-        {filteredMeetups.length === 0 && (
+        {loading ? (
           <div className="text-center py-12">
-            <p className="mobile-text text-gray-600">No meetups found</p>
+            <p className="mobile-text text-gray-600">{t('common:loading', 'Laden...')}</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="mobile-text text-red-600">{error}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMeetups.map(meetup => (
+              <MeetupListItem key={meetup.id} meetup={meetup} onView={handleViewMeetup} onJoin={handleJoinMeetup} t={t} />
+            ))}
+          </div>
+        )}
+
+        {!loading && !error && filteredMeetups.length === 0 && (
+          <div className="text-center py-12">
+            <p className="mobile-text text-gray-600">{t('meetups:noMeetups', 'Geen meetups gevonden')}</p>
           </div>
         )}
       </div>

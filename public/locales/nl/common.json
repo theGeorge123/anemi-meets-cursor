@@ -34,5 +34,17 @@
   "testimonial1": "Anemi Meets bespaart me zoveel tijd! — Sophie, Rotterdam",
   "freeAccountInfo": "Met een gratis account kun je direct meetups plannen en uitnodigingen versturen.",
   "alreadyHaveAccount": "Al een account? Inloggen",
-  "createAccount": "Account aanmaken"
+  "createAccount": "Account aanmaken",
+  "cookies": "Cookies",
+  "privacy": "Privacy",
+  "terms": "Voorwaarden",
+  "reportIssue": "Probleem melden",
+  "renderErrorTitle": "Er ging iets mis",
+  "renderErrorMessage": "Probeer het later opnieuw.",
+  "reload": "Opnieuw laden",
+  "genderOptions": [
+    { "value": "male", "label": "Man" },
+    { "value": "female", "label": "Vrouw" },
+    { "value": "other", "label": "Anders" }
+  ]
 } 

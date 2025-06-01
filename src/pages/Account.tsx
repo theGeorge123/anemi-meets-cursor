@@ -63,7 +63,8 @@ const Account = () => {
   const [showPasswordToast, setShowPasswordToast] = useState(false);
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
-  const genderOptions = t('common.genderOptions', { returnObjects: true }) as { value: string, label: string }[];
+  const genderOptionsRaw = t('common.genderOptions', { returnObjects: true });
+  const genderOptions = Array.isArray(genderOptionsRaw) ? genderOptionsRaw : [];
 
   useEffect(() => {
     const getUser = async () => {

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import ReportIssueModal from './ReportIssueModal';
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ const Footer = () => {
       </div>
       <span className="hidden sm:inline">|</span>
       <button onClick={() => setShowReportModal(true)} className="hover:underline text-primary-700 font-semibold">{t('common.reportIssue', 'Probleem melden')}</button>
-      {showReportModal && <div>TODO: ReportIssueModal</div>}
+      <ReportIssueModal open={showReportModal} onClose={() => setShowReportModal(false)} />
     </footer>
   );
 };
