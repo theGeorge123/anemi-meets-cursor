@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
+import * as Sentry from '@sentry/react';
 
 interface ErrorState {
   message: string;
@@ -43,6 +44,17 @@ export const useError = (): UseErrorReturn => {
       details: errorDetails,
       timestamp: new Date().toISOString(),
     });
+
+    // Add Sentry breadcrumb
+    Sentry.addBreadcrumb({
+      category: 'error',
+      message: errorMessage,
+      level: 'error',
+      data: { code: errorCode, details: errorDetails }
+    });
+
+    // Report to Sentry
+    Sentry.captureException(error);
 
     // Set error state
     setError({
