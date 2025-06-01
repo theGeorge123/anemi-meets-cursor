@@ -17,7 +17,6 @@ interface Meetup {
 }
 
 const LOCAL_CACHE_KEY = 'meetups_cache_v1';
-const QUEUE_KEY = 'meetups_queue_v1';
 
 const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin, t }: { meetup: Meetup, onView: (id: string) => void, onJoin: (id: string) => void, t: any }) {
   return (
@@ -64,7 +63,6 @@ const Meetups: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [usingCache, setUsingCache] = useState(false);
 
@@ -98,13 +96,11 @@ const Meetups: React.FC = () => {
         setLoading(false);
         return;
       }
-      setUser(session.user);
-      const { id: userId, email: userEmail } = session.user;
       try {
         const { data, error } = await supabase
           .from('invitations')
           .select('*')
-          .or(`invitee_id.eq.${userId},email_b.eq.${userEmail}`)
+          .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`)
           .order('selected_date', { ascending: true });
         if (error || !data) throw error || new Error('No data');
         setMeetups(data || []);

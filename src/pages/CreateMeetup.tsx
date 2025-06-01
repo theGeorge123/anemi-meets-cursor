@@ -48,7 +48,7 @@ function queueMeetup(payload: any) {
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
 }
 
-async function flushMeetupQueue(supabase: any, t: any, onSuccess: () => void) {
+async function flushMeetupQueue(supabase: any, onSuccess: () => void) {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
   if (!queue.length) return;
   const newQueue = [];
@@ -283,12 +283,12 @@ const CreateMeetup = () => {
 
   // Flush queue bij online komen
   useEffect(() => {
-    const flush = () => flushMeetupQueue(supabase, t, () => setQueueCount(q => q - 1));
+    const flush = () => flushMeetupQueue(supabase, () => setQueueCount(q => q - 1));
     window.addEventListener('online', flush);
     // Initieel ook proberen flushen
     flush();
     return () => window.removeEventListener('online', flush);
-  }, [t]);
+  }, []);
 
   // Update queueCount
   useEffect(() => {
