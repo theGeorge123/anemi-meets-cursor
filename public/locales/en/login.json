@@ -1,8 +1,8 @@
 {
   "title": "Login",
-  "subtitle": "Log in to your account to continue",
-  "welcomeBack": "Welcome back!",
-  "welcomeDesc": "We missed you. Log in and you can easily make real connections again. Grab your favorite drink ☕️ and log in!",
+  "subtitle": "Log in to your account to keep going!",
+  "welcomeBack": "Welcome back! 👋",
+  "welcomeDesc": "We missed you! Log in and get back to real connections. Grab your favorite drink ☕️ and let's go!",
   "forgotPassword": "Forgot password?",
-  "noAccountCta": "Don't have an account? Sign up"
+  "noAccountCta": "No account yet? Sign up in seconds!"
 } 

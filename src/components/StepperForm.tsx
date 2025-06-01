@@ -36,82 +36,9 @@ Uitleg in code-comments zodat een beginner snapt wat er gebeurt.
 import React, { useState } from 'react';
 import { Player } from '@lottiefiles/react-lottie-player';
 import { useSwipeable } from 'react-swipeable';
+import { useTranslation } from 'react-i18next';
 // Confetti animatie-bestand (bijv. public/confetti.json)
 // Download een confetti lottie van lottiefiles.com en plaats in public/confetti.json
-
-// --- Vertalingen ---
-const translations = {
-  nl: {
-    steps: ['Gegevens', 'Datum & Tijd', 'Café', 'Bevestigen'],
-    next: 'Volgende',
-    prev: 'Vorige',
-    submit: 'Bevestigen',
-    required: 'Verplicht veld',
-    gegevens: {
-      title: 'Jouw gegevens',
-      name: 'Naam',
-      email: 'E-mailadres',
-    },
-    datetime: {
-      title: 'Kies datum & tijd',
-      date: 'Datum',
-      time: 'Tijd',
-      morning: 'Ochtend',
-      afternoon: 'Middag',
-      evening: 'Avond',
-    },
-    cafe: {
-      title: 'Kies een café',
-      select: 'Selecteer café',
-    },
-    confirm: {
-      title: 'Bevestig je afspraak',
-      info: 'Controleer je gegevens en bevestig.',
-    },
-    success: {
-      title: 'Gelukt!',
-      message: 'Je afspraak is succesvol aangemaakt. Je ontvangt binnenkort een bevestiging per e-mail.',
-      button: 'Terug naar start',
-    },
-    cta: 'Wil jij ook terug naar echte connecties? Registreer dan nu!',
-    register: 'Account aanmaken',
-  },
-  en: {
-    steps: ['Details', 'Date & Time', 'Café', 'Confirm'],
-    next: 'Next',
-    prev: 'Back',
-    submit: 'Confirm',
-    required: 'Required',
-    gegevens: {
-      title: 'Your details',
-      name: 'Name',
-      email: 'Email',
-    },
-    datetime: {
-      title: 'Choose date & time',
-      date: 'Date',
-      time: 'Time',
-      morning: 'Morning',
-      afternoon: 'Afternoon',
-      evening: 'Evening',
-    },
-    cafe: {
-      title: 'Choose a café',
-      select: 'Select café',
-    },
-    confirm: {
-      title: 'Confirm your meetup',
-      info: 'Check your details and confirm.',
-    },
-    success: {
-      title: 'Success!',
-      message: 'Your meetup was created successfully. You will receive a confirmation soon.',
-      button: 'Back to Home',
-    },
-    cta: 'Want to reconnect in real life? Register now!',
-    register: 'Create account',
-  },
-};
 
 // --- Dummy cafés ---
 const cafes = [
@@ -135,13 +62,11 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
     time: '',
     cafe: '',
   });
-  // --- Vertalingen ophalen ---
-  const t = (key: string) => {
-    const keys = key.split('.');
-    let val: any = translations[locale];
-    for (const k of keys) val = val?.[k];
-    return val || key;
-  };
+  // --- i18n hook ---
+  const { t, i18n } = useTranslation('stepperForm');
+  // Forceer juiste taal indien nodig
+  if (i18n.language !== locale) i18n.changeLanguage(locale);
+
   // --- Validatie per stap ---
   const isStepValid = () => {
     if (step === 0) return form.name.trim() && form.email.trim();
@@ -236,20 +161,17 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
                 <label className="block mobile-text font-semibold text-[#37474f] mb-2">
                   {t('datetime.time')} <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {['morning', 'afternoon', 'evening'].map(tijd => (
-                    <button
-                      key={tijd}
-                      type="button"
-                      className={`btn-secondary ${
-                        form.time === tijd ? 'bg-[#b2dfdb] text-[#37474f]' : ''
-                      }`}
-                      onClick={() => setForm(f => ({ ...f, time: tijd }))}
-                    >
-                      {t(`datetime.${tijd}`)}
-                    </button>
-                  ))}
-                </div>
+                <select
+                  className="input-field w-full"
+                  value={form.time}
+                  onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
+                  required
+                >
+                  <option value="">{t('select')}</option>
+                  <option value="morning">{t('datetime.morning')}</option>
+                  <option value="afternoon">{t('datetime.afternoon')}</option>
+                  <option value="evening">{t('datetime.evening')}</option>
+                </select>
               </div>
             </div>
           </div>
@@ -259,24 +181,20 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
           <div className="space-y-6">
             <h2 className="mobile-heading text-[#37474f]">{t('cafe.title')}</h2>
             <div className="space-y-4">
-              <div>
-                <label className="block mobile-text font-semibold text-[#37474f] mb-2">
-                  {t('cafe.select')} <span className="text-red-500">*</span>
-                </label>
-                <select
-                  className="input-field w-full"
-                  value={form.cafe}
-                  onChange={e => setForm(f => ({ ...f, cafe: e.target.value }))}
-                  required
-                >
-                  <option value="">{t('common.select')}</option>
-                  {cafes.map(cafe => (
-                    <option key={cafe.id} value={cafe.id}>
-                      {cafe.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <label className="block mobile-text font-semibold text-[#37474f] mb-2">
+                {t('cafe.select')} <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="input-field w-full"
+                value={form.cafe}
+                onChange={e => setForm(f => ({ ...f, cafe: e.target.value }))}
+                required
+              >
+                <option value="">{t('select')}</option>
+                {cafes.map(cafe => (
+                  <option key={cafe.id} value={cafe.name}>{cafe.name}</option>
+                ))}
+              </select>
             </div>
           </div>
         );
@@ -284,32 +202,14 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
         return (
           <div className="space-y-6">
             <h2 className="mobile-heading text-[#37474f]">{t('confirm.title')}</h2>
-            <div className="space-y-4">
-              <div className="card bg-white/50">
-                <div className="space-y-3">
-                  <div>
-                    <span className="mobile-text font-semibold text-[#37474f]">{t('gegevens.name')}:</span>
-                    <p className="mobile-text">{form.name}</p>
-                  </div>
-                  <div>
-                    <span className="mobile-text font-semibold text-[#37474f]">{t('gegevens.email')}:</span>
-                    <p className="mobile-text">{form.email}</p>
-                  </div>
-                  <div>
-                    <span className="mobile-text font-semibold text-[#37474f]">{t('datetime.date')}:</span>
-                    <p className="mobile-text">{form.date}</p>
-                  </div>
-                  <div>
-                    <span className="mobile-text font-semibold text-[#37474f]">{t('datetime.time')}:</span>
-                    <p className="mobile-text">{t(`datetime.${form.time}`)}</p>
-                  </div>
-                  <div>
-                    <span className="mobile-text font-semibold text-[#37474f]">{t('cafe.select')}:</span>
-                    <p className="mobile-text">{cafes.find(c => c.id === Number(form.cafe))?.name}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p>{t('confirm.info')}</p>
+            <ul className="list-disc ml-6">
+              <li>{t('gegevens.name')}: {form.name}</li>
+              <li>{t('gegevens.email')}: {form.email}</li>
+              <li>{t('datetime.date')}: {form.date}</li>
+              <li>{t('datetime.time')}: {t(`datetime.${form.time}`)}</li>
+              <li>{t('cafe.select')}: {form.cafe}</li>
+            </ul>
           </div>
         );
       default:
@@ -374,7 +274,7 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
-              {translations[locale].steps.map((stepTitle, index) => (
+              {(t('steps', { returnObjects: true }) as string[]).map((stepTitle: any, index: number) => (
                 <div
                   key={index}
                   className={`flex-1 text-center ${

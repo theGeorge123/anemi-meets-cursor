@@ -1,8 +1,8 @@
 {
   "title": "Dashboard",
-  "noMeetups": "Je hebt nog geen ontmoetingen",
-  "errorLoadingMeetups": "Fout bij het laden van je ontmoetingen",
-  "welcome": "Welkom",
+  "noMeetups": "Je hebt nog geen ontmoetingen. Tijd om er eentje te plannen! ☕",
+  "errorLoadingMeetups": "Oeps, je ontmoetingen laden lukt niet. Probeer het straks nog eens!",
+  "welcome": "Welkom!",
   "user": "Gebruiker",
   "lastLogin": "Laatste login: {{date}}",
   "lastActivity": "Laatste activiteit",

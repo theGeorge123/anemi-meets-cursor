@@ -56,7 +56,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
             <Link
               key={link.to}
               to={link.to}
-              className={`px-3 py-1 rounded-xl font-medium transition-colors ${activePath === link.to ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-primary-50'} active:scale-95 active:bg-[#b2dfdb]`}
+              className={`px-3 py-2 rounded-xl font-medium transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center text-center ${activePath === link.to ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-primary-50'} active:scale-95 active:bg-[#b2dfdb]`}
             >
               {link.label}
             </Link>
@@ -111,10 +111,10 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
             </span>
           )}
         </div>
-        {/* Hamburger menu for mobile */}
+        {/* Mobile hamburger menu */}
         <div className="md:hidden flex items-center gap-2">
           <button
-            className="flex items-center justify-center w-10 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 hover:bg-primary-50 transition-colors active:scale-95 active:bg-[#b2dfdb]"
+            className="flex items-center justify-center w-11 h-11 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 hover:bg-primary-50 transition-colors active:scale-95 active:bg-[#b2dfdb] min-h-[44px] min-w-[44px]"
             onClick={() => setMenuOpen(v => !v)}
             aria-label="Menu"
             aria-expanded={menuOpen}
@@ -130,7 +130,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
           {/* Language Switcher Dropdown for mobile */}
           <div className="relative">
             <button
-              className={`px-3 py-1 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary-400 ${langMenuOpen ? 'ring-2 ring-primary-400' : ''}`}
+              className={`px-3 py-2 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary-400 min-h-[44px] min-w-[44px]`}
               aria-haspopup="listbox"
               aria-expanded={langMenuOpen}
               aria-label={t('common.selectLanguage', 'Select language')}
@@ -142,33 +142,20 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
               <span className="uppercase font-bold tracking-wider">{i18n.language}</span>
               <svg className={`w-4 h-4 transition-transform duration-200 ${langMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
             </button>
-            <Transition
-              as={Fragment}
-              show={langMenuOpen}
-              enter="transition ease-out duration-150"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="transition ease-in duration-100"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <div className="absolute right-0 mt-2 w-28 bg-white border border-primary-100 rounded-xl shadow-lg z-50 py-1 animate-fade-in">
-                {LANGUAGES.map((lang) => (
+            {/* Dropdown menu (optioneel) */}
+            {langMenuOpen && (
+              <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg py-2 z-50 flex flex-col gap-y-2">
+                {LANGUAGES.map(lang => (
                   <button
                     key={lang.code}
+                    className={`w-full text-left px-4 py-3 rounded-xl font-medium text-primary-700 hover:bg-primary-50 transition-colors min-h-[44px] min-w-[44px] ${i18n.language === lang.code ? 'bg-primary-100' : ''}`}
                     onClick={() => handleLanguageChange(lang.code)}
-                    className={`flex items-center w-full text-left px-4 py-2 rounded-xl transition-colors duration-100 gap-2 ${i18n.language === lang.code ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
-                    aria-checked={i18n.language === lang.code}
-                    role="option"
                   >
-                    <span>{lang.label}</span>
-                    {i18n.language === lang.code && (
-                      <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    )}
+                    {lang.label}
                   </button>
                 ))}
               </div>
-            </Transition>
+            )}
           </div>
         </div>
       </div>

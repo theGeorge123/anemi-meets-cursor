@@ -1,0 +1,36 @@
+{
+  "steps": ["Details", "Date & Time", "Café", "Confirm"],
+  "next": "Next",
+  "prev": "Back",
+  "submit": "Confirm",
+  "required": "Required",
+  "select": "Select...",
+  "gegevens": {
+    "title": "Your details",
+    "name": "Name",
+    "email": "Email"
+  },
+  "datetime": {
+    "title": "Pick a date & time",
+    "date": "Date",
+    "time": "Time",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening"
+  },
+  "cafe": {
+    "title": "Pick a café",
+    "select": "Select café"
+  },
+  "confirm": {
+    "title": "Confirm your meetup",
+    "info": "Check your details and hit confirm!"
+  },
+  "success": {
+    "title": "All done! 🎉",
+    "message": "You're all set! We'll send you a confirmation soon 📬",
+    "button": "Back to Home"
+  },
+  "cta": "Ready for real connections? Create your account now!",
+  "register": "Create account"
+} 

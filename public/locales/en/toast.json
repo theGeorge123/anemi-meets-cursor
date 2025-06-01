@@ -1,7 +1,7 @@
 {
-  "loginSuccess": "Welcome back! You are now logged in",
-  "signupSuccess": "Account created! Check your email for confirmation",
-  "profileUpdated": "Your profile has been updated",
-  "meetupCreated": "Meetup created successfully!",
-  "passwordChanged": "Password changed successfully"
+  "loginSuccess": "Awesome! You're logged in! 🎉",
+  "signupSuccess": "Account created! You're all set! ✨",
+  "profileUpdated": "Profile updated! 🎉",
+  "meetupCreated": "Meetup created! ☕",
+  "passwordChanged": "Password changed!"
 } 

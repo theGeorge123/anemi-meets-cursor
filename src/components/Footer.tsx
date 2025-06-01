@@ -7,20 +7,17 @@ const Footer = () => {
   const { t } = useTranslation();
   const [showReportModal, setShowReportModal] = useState(false);
   return (
-    <footer className="w-full py-6 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-6 text-sm text-gray-500">
-      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2">
-        <Link to="/cookies" className="hover:underline">{t('common.cookies')}</Link>
+    <footer className="w-full border-t border-[#b2dfdb]/40 py-8 px-4 flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 text-sm text-gray-600 font-medium bg-white/90 mt-auto">
+      <div className="flex flex-col sm:flex-row items-center gap-y-2 gap-x-4 sm:gap-6 w-full sm:w-auto">
+        <Link to="/cookies" className="hover:text-primary-700 underline transition-colors block sm:inline-block min-h-[44px] min-w-[44px] px-2 py-2 sm:px-0 sm:py-0 text-center">{t('common.cookies')}</Link>
         <span className="hidden sm:inline">|</span>
-        <Link to="/privacy" className="hover:underline">{t('common.privacy')}</Link>
-      </div>
-      <span className="hidden sm:inline">|</span>
-      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2">
-        <Link to="/terms" className="hover:underline">{t('common.terms')}</Link>
+        <Link to="/privacy" className="hover:text-primary-700 underline transition-colors block sm:inline-block min-h-[44px] min-w-[44px] px-2 py-2 sm:px-0 sm:py-0 text-center">{t('common.privacy')}</Link>
         <span className="hidden sm:inline">|</span>
-        <Link to="/contact" className="hover:underline">{t('common.contact')}</Link>
+        <Link to="/terms" className="hover:text-primary-700 underline transition-colors block sm:inline-block min-h-[44px] min-w-[44px] px-2 py-2 sm:px-0 sm:py-0 text-center">{t('common.terms')}</Link>
+        <span className="hidden sm:inline">|</span>
+        <Link to="/contact" className="hover:text-primary-700 underline transition-colors block sm:inline-block min-h-[44px] min-w-[44px] px-2 py-2 sm:px-0 sm:py-0 text-center">{t('common.contact')}</Link>
       </div>
-      <span className="hidden sm:inline">|</span>
-      <button onClick={() => setShowReportModal(true)} className="hover:underline text-primary-700 font-semibold">{t('reportIssue.title')}</button>
+      <button onClick={() => setShowReportModal(true)} className="btn-secondary px-4 py-2 rounded-2xl ml-0 sm:ml-6 mt-2 sm:mt-0 min-h-[44px] min-w-[44px]">{t('reportIssue.title')}</button>
       <ReportIssueModal open={showReportModal} onClose={() => setShowReportModal(false)} />
     </footer>
   );

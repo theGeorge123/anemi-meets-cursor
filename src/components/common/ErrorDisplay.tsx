@@ -44,7 +44,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
               <button
                 type="button"
                 onClick={onRetry}
-                className="inline-flex items-center rounded-md bg-red-100 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                className="btn-secondary border-red-400 text-red-700 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
               >
                 {t('errors.retry')}
               </button>

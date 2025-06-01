@@ -136,18 +136,18 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">
+    <div className="max-w-md mx-auto px-2 sm:px-0 py-6">
+      <h1 className="mobile-heading text-primary-600 mb-6 text-center">
         {t('common.login')}
       </h1>
-      <div className="bg-[#fff7f3] rounded-2xl shadow p-6 mb-8 text-center">
+      <div className="bg-[#fff7f3] rounded-2xl shadow p-4 sm:p-6 mb-6 text-center">
         <div className="text-2xl mb-2">👋✨</div>
         <div className="text-lg font-semibold text-primary-700 mb-1">{t('login.welcomeBack')}</div>
         <div className="text-gray-700 text-base">{t('login.welcomeDesc')}</div>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-6 px-2 sm:px-0">
+      <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 bg-white/90 p-4 sm:p-6 rounded-xl shadow-2xl border border-primary-100 flex flex-col justify-between">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block mobile-text font-medium text-gray-700 mb-2">
             {t('common.email')}
           </label>
           <input
@@ -165,7 +165,7 @@ const Login = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="block mobile-text font-medium text-gray-700 mb-2">
             {t('common.password')}
           </label>
           <input
@@ -225,7 +225,7 @@ const Login = () => {
 
       <div className="text-center mt-6">
         <button
-          className="text-primary-600 underline hover:text-primary-800 text-sm"
+          className="text-primary-600 underline hover:text-primary-800 text-sm min-h-[44px] min-w-[44px]"
           onClick={() => navigate('/signup')}
         >
           {t('login.noAccountCta')}
