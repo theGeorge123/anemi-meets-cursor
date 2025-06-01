@@ -1,9 +1,18 @@
 {
   "title": "Welkom bij Anemi Meets",
+  "subtitle": "Plan je volgende Meetup in een paar klikken",
   "fillIn": "Invullen",
-  "fillInDesc": "Vul je naam, e-mail en favoriete data in.",
+  "fillInDesc": "Vul je naam, e-mail en favoriete data in",
   "send": "Versturen",
-  "sendDesc": "Stuur de uitnodiging met één klik naar je vriend(in).",
+  "sendDesc": "Verstuur de uitnodiging met één klik naar je vriend(in)",
   "accept": "Accepteren",
-  "acceptDesc": "Je vriend kiest en bevestigt de beste tijd. Klaar!"
+  "acceptDesc": "Je vriend kiest en accepteert de beste tijd. Klaar!",
+  "tired": "Ook zo moe van eindeloze groepsapps",
+  "oneClick": "Met één klik ben je klaar",
+  "connectFaster": "Sneller Meetups plannen, sneller verbinden",
+  "strengthen": "Versterk je connecties",
+  "firstStep": "Zet de eerste stap naar een echte Meetup!",
+  "startNow": "Begin nu",
+  "freeText": "Nu gratis!",
+  "testimonial1": "Anemi Meets bespaart me zoveel tijd! — Sophie, Rotterdam"
 } 

@@ -68,7 +68,7 @@ async function flushMeetupQueue(supabase: any, onSuccess: () => void) {
 }
 
 const CreateMeetup = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['common', 'meetup']);
   const [formData, setFormData] = useState({
     name: '',
     dates: [] as Date[],
@@ -551,20 +551,20 @@ const CreateMeetup = () => {
               type="text"
               {...register('name')}
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.name ? 'border-red-500' : watchedName ? 'border-green-500' : 'border-primary-200'}`}
-              placeholder={t('common.name')}
+              placeholder={t('name')}
               autoComplete="off"
             />
             {errors.name && <div className="text-red-500 text-sm mb-2">{errors.name.message}</div>}
           </div>
           {!user && (
             <div className="mb-2">
-              <label className="block text-gray-700 mb-2" htmlFor="email">{t('common.email')}</label>
+              <label className="block text-gray-700 mb-2" htmlFor="email">{t('email')}</label>
               <input
                 id="email"
                 type="email"
                 {...register('email')}
                 className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.email ? 'border-red-500' : watchedEmail ? 'border-green-500' : 'border-primary-200'}`}
-                placeholder={t('common.email')}
+                placeholder={t('email')}
                 autoComplete="off"
                 required
               />
@@ -576,7 +576,7 @@ const CreateMeetup = () => {
             disabled={!isValid}
             className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           >
-            {t('common.continue')}
+            {t('continue')}
           </button>
           {/* Suggesties */}
           {errors.name && <div className="text-xs text-gray-500 mt-1">{t('createMeetup.suggestionName')}</div>}

@@ -1,5 +1,8 @@
 {
+  "title": "Inloggen",
+  "subtitle": "Log in op je account om verder te gaan",
   "welcomeBack": "Welkom terug!",
   "welcomeDesc": "We hebben je gemist. Nog even inloggen en je kunt weer makkelijk echte connecties maken. Pak je favoriete drankje ☕️ en log snel in!",
-  "noAccountCta": "Nog geen account? Maak hier je account"
+  "forgotPassword": "Wachtwoord vergeten?",
+  "noAccountCta": "Nog geen account? Registreer je"
 } 

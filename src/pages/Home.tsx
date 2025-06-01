@@ -23,17 +23,17 @@ const Home = () => {
             style={{ border: '2px solid #b2dfdb' }}
             aria-label={t('fillIn')}
           >
-            <span className="text-3xl mb-2">📝</span>
+            <span className="text-3xl mb-2" aria-hidden="true">📝</span>
             <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('fillIn')}</h2>
             <p className="text-gray-600 text-sm text-center">{t('fillInDesc')}</p>
           </button>
           <div className="flex-1 card bg-[#ff914d]/80 flex flex-col items-center p-6 min-w-[180px]">
-            <span className="text-3xl mb-2">📤</span>
+            <span className="text-3xl mb-2" aria-hidden="true">📤</span>
             <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('send')}</h2>
             <p className="text-gray-600 text-sm text-center">{t('sendDesc')}</p>
           </div>
           <div className="flex-1 card bg-[#c5cae9]/80 flex flex-col items-center p-6 min-w-[180px]">
-            <span className="text-3xl mb-2">✅</span>
+            <span className="text-3xl mb-2" aria-hidden="true">✅</span>
             <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('accept')}</h2>
             <p className="text-gray-600 text-sm text-center">{t('acceptDesc')}</p>
           </div>
@@ -47,15 +47,16 @@ const Home = () => {
         </div>
         <div className="bg-[#b2dfdb]/80 rounded-3xl shadow-xl p-8 flex flex-col items-center gap-2 max-w-xl mx-auto">
           <h2 className="text-2xl font-bold text-primary-700 mb-2 flex items-center gap-2">
-            <span role="img" aria-label="connect">🤝</span> {t('strengthen')}
+            <span role="img" aria-label={t('connectAria', 'connect')}>🤝</span> {t('strengthen')}
           </h2>
           <p className="text-lg text-gray-700 text-center">
             {t('firstStep')}<br/>
-            <span className="text-2xl">☕️✨</span>
+            <span className="text-2xl" aria-hidden="true">☕️✨</span>
           </p>
           <button
             onClick={handleStartMeetup}
             className="text-lg px-8 py-3 mt-4 rounded-2xl font-semibold shadow-xl bg-[#ff914d] text-white hover:bg-[#ffb184] transition-colors duration-300"
+            aria-label={t('startNow')}
           >
             {t('startNow')}
           </button>
@@ -69,7 +70,7 @@ const Home = () => {
       </div>
       {/* Testimonial sectie */}
       <div className="max-w-xl mx-auto mt-8">
-        <h2 className="text-xl font-bold text-primary-700 mb-2 text-center">{t('common.testimonialsTitle')}</h2>
+        <h2 className="text-xl font-bold text-primary-700 mb-2 text-center">{tCommon('testimonialsTitle')}</h2>
         <div className="italic text-gray-700 bg-white/70 rounded-xl p-4 shadow text-center">
           {t('testimonial1', tCommon('testimonial1'))}
         </div>

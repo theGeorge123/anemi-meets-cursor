@@ -123,7 +123,7 @@ const Dashboard = () => {
                   <span className="font-semibold text-primary-700">{m.selected_date}</span>
                   {m.selected_time && <span> &bull; {m.selected_time}</span>}
                   {m.cafe_name && <span> &bull; {m.cafe_name}</span>}
-                  {!m.cafe_name && m.cafe_id && <span> &bull; Café {m.cafe_id}</span>}
+                  {!m.cafe_name && m.cafe_id && <span> &bull; {t('cafe')} {m.cafe_id}</span>}
                 </div>
                 <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === 'confirmed' ? 'bg-green-100 text-green-700' : m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}>{t(`account.status.${m.status}`)}</span>
               </li>
@@ -137,18 +137,21 @@ const Dashboard = () => {
         <button
           className="btn-primary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
           onClick={() => navigate('/create-meetup')}
+          aria-label={t('ctaNewMeetup')}
         >
           {t('ctaNewMeetup')}
         </button>
         <button
           className="btn-secondary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
           onClick={() => navigate('/account')}
+          aria-label={t('ctaProfile')}
         >
           {t('ctaProfile')}
         </button>
         <button
           className="btn-secondary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
           onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }}
+          aria-label={t('ctaLogout')}
         >
           {t('ctaLogout')}
         </button>

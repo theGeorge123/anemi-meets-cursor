@@ -1,25 +1,36 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, Fragment, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { NavigationContext } from '../context/NavigationContext';
 import ErrorBoundary from './ErrorBoundary';
+import { Transition } from '@headlessui/react';
 
 const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
   const { t, i18n } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { activePath, isAuthenticated } = useContext(NavigationContext);
+  const LANGUAGES = [
+    { code: 'en', label: 'EN' },
+    { code: 'nl', label: 'NL' },
+  ];
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const langBtnRef = useRef<HTMLButtonElement>(null);
 
   // Save language preference in localStorage
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language');
+    const savedLanguage = localStorage.getItem('i18nextLng');
     if (savedLanguage) {
       i18n.changeLanguage(savedLanguage);
     }
   }, [i18n]);
 
   const handleLanguageChange = (lang: string) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem('language', lang);
+    if (lang !== i18n.language) {
+      i18n.changeLanguage(lang);
+      localStorage.setItem('i18nextLng', lang);
+      // Kleine animatie triggeren (optioneel: fade/scale)
+      setLangMenuOpen(false);
+    }
   };
 
   // Menu links met vertaalde labels
@@ -50,26 +61,49 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
               {link.label}
             </Link>
           ))}
-          {/* Interactive language switcher on the far right */}
-          <div className="ml-4 relative group">
+          {/* Language Switcher Dropdown */}
+          <div className="ml-4 relative">
             <button
-              className="px-3 py-1 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition active:scale-95 active:bg-[#b2dfdb] flex items-center gap-1"
+              ref={langBtnRef}
+              className={`px-3 py-1 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary-400 ${langMenuOpen ? 'ring-2 ring-primary-400' : ''}`}
               aria-haspopup="listbox"
-              aria-expanded="false"
+              aria-expanded={langMenuOpen}
+              aria-label={t('common.selectLanguage', 'Select language')}
+              onClick={() => setLangMenuOpen((v) => !v)}
+              onBlur={e => {
+                if (!e.currentTarget.contains(e.relatedTarget)) setLangMenuOpen(false);
+              }}
             >
-              <span className="uppercase">{i18n.language}</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              <span className="uppercase font-bold tracking-wider">{i18n.language}</span>
+              <svg className={`w-4 h-4 transition-transform duration-200 ${langMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
             </button>
-            <div className="absolute right-0 mt-2 w-24 bg-white border border-primary-100 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50">
-              <button
-                onClick={() => handleLanguageChange('en')}
-                className={`block w-full text-left px-4 py-2 rounded-t-xl ${i18n.language === 'en' ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
-              >EN</button>
-              <button
-                onClick={() => handleLanguageChange('nl')}
-                className={`block w-full text-left px-4 py-2 rounded-b-xl ${i18n.language === 'nl' ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
-              >NL</button>
-            </div>
+            <Transition
+              as={Fragment}
+              show={langMenuOpen}
+              enter="transition ease-out duration-150"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="transition ease-in duration-100"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <div className="absolute right-0 mt-2 w-28 bg-white border border-primary-100 rounded-xl shadow-lg z-50 py-1 animate-fade-in">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => handleLanguageChange(lang.code)}
+                    className={`flex items-center w-full text-left px-4 py-2 rounded-xl transition-colors duration-100 gap-2 ${i18n.language === lang.code ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
+                    aria-checked={i18n.language === lang.code}
+                    role="option"
+                  >
+                    <span>{lang.label}</span>
+                    {i18n.language === lang.code && (
+                      <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </Transition>
           </div>
           {profileEmoji && (
             <span className="ml-3 text-2xl" title={t('nav.profile')}>
@@ -93,26 +127,48 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
               )}
             </svg>
           </button>
-          {/* Interactive language switcher for mobile, on the right */}
-          <div className="relative group ml-2">
+          {/* Language Switcher Dropdown for mobile */}
+          <div className="relative">
             <button
-              className="px-3 py-1 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition active:scale-95 active:bg-[#b2dfdb] flex items-center gap-1"
+              className={`px-3 py-1 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary-400 ${langMenuOpen ? 'ring-2 ring-primary-400' : ''}`}
               aria-haspopup="listbox"
-              aria-expanded="false"
+              aria-expanded={langMenuOpen}
+              aria-label={t('common.selectLanguage', 'Select language')}
+              onClick={() => setLangMenuOpen((v) => !v)}
+              onBlur={e => {
+                if (!e.currentTarget.contains(e.relatedTarget)) setLangMenuOpen(false);
+              }}
             >
-              <span className="uppercase">{i18n.language}</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              <span className="uppercase font-bold tracking-wider">{i18n.language}</span>
+              <svg className={`w-4 h-4 transition-transform duration-200 ${langMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
             </button>
-            <div className="absolute right-0 mt-2 w-24 bg-white border border-primary-100 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50">
-              <button
-                onClick={() => handleLanguageChange('en')}
-                className={`block w-full text-left px-4 py-2 rounded-t-xl ${i18n.language === 'en' ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
-              >EN</button>
-              <button
-                onClick={() => handleLanguageChange('nl')}
-                className={`block w-full text-left px-4 py-2 rounded-b-xl ${i18n.language === 'nl' ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
-              >NL</button>
-            </div>
+            <Transition
+              as={Fragment}
+              show={langMenuOpen}
+              enter="transition ease-out duration-150"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="transition ease-in duration-100"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <div className="absolute right-0 mt-2 w-28 bg-white border border-primary-100 rounded-xl shadow-lg z-50 py-1 animate-fade-in">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => handleLanguageChange(lang.code)}
+                    className={`flex items-center w-full text-left px-4 py-2 rounded-xl transition-colors duration-100 gap-2 ${i18n.language === lang.code ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
+                    aria-checked={i18n.language === lang.code}
+                    role="option"
+                  >
+                    <span>{lang.label}</span>
+                    {i18n.language === lang.code && (
+                      <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </Transition>
           </div>
         </div>
       </div>
@@ -151,27 +207,49 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
               </span>
             )}
           </div>
-          {/* Language switcher at the bottom */}
+          {/* Language Switcher Dropdown at the bottom */}
           <div className="w-full px-6 pb-8 flex flex-col items-center">
-            <div className="relative group w-full">
+            <div className="relative">
               <button
-                className="w-full px-3 py-3 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition active:scale-95 active:bg-[#b2dfdb] flex items-center gap-1 justify-center"
+                className={`w-full px-3 py-3 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary-400 ${langMenuOpen ? 'ring-2 ring-primary-400' : ''}`}
                 aria-haspopup="listbox"
-                aria-expanded="false"
+                aria-expanded={langMenuOpen}
+                aria-label={t('common.selectLanguage', 'Select language')}
+                onClick={() => setLangMenuOpen((v) => !v)}
+                onBlur={e => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) setLangMenuOpen(false);
+                }}
               >
-                <span className="uppercase">{i18n.language}</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                <span className="uppercase font-bold tracking-wider">{i18n.language}</span>
+                <svg className={`w-4 h-4 transition-transform duration-200 ${langMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </button>
-              <div className="absolute right-0 mt-2 w-24 bg-white border border-primary-100 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50">
-                <button
-                  onClick={() => handleLanguageChange('en')}
-                  className={`block w-full text-left px-4 py-2 rounded-t-xl ${i18n.language === 'en' ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
-                >EN</button>
-                <button
-                  onClick={() => handleLanguageChange('nl')}
-                  className={`block w-full text-left px-4 py-2 rounded-b-xl ${i18n.language === 'nl' ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
-                >NL</button>
-              </div>
+              <Transition
+                as={Fragment}
+                show={langMenuOpen}
+                enter="transition ease-out duration-150"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="transition ease-in duration-100"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <div className="absolute right-0 mt-2 w-28 bg-white border border-primary-100 rounded-xl shadow-lg z-50 py-1 animate-fade-in">
+                  {LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => handleLanguageChange(lang.code)}
+                      className={`flex items-center w-full text-left px-4 py-2 rounded-xl transition-colors duration-100 gap-2 ${i18n.language === lang.code ? 'bg-primary-100 text-primary-700 font-bold' : 'hover:bg-primary-50 text-gray-700'}`}
+                      aria-checked={i18n.language === lang.code}
+                      role="option"
+                    >
+                      <span>{lang.label}</span>
+                      {i18n.language === lang.code && (
+                        <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </Transition>
             </div>
           </div>
         </div>

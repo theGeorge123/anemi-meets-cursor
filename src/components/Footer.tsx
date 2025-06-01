@@ -20,7 +20,7 @@ const Footer = () => {
         <Link to="/contact" className="hover:underline">{t('common.contact')}</Link>
       </div>
       <span className="hidden sm:inline">|</span>
-      <button onClick={() => setShowReportModal(true)} className="hover:underline text-primary-700 font-semibold">{t('common.reportIssue', 'Probleem melden')}</button>
+      <button onClick={() => setShowReportModal(true)} className="hover:underline text-primary-700 font-semibold">{t('reportIssue.title')}</button>
       <ReportIssueModal open={showReportModal} onClose={() => setShowReportModal(false)} />
     </footer>
   );

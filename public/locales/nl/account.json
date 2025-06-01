@@ -1,5 +1,5 @@
 {
-  "accountTitle": "Account",
+  "title": "Account",
   "name": "Naam",
   "email": "E-mail",
   "gender": "Geslacht",
@@ -14,7 +14,7 @@
   "changePassword": "Wachtwoord wijzigen",
   "myMeetups": "Jouw meetups",
   "dangerZone": "Gevaarzone",
-  "deleteConfirm": "Weet je zeker dat je je account wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
+  "deleteConfirm": "Weet je zeker dat je je account wilt verwijderen? Dit kan niet ongedaan worden gemaakt",
   "confirmDelete": "Ja, verwijder mijn account",
   "deleteAccount": "Verwijder mijn account",
   "logout": "Uitloggen",
@@ -35,7 +35,7 @@
   "notSpecified": "Niet gespecificeerd",
   "deleting": "Verwijderen...",
   "errorLoadingMeetupsDetails": "Fout bij het laden van je meetups: {{details}}",
-  "errorSession": "Fout bij het ophalen van je sessie. Log opnieuw in.",
+  "errorSession": "Fout bij het ophalen van je sessie. Log opnieuw in",
   "status": {
     "confirmed": "Bevestigd",
     "pending": "In afwachting",
