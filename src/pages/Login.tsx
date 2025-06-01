@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
 import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -242,4 +243,10 @@ const Login = () => {
   );
 };
 
-export default Login; 
+const LoginPageWithBoundary = () => (
+  <ErrorBoundary>
+    <Login />
+  </ErrorBoundary>
+);
+
+export default LoginPageWithBoundary; 

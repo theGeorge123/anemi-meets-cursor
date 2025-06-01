@@ -1,11 +1,33 @@
+import * as Sentry from "@sentry/react";
+
+Sentry.init({
+  dsn: "https://9c9ec0d710df965baa6558ee822c0928@o4509423043018752.ingest.de.sentry.io/4509423100624976",
+  sendDefaultPii: true,
+  integrations: [
+    Sentry.browserTracingIntegration()
+  ],
+  tracesSampleRate: 1.0,
+  tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
+  environment: import.meta.env.MODE,
+  beforeSend(event) {
+    // Voeg extra context toe, filter PII, etc.
+    return event;
+  }
+});
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-import './i18n/i18n';
+import i18n from './i18n/i18n';
+import { I18nextProvider } from 'react-i18next';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <I18nextProvider i18n={i18n}>
+      <Sentry.ErrorBoundary fallback={<div style={{padding: 40, textAlign: 'center'}}><h2>Er is iets misgegaan 😬</h2><p>Probeer het later opnieuw of <a href="/">ga terug naar home</a>.</p></div>} showDialog={false}>
+        <App />
+      </Sentry.ErrorBoundary>
+    </I18nextProvider>
   </React.StrictMode>,
 ); 

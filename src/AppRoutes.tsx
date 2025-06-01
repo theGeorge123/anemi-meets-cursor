@@ -1,5 +1,5 @@
 import { Routes, Route, useNavigate, Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { supabase } from './supabaseClient';
 import Home from './pages/Home';
 import CreateMeetup from './pages/CreateMeetup';
@@ -14,6 +14,8 @@ import Confirmed from './pages/Confirmed';
 import Account from './pages/Account';
 import Dashboard from './pages/Dashboard';
 import { useTranslation } from 'react-i18next';
+import ErrorBoundary from './components/ErrorBoundary';
+import NotFound from './pages/NotFound';
 
 const AppRoutes = () => {
   const { t } = useTranslation();
@@ -49,28 +51,31 @@ const AppRoutes = () => {
   }, [navigate]);
 
   return (
-    <>
+    <ErrorBoundary>
       {sessionExpiresSoon && (
         <div className="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-900 text-center py-2 z-50 font-semibold shadow-lg">
           {t('common.sessionExpiresSoon')}
           <Link to="/login" className="ml-4 underline text-primary-700">{t('common.login')}</Link>
         </div>
       )}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/create-meetup" element={<CreateMeetup />} />
-        <Route path="/invite/:token" element={<Invite />} />
-        <Route path="/respond" element={<Respond />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/cookies" element={<CookiePolicy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/confirmed" element={<Confirmed />} />
-        <Route path="/account" element={<Account />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-    </>
+      <Suspense fallback={<div className="text-center py-12 text-lg text-primary-700">{t('common.loading')}</div>}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/create-meetup" element={<CreateMeetup />} />
+          <Route path="/invite/:token" element={<Invite />} />
+          <Route path="/respond" element={<Respond />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/cookies" element={<CookiePolicy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/confirmed" element={<Confirmed />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<NotFound />} errorElement={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

@@ -6,6 +6,7 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import React from 'react';
 import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -706,4 +707,10 @@ const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
   );
 };
 
-export default Account; 
+const AccountPageWithBoundary = () => (
+  <ErrorBoundary>
+    <Account />
+  </ErrorBoundary>
+);
+
+export default AccountPageWithBoundary; 

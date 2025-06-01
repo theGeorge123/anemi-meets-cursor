@@ -34,5 +34,8 @@
   "testimonial1": "Anemi Meets saves me so much time! — Sophie, Rotterdam",
   "freeAccountInfo": "With a free account you can immediately plan meetups and send invitations.",
   "alreadyHaveAccount": "Already have an account? Login",
-  "createAccount": "Create Account"
+  "createAccount": "Create Account",
+  "notFoundTitle": "Page not found",
+  "notFoundDesc": "Sorry, this page does not exist or has moved.",
+  "backToHome": "Back to home"
 } 

@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { NavigationContext } from '../context/NavigationContext';
+import ErrorBoundary from './ErrorBoundary';
 
 const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
   const { t, i18n } = useTranslation();
@@ -179,4 +180,10 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
   );
 };
 
-export default NavigationBar; 
+const NavigationBarWithBoundary = (props: any) => (
+  <ErrorBoundary>
+    <NavigationBar {...props} />
+  </ErrorBoundary>
+);
+
+export default NavigationBarWithBoundary; 

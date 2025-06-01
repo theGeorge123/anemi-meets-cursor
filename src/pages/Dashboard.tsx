@@ -24,7 +24,7 @@ interface Profile {
 }
 
 const Dashboard = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('dashboard');
   const [meetups, setMeetups] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,11 +82,11 @@ const Dashboard = () => {
         {profile?.emoji && <span className="text-4xl" title={profile.full_name}>{profile.emoji}</span>}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
-            {t('dashboard.welcome')}, {profile?.full_name || t('dashboard.user')}!
+            {t('welcome')}, {profile?.full_name || t('user')}!
           </h1>
           {profile && (
             <div className="text-gray-600 text-sm">
-              {t('dashboard.lastLogin', { date: profile.last_sign_in_at ? new Date(profile.last_sign_in_at).toLocaleString() : '' })}
+              {t('lastLogin', { date: profile.last_sign_in_at ? new Date(profile.last_sign_in_at).toLocaleString() : '' })}
             </div>
           )}
         </div>
@@ -96,7 +96,7 @@ const Dashboard = () => {
       {lastActivity && (
         <div className="mb-6">
           <div className="text-gray-700 text-base">
-            {t('dashboard.lastActivity')}: <span className="font-semibold">{lastActivity.selected_date}{lastActivity.selected_time && `, ${lastActivity.selected_time}`}</span>
+            {t('lastActivity')}: <span className="font-semibold">{lastActivity.selected_date}{lastActivity.selected_time && `, ${lastActivity.selected_time}`}</span>
             {lastActivity.cafe_name && <span> @ {lastActivity.cafe_name}</span>}
           </div>
         </div>
@@ -104,7 +104,7 @@ const Dashboard = () => {
 
       {/* Samenvatting aankomende meetups */}
       <div className="mb-8">
-        <h2 className="text-lg font-bold text-primary-700 mb-2">{t('dashboard.upcomingMeetups')}</h2>
+        <h2 className="text-lg font-bold text-primary-700 mb-2">{t('upcomingMeetups')}</h2>
         {loading && (
           <>
             <LoadingIndicator label={t('common.loading')} size="md" className="my-4" />
@@ -113,7 +113,7 @@ const Dashboard = () => {
         )}
         {error && <div className="text-red-500 mb-4">{error}</div>}
         {!loading && !error && upcoming.length === 0 && (
-          <div className="text-gray-600 text-center">{t('dashboard.noMeetups')}</div>
+          <div className="text-gray-600 text-center">{t('noMeetups')}</div>
         )}
         {!loading && !error && upcoming.length > 0 && (
           <ul className="space-y-4">
@@ -138,19 +138,19 @@ const Dashboard = () => {
           className="btn-primary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
           onClick={() => navigate('/create-meetup')}
         >
-          {t('dashboard.ctaNewMeetup')}
+          {t('ctaNewMeetup')}
         </button>
         <button
           className="btn-secondary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
           onClick={() => navigate('/account')}
         >
-          {t('dashboard.ctaProfile')}
+          {t('ctaProfile')}
         </button>
         <button
           className="btn-secondary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
           onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }}
         >
-          {t('dashboard.ctaLogout')}
+          {t('ctaLogout')}
         </button>
       </div>
     </div>

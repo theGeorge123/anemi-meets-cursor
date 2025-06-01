@@ -58,6 +58,7 @@ function App() {
           </div>
           <NavigationBar profileEmoji={profileEmoji} />
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+            <button onClick={() => { throw new Error("This is your first error!"); }} style={{marginBottom: 24, padding: 12, background: '#ff914d', color: 'white', borderRadius: 8, fontWeight: 'bold'}}>Break the world</button>
             <AppRoutes />
           </main>
           <Footer />

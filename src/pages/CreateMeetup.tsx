@@ -10,6 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import Toast from '../components/Toast';
 import React from 'react';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
@@ -715,4 +716,10 @@ const CreateMeetup = () => {
   );
 };
 
-export default CreateMeetup; 
+const CreateMeetupWithBoundary = () => (
+  <ErrorBoundary>
+    <CreateMeetup />
+  </ErrorBoundary>
+);
+
+export default CreateMeetupWithBoundary; 
