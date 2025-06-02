@@ -408,32 +408,6 @@ const CreateMeetup = () => {
       String(date.getDate()).padStart(2, '0');
   };
 
-  // Multi-date select: toggle datum bij klik
-  const handleDatePickerChange = (date: Date) => {
-    const dateStr = getLocalDateString(date);
-    const exists = formData.dates.some(d => getLocalDateString(d) === dateStr);
-    if (exists) {
-      handleRemoveDate(dateStr);
-    } else {
-      setFormData(prev => ({ ...prev, dates: [...prev.dates, date] }));
-      setDateTimeOptions(prev => ([...prev, { date: dateStr, times: [] }]));
-    }
-  };
-
-  // Datum verwijderen
-  const handleRemoveDate = (dateStr: string) => {
-    setFormData(prev => ({
-      ...prev,
-      dates: prev.dates.filter(d => getLocalDateString(d) !== dateStr)
-    }));
-    setDateTimeOptions(prev => prev.filter(opt => opt.date !== dateStr));
-  };
-
-  // Helper: check of er geldige datum/tijd selecties zijn
-  const hasValidDateTimeSelection = () => {
-    return formData.dates.length > 0 && dateTimeOptions.some(opt => opt.times.length > 0);
-  };
-
   useEffect(() => {
     const viewport = document.querySelector('meta[name=viewport]');
     if (viewport) {

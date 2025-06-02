@@ -59,7 +59,6 @@ const Account = () => {
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
   const genderOptionsRaw = t('common.genderOptions', { returnObjects: true });
-  const genderOptions = Array.isArray(genderOptionsRaw) ? genderOptionsRaw : [];
 
   // Split emoji options into rows of 4 for better layout
   const EMOJI_ROWS = [];
