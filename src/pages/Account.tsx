@@ -34,7 +34,6 @@ const Account = () => {
   const [user, setUser] = useState<Profile | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [genderSaving, setGenderSaving] = useState(false);
   const [age, setAge] = useState<number | ''>('');
   const [ageSaving, setAgeSaving] = useState(false);
   const [myMeetups, setMyMeetups] = useState<Invitation[]>([]);
@@ -56,7 +55,6 @@ const Account = () => {
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [editName, setEditName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
-  const [editGender, setEditGender] = useState(false);
   const [editAge, setEditAge] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
   const [showProfileToast, setShowProfileToast] = useState(false);
@@ -155,22 +153,6 @@ const Account = () => {
       setSelectedEmoji(emoji);
       window.dispatchEvent(new Event('profile-emoji-updated'));
     }
-  };
-
-  const handleGenderSave = async () => {
-    if (!user || !user.id) {
-      return;
-    }
-    setGenderSaving(true);
-    const { error } = await supabase.from('profiles').update({ gender: pendingGender }).eq('id', user.id);
-    if (error) {
-      console.error('Fout bij opslaan gender:', error);
-    } else {
-      setGender(pendingGender);
-      setEditGender(false);
-      setShowProfileToast(true);
-    }
-    setGenderSaving(false);
   };
 
   const handleAgeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -394,24 +376,6 @@ const Account = () => {
               )}
             </div>
           </div>
-
-          {/* Gender Section (only if set) */}
-          {gender && (
-            <div className="card mb-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="w-full sm:w-32 font-semibold">{t('gender')}</label>
-                <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  <span className="mobile-text">{t(`genderOptions.${gender}`)}</span>
-                  <button
-                    onClick={() => setEditGender(true)}
-                    className="btn-secondary"
-                  >
-                    {t('edit')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Age Section */}
           <div className="card mb-8">

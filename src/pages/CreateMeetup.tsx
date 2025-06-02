@@ -1,6 +1,5 @@
 import { useState, useEffect, forwardRef, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import DatePicker from 'react-datepicker';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import { nl, enUS } from 'date-fns/locale';
@@ -22,24 +21,6 @@ const getLastCity = () => {
   }
   return '';
 };
-
-// Memoizeer tijdslotknop
-const TimeSlotButton = React.memo(function TimeSlotButton({ time, isSelected, isPast, onClick, t }: { time: string, isSelected: boolean, isPast: boolean, onClick: () => void, t: any }) {
-  return (
-    <button
-      key={time}
-      type="button"
-      onClick={onClick}
-      disabled={isPast}
-      className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150
-        ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}
-        ${isPast ? 'opacity-50 cursor-not-allowed' : ''}`}
-      aria-pressed={isSelected}
-    >
-      {t(`common.${time}`)}
-    </button>
-  );
-});
 
 const QUEUE_KEY = 'meetups_queue_v1';
 
@@ -83,7 +64,6 @@ const CreateMeetup = () => {
   const [shuffleCooldown, setShuffleCooldown] = useState(false);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [step, setStep] = useState(1);
-  const dateLocale = i18n.language === 'en' ? enUS : nl;
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -453,15 +433,6 @@ const CreateMeetup = () => {
     }
   };
 
-  // Tijdvak checkbox toggle
-  const handleTimeToggle = useCallback((dateStr: string, time: string) => {
-    setDateTimeOptions(prev => prev.map(opt =>
-      opt.date === dateStr
-        ? { ...opt, times: opt.times.includes(time) ? opt.times.filter(t => t !== time) : [...opt.times, time] }
-        : opt
-    ));
-  }, []);
-
   // Datum verwijderen
   const handleRemoveDate = (dateStr: string) => {
     setFormData(prev => ({
@@ -471,30 +442,10 @@ const CreateMeetup = () => {
     setDateTimeOptions(prev => prev.filter(opt => opt.date !== dateStr));
   };
 
-  // Helper: bepaal of een tijdvak in het verleden ligt (alleen voor vandaag)
-  const isTimeSlotPast = (dateStr: string, time: string) => {
-    const today = new Date();
-    const date = new Date(dateStr);
-    if (date.toDateString() !== today.toDateString()) return false;
-    
-    const now = new Date();
-    const timeMap = {
-      morning: 12, // voor 12:00
-      afternoon: 17, // voor 17:00
-      evening: 22 // voor 22:00
-    };
-    return now.getHours() >= timeMap[time as keyof typeof timeMap];
-  };
-
   // Helper: check of er geldige datum/tijd selecties zijn
   const hasValidDateTimeSelection = () => {
     return formData.dates.length > 0 && dateTimeOptions.some(opt => opt.times.length > 0);
   };
-
-  // Custom input voor DatePicker (verbergt standaard input)
-  const CustomInput = forwardRef<HTMLInputElement>((props, ref) => (
-    <input type="text" style={{ position: 'absolute', left: '-9999px', width: 0, height: 0, opacity: 0 }} ref={ref} {...props} />
-  ));
 
   useEffect(() => {
     const viewport = document.querySelector('meta[name=viewport]');

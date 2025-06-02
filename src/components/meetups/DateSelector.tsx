@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
  * @param {Array<{ date: string; times: string[] }>} props.dateTimeOptions - Date/time options state
  * @param {(opts: Array<{ date: string; times: string[] }>) => void} props.setDateTimeOptions - Setter for date/time options
  * @param {string | null} props.error - Error message to display
- * @param {boolean} props.loading - Loading state
  */
 export interface DateSelectorProps {
   selectedDates: Date[];
@@ -20,7 +19,6 @@ export interface DateSelectorProps {
   dateTimeOptions: { date: string; times: string[] }[];
   setDateTimeOptions: (opts: { date: string; times: string[] }[]) => void;
   error?: string | null;
-  loading?: boolean;
 }
 
 const TIME_SLOTS = ['morning', 'afternoon', 'evening'] as const;
@@ -31,7 +29,6 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
   dateTimeOptions,
   setDateTimeOptions,
   error,
-  loading,
 }) => {
   const { t, i18n } = useTranslation(['common', 'meetup']);
   const dateLocale = i18n.language === 'en' ? undefined : undefined; // Add locale if needed
