@@ -58,7 +58,6 @@ const Account = () => {
   const [showPasswordToast, setShowPasswordToast] = useState(false);
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
-  const genderOptionsRaw = t('common.genderOptions', { returnObjects: true });
 
   // Split emoji options into rows of 4 for better layout
   const EMOJI_ROWS = [];
