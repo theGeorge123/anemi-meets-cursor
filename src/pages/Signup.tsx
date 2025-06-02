@@ -142,13 +142,13 @@ const Signup = () => {
       </div>
       <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('common.createAccount')}</h1>
       <div className="flex justify-center gap-2 mb-8 mt-6">
-        {steps.map((label, idx) => (
+        {(t('signup.steps', { returnObjects: true }) as string[]).map((label, idx) => (
           <div
             key={label}
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200
               ${step === idx ? 'bg-[#ff914d] text-white scale-110 shadow-lg' : 'bg-[#b2dfdb] text-primary-700 opacity-60'}`}
           >
-            {idx + 1}
+            {label}
           </div>
         ))}
       </div>

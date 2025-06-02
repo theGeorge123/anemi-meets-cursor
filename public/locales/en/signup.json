@@ -10,5 +10,6 @@
   "confirmPasswordPrompt": "Sorry, but we need to check if you typed your password correctly",
   "confirmPasswordPlaceholder": "Confirm your password",
   "overviewTitle": "Overview of your details",
-  "submit": "Sign up"
+  "submit": "Sign up",
+  "steps": ["Name", "Email", "Password", "Overview"]
 } 

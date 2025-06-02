@@ -32,5 +32,9 @@
     "button": "Terug naar start"
   },
   "cta": "Ook weer zin in echte connecties? Maak nu je account aan!",
-  "register": "Account aanmaken"
+  "register": "Account aanmaken",
+  "stepNumber1": "Stap 1",
+  "stepNumber2": "Stap 2",
+  "stepNumber3": "Stap 3",
+  "stepNumber4": "Stap 4"
 } 

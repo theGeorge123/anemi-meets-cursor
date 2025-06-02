@@ -10,5 +10,6 @@
   "confirmPasswordPrompt": "Sorry, maar we moeten even checken of je je wachtwoord goed hebt getypt",
   "confirmPasswordPlaceholder": "Bevestig je wachtwoord",
   "overviewTitle": "Overzicht van je gegevens",
-  "submit": "Registreren"
+  "submit": "Registreren",
+  "steps": ["Naam", "E-mail", "Wachtwoord", "Overzicht"]
 } 

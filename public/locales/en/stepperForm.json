@@ -32,5 +32,9 @@
     "button": "Back to Home"
   },
   "cta": "Ready for real connections? Create your account now!",
-  "register": "Create account"
+  "register": "Create account",
+  "stepNumber1": "Step 1",
+  "stepNumber2": "Step 2",
+  "stepNumber3": "Step 3",
+  "stepNumber4": "Step 4"
 } 

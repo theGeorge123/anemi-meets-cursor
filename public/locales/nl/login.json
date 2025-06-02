@@ -1,8 +1,17 @@
 {
   "title": "Inloggen",
   "subtitle": "Log in op je account om verder te gaan!",
-  "welcomeBack": "Welkom terug! 👋",
-  "welcomeDesc": "We hebben je gemist! Nog even inloggen en je kunt weer makkelijk echte connecties maken. Pak je favoriete drankje ☕️ en log snel in!",
+  "welcomeBack": "Welkom terug! 👋✨",
+  "welcomeDesc": "Log in om verder te gaan",
   "forgotPassword": "Wachtwoord vergeten?",
-  "noAccountCta": "Nog geen account? Maak er snel eentje aan!"
+  "noAccountCta": "Nog geen account? Maak er snel eentje aan!",
+  "error_generic": "Inloggen mislukt. Probeer het opnieuw.",
+  "error_user_not_found": "Geen gebruiker gevonden met dit e-mailadres.",
+  "error_invalid_password": "Onjuist wachtwoord. Probeer het opnieuw.",
+  "error_invalid_email": "Ongeldig e-mailadres.",
+  "error_user_banned": "Dit account is geblokkeerd.",
+  "error_email_not_confirmed": "Bevestig eerst je e-mailadres voordat je inlogt.",
+  "errorRateLimit": "Te veel pogingen. Wacht even en probeer opnieuw.",
+  "reset_error_generic": "Kon geen resetmail sturen. Probeer het opnieuw.",
+  "reset_success": "Wachtwoord-resetmail verstuurd! Check je inbox."
 } 

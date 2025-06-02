@@ -9,5 +9,6 @@
   "upcomingMeetups": "Aankomende Meetups",
   "ctaNewMeetup": "Nieuwe Meetup",
   "ctaProfile": "Account",
-  "ctaLogout": "Uitloggen"
+  "ctaLogout": "Uitloggen",
+  "progressSteps": ["Stap 1", "Stap 2", "Stap 3", "Stap 4"]
 } 
