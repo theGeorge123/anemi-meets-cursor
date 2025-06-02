@@ -33,7 +33,6 @@ interface Invitation {
 const Account = () => {
   const [user, setUser] = useState<Profile | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
-  const [gender, setGender] = useState<string>('');
   const [age, setAge] = useState<number | ''>('');
   const [ageSaving, setAgeSaving] = useState(false);
   const [myMeetups, setMyMeetups] = useState<Invitation[]>([]);
@@ -89,7 +88,6 @@ const Account = () => {
       if (testProfiles) {
         setUser(testProfiles as Profile);
         if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
-        if (testProfiles.gender) setGender(testProfiles.gender);
         if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
         setWantsUpdates(!!testProfiles.wants_updates);
         setIsPrivate(!!testProfiles.is_private);

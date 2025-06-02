@@ -306,9 +306,6 @@ const CreateMeetup = () => {
       cafe_id: selectedCafe.id,
       date_time_options: filteredDateTimeOptions
     };
-    if (!user) {
-      payload.email_b = email;
-    }
 
     if (!navigator.onLine) {
       queueMeetup(payload);
