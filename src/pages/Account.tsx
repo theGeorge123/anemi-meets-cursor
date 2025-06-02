@@ -48,8 +48,6 @@ const Account = () => {
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation(['account', 'common']);
-  const [pendingGender, setPendingGender] = useState<string>('');
-  const [pendingAge, setPendingAge] = useState<number | ''>('');
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
@@ -123,8 +121,6 @@ const Account = () => {
       setMeetupsLoading(false);
     };
     getUser();
-    setPendingGender(gender);
-    setPendingAge(age);
   }, [navigate, t]);
 
   useEffect(() => {
@@ -157,19 +153,19 @@ const Account = () => {
 
   const handleAgeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    if (val === '') setPendingAge('');
-    else if (/^\d{0,3}$/.test(val)) setPendingAge(Number(val));
+    if (val === '') setAge('');
+    else if (/^\d{0,3}$/.test(val)) setAge(Number(val));
   };
 
   const handleAgeSave = async () => {
     if (!user || !user.id) return;
     setAgeSaving(true);
-    const value = pendingAge === '' ? null : pendingAge;
+    const value = age === '' ? undefined : age;
     const { error } = await supabase.from('profiles').update({ age: value }).eq('id', user.id);
     if (error) {
       console.error('Fout bij opslaan age:', error);
     } else {
-      setAge(pendingAge);
+      setAge(value === undefined ? '' : value);
       setShowProfileToast(true);
     }
     setAgeSaving(false);
@@ -385,7 +381,7 @@ const Account = () => {
                 <div className="flex-1 flex flex-col sm:flex-row gap-2">
                   <input
                     type="number"
-                    value={pendingAge}
+                    value={age}
                     onChange={handleAgeInput}
                     className="input-field flex-1"
                     min="0"

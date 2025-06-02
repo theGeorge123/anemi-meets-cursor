@@ -1,8 +1,7 @@
-import { useState, useEffect, forwardRef, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
-import { nl, enUS } from 'date-fns/locale';
 import Confetti from 'react-confetti';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -50,7 +49,7 @@ async function flushMeetupQueue(supabase: any, onSuccess: () => void) {
 }
 
 const CreateMeetup = () => {
-  const { t, i18n } = useTranslation(['common', 'meetup']);
+  const { t } = useTranslation(['common', 'meetup']);
   const [formData, setFormData] = useState({
     name: '',
     dates: [] as Date[],
@@ -70,7 +69,6 @@ const CreateMeetup = () => {
     height: window.innerHeight,
   });
   const [user, setUser] = useState<any>(null);
-  const [email, setEmail] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successSummary, setSuccessSummary] = useState<{date: string, time: string, cafe: string, token?: string} | null>(null);
@@ -84,11 +82,6 @@ const CreateMeetup = () => {
   // 1. Extend Yup schema for all steps
   const fullSchema = yup.object().shape({
     name: yup.string().required(t('createMeetup.errorNameRequired')).min(2, t('createMeetup.errorNameShort')),
-    email: yup.string()
-      .email(t('createMeetup.errorEmailInvalid'))
-      .test('required-if-no-user', t('createMeetup.errorEmailRequired'), function (value) {
-        return !!user ? true : !!value;
-      }),
     city: yup.string().required(t('createMeetup.errorCityRequired')),
     dates: yup.array().of(yup.date()).min(1, t('createMeetup.errorDatesRequired')),
     dateTimeOptions: yup.array().of(
@@ -105,19 +98,16 @@ const CreateMeetup = () => {
     resolver: yupResolver(fullSchema),
     defaultValues: {
       name: '',
-      email: '',
     },
   });
 
   const watchedName = watch('name');
-  const watchedEmail = watch('email');
 
   // 2. Add step validation logic
   const validateStep = async (currentStep: number) => {
     try {
       if (currentStep === 1) {
         await fullSchema.validateAt('name', { name: watchedName });
-        if (!user) await fullSchema.validateAt('email', { email: watchedEmail });
       } else if (currentStep === 2) {
         await fullSchema.validateAt('city', { city: formData.city });
       } else if (currentStep === 3) {
@@ -501,21 +491,6 @@ const CreateMeetup = () => {
             />
             {errors.name && <div className="text-red-500 text-sm mb-2">{errors.name.message}</div>}
           </div>
-          {!user && (
-            <div className="mb-2">
-              <label className="block text-gray-700 mb-2" htmlFor="email">{t('email')}</label>
-              <input
-                id="email"
-                type="email"
-                {...register('email')}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.email ? 'border-red-500' : watchedEmail ? 'border-green-500' : 'border-primary-200'}`}
-                placeholder={t('email')}
-                autoComplete="off"
-                required
-              />
-              {errors.email && <div className="text-red-500 text-sm mb-2">{errors.email.message}</div>}
-            </div>
-          )}
           <button
             type="submit"
             disabled={!isValid}
@@ -525,7 +500,6 @@ const CreateMeetup = () => {
           </button>
           {/* Suggesties */}
           {errors.name && <div className="text-xs text-gray-500 mt-1">{t('createMeetup.suggestionName')}</div>}
-          {errors.email && <div className="text-xs text-gray-500 mt-1">{t('createMeetup.suggestionEmail')}</div>}
         </form>
       )}
       {/* Stap 2: Stad kiezen */}
@@ -606,7 +580,6 @@ const CreateMeetup = () => {
           <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.summary')}</h2>
           <div className="mb-4">
             <div className="mb-2"><span className="font-medium">{t('common.name')}:</span> {formData.name}</div>
-            {!user && <div className="mb-2"><span className="font-medium">{t('common.email')}:</span> {email}</div>}
             <div className="mb-2"><span className="font-medium">{t('common.city')}:</span> {formData.city}</div>
             <div className="mb-2"><span className="font-medium">{t('common.selectedDates')}:</span>
               <ul className="list-disc ml-6">
