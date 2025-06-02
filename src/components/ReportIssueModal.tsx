@@ -91,7 +91,7 @@ const ReportIssueModal: React.FC<Props> = ({ open, onClose }) => {
           </label>
           <div className="flex gap-2 items-center mt-2">
             <button type="submit" disabled={submitting} className="btn-primary px-6 py-2 rounded-2xl font-semibold disabled:opacity-60">{t('reportIssue.submit')}</button>
-            <button type="button" onClick={onClose} className="btn-secondary px-4 py-2 rounded-2xl">{t('common.cancel')}</button>
+            <button type="button" onClick={onClose} className="btn-secondary px-4 py-2 rounded-2xl">{t('cancel')}</button>
           </div>
           {error && <div className="text-red-500 text-sm mt-2">{t('reportIssue.error', { error })}</div>}
           {success && <div className="text-green-700 text-sm mt-2">{t('reportIssue.success')}</div>}

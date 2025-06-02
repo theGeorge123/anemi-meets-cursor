@@ -10,7 +10,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
 const Login = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['login', 'common']);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -51,43 +51,43 @@ const Login = () => {
       password: formData.password,
     });
     if (error) {
-      let msg = t('login.error_generic');
+      let msg = t('error_generic');
       const code = error.code || '';
       switch (code) {
         case 'user_not_found':
-          msg = t('login.error_user_not_found');
+          msg = t('error_user_not_found');
           break;
         case 'invalid_login_credentials':
-          msg = t('login.error_invalid_password');
+          msg = t('error_invalid_password');
           break;
         case 'email_address_invalid':
         case 'invalid_email':
-          msg = t('login.error_invalid_email');
+          msg = t('error_invalid_email');
           break;
         case 'user_banned':
-          msg = t('login.error_user_banned');
+          msg = t('error_user_banned');
           break;
         case 'email_not_confirmed':
-          msg = t('login.error_email_not_confirmed');
+          msg = t('error_email_not_confirmed');
           break;
         case 'over_email_send_rate_limit':
         case 'over_request_rate_limit':
-          msg = t('login.errorRateLimit');
+          msg = t('errorRateLimit');
           break;
         default:
           const errMsg = error.message?.toLowerCase() || '';
           if (errMsg.includes('invalid login credentials')) {
-            msg = t('login.error_invalid_password');
+            msg = t('error_invalid_password');
           } else if (errMsg.includes('user not found')) {
-            msg = t('login.error_user_not_found');
+            msg = t('error_user_not_found');
           } else if (errMsg.includes('email')) {
-            msg = t('login.error_invalid_email');
+            msg = t('error_invalid_email');
           } else if (errMsg.includes('banned')) {
-            msg = t('login.error_user_banned');
+            msg = t('error_user_banned');
           } else if (errMsg.includes('not confirmed')) {
-            msg = t('login.error_email_not_confirmed');
+            msg = t('error_email_not_confirmed');
           } else if (errMsg.includes('rate limit')) {
-            msg = t('login.errorRateLimit');
+            msg = t('errorRateLimit');
           }
       }
       setError(msg);
@@ -104,33 +104,33 @@ const Login = () => {
     setResetLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail || formData.email);
     if (error) {
-      let msg = t('login.reset_error_generic');
+      let msg = t('reset_error_generic');
       const code = error.code || '';
       switch (code) {
         case 'user_not_found':
-          msg = t('login.error_user_not_found');
+          msg = t('error_user_not_found');
           break;
         case 'email_address_invalid':
         case 'invalid_email':
-          msg = t('login.error_invalid_email');
+          msg = t('error_invalid_email');
           break;
         case 'over_email_send_rate_limit':
         case 'over_request_rate_limit':
-          msg = t('login.errorRateLimit');
+          msg = t('errorRateLimit');
           break;
         default:
           const errMsg = error.message?.toLowerCase() || '';
           if (errMsg.includes('user not found')) {
-            msg = t('login.error_user_not_found');
+            msg = t('error_user_not_found');
           } else if (errMsg.includes('invalid email')) {
-            msg = t('login.error_invalid_email');
+            msg = t('error_invalid_email');
           } else if (errMsg.includes('rate limit')) {
-            msg = t('login.errorRateLimit');
+            msg = t('errorRateLimit');
           }
       }
       setResetMsg(msg);
     } else {
-      setResetMsg(t('login.reset_success'));
+      setResetMsg(t('reset_success'));
     }
     setResetLoading(false);
   };
@@ -138,17 +138,17 @@ const Login = () => {
   return (
     <div className="max-w-md mx-auto px-2 sm:px-0 py-6">
       <h1 className="mobile-heading text-primary-600 mb-6 text-center">
-        {t('common.login')}
+        {t('title')}
       </h1>
       <div className="bg-[#fff7f3] rounded-2xl shadow p-4 sm:p-6 mb-6 text-center">
         <div className="text-2xl mb-2">👋✨</div>
-        <div className="text-lg font-semibold text-primary-700 mb-1">{t('login.welcomeBack')}</div>
-        <div className="text-gray-700 text-base">{t('login.welcomeDesc')}</div>
+        <div className="text-lg font-semibold text-primary-700 mb-1">{t('welcomeBack')}</div>
+        <div className="text-gray-700 text-base">{t('welcomeDesc')}</div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 bg-white/90 p-4 sm:p-6 rounded-xl shadow-2xl border border-primary-100 flex flex-col justify-between">
         <div>
           <label htmlFor="email" className="block mobile-text font-medium text-gray-700 mb-2">
-            {t('common.email')}
+            {t('email')}
           </label>
           <input
             type="email"
@@ -158,7 +158,7 @@ const Login = () => {
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
             autoFocus
-            placeholder={t('common.emailPlaceholder')}
+            placeholder={t('emailPlaceholder')}
             inputMode="email"
             autoComplete="email"
           />
@@ -166,7 +166,7 @@ const Login = () => {
 
         <div>
           <label htmlFor="password" className="block mobile-text font-medium text-gray-700 mb-2">
-            {t('common.password')}
+            {t('password')}
           </label>
           <input
             type="password"
@@ -175,7 +175,7 @@ const Login = () => {
             value={formData.password}
             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
             required
-            placeholder={t('common.passwordPlaceholder')}
+            placeholder={t('passwordPlaceholder')}
             inputMode="text"
             autoComplete="current-password"
           />
@@ -184,7 +184,7 @@ const Login = () => {
             className="text-primary-600 underline text-xs mt-2 ml-1 hover:text-primary-800"
             onClick={() => setShowReset(v => !v)}
           >
-            {t('login.forgotPassword')}
+            {t('forgotPassword')}
           </button>
         </div>
 
@@ -206,7 +206,7 @@ const Login = () => {
               {resetLoading ? (
                 <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
               ) : null}
-              {resetLoading ? t('common.loading') : t('login.forgotPassword')}
+              {resetLoading ? t('common.loading') : t('forgotPassword')}
             </button>
             {resetMsg && <div className="text-xs mt-1 text-green-700">{resetMsg}</div>}
           </form>
@@ -219,16 +219,16 @@ const Login = () => {
           className="btn-primary w-full min-h-[48px] text-base mt-2"
           disabled={loading}
         >
-          {t('common.login')}
+          {t('title')}
         </button>
       </form>
 
       <div className="text-center mt-6">
         <button
-          className="text-primary-600 underline hover:text-primary-800 text-sm min-h-[44px] min-w-[44px]"
+          className="text-primary-600 underline hover:text-primary-800 text-sm"
           onClick={() => navigate('/signup')}
         >
-          {t('login.noAccountCta')}
+          {t('noAccountCta')}
         </button>
       </div>
 

@@ -13,8 +13,8 @@
   "cancel": "Annuleren",
   "deleting": "Verwijderen...",
   "notSpecified": "Nog niet ingevuld",
-  "error": "Oeps! Er ging iets mis. Nog een keer proberen?",
-  "success": "Geweldig! Alles is geregeld! ✨",
+  "error": "Oeps! Er ging iets mis. Probeer het nog eens!",
+  "success": "Gelukt! 🎉",
   "yes": "Ja",
   "no": "Nee",
   "namePlaceholder": "Jouw naam",
@@ -26,13 +26,14 @@
   "contactMessage": "Jouw bericht",
   "contactSend": "Versturen",
   "contactSuccess": "Bedankt voor je bericht! We sturen je snel een reactie 😊",
-  "contactError": "Oeps, er ging iets mis. Probeer het straks nog eens!",
+  "contactError": "Oeps! Er ging iets mis. Probeer het nog eens!",
   "messagePlaceholder": "Typ hier je bericht...",
   "select": "Selecteer...",
   "next": "Volgende stap! →",
   "testimonialsTitle": "Wat anderen zeggen",
   "testimonial1": "Anemi Meets bespaart me zoveel tijd! — Sophie, Rotterdam",
-  "freeAccountInfo": "Met een gratis account kun je direct Meetups plannen en uitnodigingen versturen.",
+  "free": "Gratis! 🎉",
+  "freeAccountInfo": "Met een gratis account kun je direct Meetups plannen en uitnodigingen versturen!",
   "alreadyHaveAccount": "Al een account? Inloggen",
   "createAccount": "Account aanmaken",
   "cookies": "Cookiebeleid",
@@ -71,5 +72,23 @@
   "privacyFull": "Jouw privacy is belangrijk voor ons. We gebruiken je gegevens alleen om onze dienst te leveren. (Dit is een voorbeeldtekst voor het volledige privacybeleid.)",
   "termsFull": "Door deze app te gebruiken, ga je akkoord met onze gebruiksvoorwaarden. (Dit is een voorbeeldtekst voor de volledige gebruiksvoorwaarden.)",
   "rights": "Alle rechten voorbehouden.",
-  "lastUpdate": "Laatst bijgewerkt:"
+  "lastUpdate": "Laatst bijgewerkt:",
+  "createMeetupTitle": "Meetup aanmaken",
+  "createMeetupSubtitle": "Nodig iemand uit en kies een tijd!",
+  "onboarding": {
+    "welcome": {
+      "title": "Welkom bij Anemi Meets!",
+      "description": "Plan meetups met vrienden in een paar klikken. We laten je zien hoe het werkt!"
+    },
+    "features": {
+      "title": "Makkelijk plannen",
+      "description": "Kies een stad, een datum en nodig je vrienden uit. Wij regelen de rest!"
+    },
+    "getting_started": {
+      "title": "Aan de slag",
+      "description": "Klaar om je eerste meetup te maken? Let's go!"
+    }
+  },
+  "skip": "Overslaan",
+  "get_started": "Aan de slag! 🚀"
 } 

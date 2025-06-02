@@ -138,9 +138,9 @@ const Signup = () => {
         </button>
       </div>
       <div className="bg-[#fff7f3] rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base">
-        {t('common.freeAccountInfo')}
+        {t('freeAccountInfo')}
       </div>
-      <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('common.createAccount')}</h1>
+      <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('createAccount')}</h1>
       <div className="flex justify-center gap-2 mb-8 mt-6">
         {(t('signup.steps', { returnObjects: true }) as string[]).map((label, idx) => (
           <div
@@ -167,7 +167,7 @@ const Signup = () => {
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               required
               autoFocus
-              placeholder={t('signup.namePlaceholder')}
+              placeholder={t('createAccount')}
               inputMode="text"
               autoComplete="name"
             />
@@ -232,7 +232,7 @@ const Signup = () => {
           className="btn-primary w-full min-h-[48px] text-base mt-2"
           disabled={loading}
         >
-          {step === steps.length - 1 ? t('signup.submit') : t('common.next')}
+          {step === steps.length - 1 ? t('signup.submit') : t('next')}
         </button>
         {showSuccess && (
           <Toast
@@ -247,13 +247,13 @@ const Signup = () => {
           className="text-primary-600 underline hover:text-primary-800 text-sm"
           onClick={() => navigate('/login')}
         >
-          {t('common.alreadyHaveAccount')}
+          {t('alreadyHaveAccount')}
         </button>
       </div>
       <div className="text-center mt-10">
-        <h2 className="text-xl font-bold text-primary-700 mb-2">{t('common.testimonialsTitle')}</h2>
+        <h2 className="text-xl font-bold text-primary-700 mb-2">{t('testimonialsTitle')}</h2>
         <div className="italic text-gray-700 bg-white/70 rounded-xl p-4 shadow max-w-xs mx-auto">
-          {t('common.testimonial1')}
+          {t('testimonial1')}
         </div>
       </div>
     </div>

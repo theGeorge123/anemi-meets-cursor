@@ -48,7 +48,7 @@ const Account = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['account', 'common']);
   const [pendingGender, setPendingGender] = useState<string>('');
   const [pendingAge, setPendingAge] = useState<number | ''>('');
   const [wantsUpdates, setWantsUpdates] = useState(false);
@@ -66,12 +66,18 @@ const Account = () => {
   const genderOptionsRaw = t('common.genderOptions', { returnObjects: true });
   const genderOptions = Array.isArray(genderOptionsRaw) ? genderOptionsRaw : [];
 
+  // Split emoji options into rows of 4 for better layout
+  const EMOJI_ROWS = [];
+  for (let i = 0; i < EMOJI_OPTIONS.length; i += 4) {
+    EMOJI_ROWS.push(EMOJI_OPTIONS.slice(i, i + 4));
+  }
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) {
         console.error('Fout bij ophalen sessie:', sessionError);
-        setMeetupsError(t('account.errorSession'));
+        setMeetupsError(t('errorSession'));
         setMeetupsLoading(false);
         return;
       }
@@ -106,14 +112,14 @@ const Account = () => {
           .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
         if (meetupsError) {
           console.error('Fout bij ophalen meetups:', meetupsError.message);
-          setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: meetupsError.message }));
+          setMeetupsError(t('errorLoadingMeetupsDetails', { details: meetupsError.message }));
           setMyMeetups([]);
         } else {
           setMyMeetups((meetups || []) as Invitation[]);
         }
       } catch (err: any) {
         console.error('Onverwachte fout bij ophalen meetups:', err);
-        setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: err.message || err.toString() }));
+        setMeetupsError(t('errorLoadingMeetupsDetails', { details: err.message || err.toString() }));
         setMyMeetups([]);
       }
       setMeetupsLoading(false);
@@ -283,229 +289,203 @@ const Account = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-extrabold text-[#37474f] mb-8">{t('account.accountTitle')}</h1>
+          <h1 className="text-4xl font-extrabold text-[#37474f] mb-8">{t('title')}</h1>
 
-          {/* Profile Section */}
-          <div className="card mb-8">
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="flex flex-col items-center">
-                <div className="text-6xl mb-4">{selectedEmoji || '👤'}</div>
-                <div className="grid grid-cols-5 gap-2">
-                  {EMOJI_OPTIONS.map((emoji) => (
+          {/* Emoji Section */}
+          <div className="card mb-6 flex flex-col items-center">
+            <div className="text-6xl mb-4">{selectedEmoji || '👤'}</div>
+            <div className="flex flex-col gap-1">
+              {EMOJI_ROWS.map((row, rowIdx) => (
+                <div key={rowIdx} className="flex gap-1 justify-center">
+                  {row.map((emoji) => (
                     <button
                       key={emoji}
                       onClick={() => handleEmojiSelect(emoji)}
-                      className="w-10 h-10 text-2xl hover:scale-110 transition-transform"
+                      className="w-8 h-8 text-xl hover:scale-110 transition-transform p-0"
                     >
                       {emoji}
                     </button>
                   ))}
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
 
-              <div className="flex-1 w-full">
-                <div className="space-y-6">
-                  {/* Name */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('account.name')}</label>
-                    {editName ? (
-                      <div className="flex-1 flex flex-col sm:flex-row gap-2">
-                        <input
-                          type="text"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className="input-field flex-1"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleNameSave}
-                            disabled={nameSaving}
-                            className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
-                          >
-                            {nameSaving ? t('common.saving') : t('common.save')}
-                          </button>
-                          <button
-                            onClick={() => setEditName(false)}
-                            className="btn-secondary"
-                          >
-                            {t('common.cancel')}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                        <span className="mobile-text">{name}</span>
-                        <button
-                          onClick={() => setEditName(true)}
-                          className="btn-secondary"
-                        >
-                          {t('common.edit')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('account.email')}</label>
-                    {editEmail ? (
-                      <div className="flex-1 flex flex-col sm:flex-row gap-2">
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="input-field flex-1"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleEmailSave}
-                            disabled={emailSaving}
-                            className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
-                          >
-                            {emailSaving ? t('common.saving') : t('common.save')}
-                          </button>
-                          <button
-                            onClick={() => setEditEmail(false)}
-                            className="btn-secondary"
-                          >
-                            {t('common.cancel')}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                        <span className="mobile-text">{email}</span>
-                        <button
-                          onClick={() => setEditEmail(true)}
-                          className="btn-secondary"
-                        >
-                          {t('common.edit')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Gender */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('account.gender')}</label>
-                    {editGender ? (
-                      <div className="flex-1 flex flex-col sm:flex-row gap-2">
-                        <select
-                          value={pendingGender}
-                          onChange={(e) => setPendingGender(e.target.value)}
-                          className="input-field flex-1"
-                        >
-                          <option value="">{t('common.select')}</option>
-                          {genderOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleGenderSave}
-                            disabled={genderSaving}
-                            className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
-                          >
-                            {genderSaving ? t('common.saving') : t('common.save')}
-                          </button>
-                          <button
-                            onClick={() => setEditGender(false)}
-                            className="btn-secondary"
-                          >
-                            {t('common.cancel')}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                        <span className="mobile-text">
-                          {genderOptions.find((opt) => opt.value === gender)?.label || t('common.notSpecified')}
-                        </span>
-                        <button
-                          onClick={() => setEditGender(true)}
-                          className="btn-secondary"
-                        >
-                          {t('common.edit')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Age */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <label className="w-full sm:w-32 font-semibold">{t('account.age')}</label>
-                    {editAge ? (
-                      <div className="flex-1 flex flex-col sm:flex-row gap-2">
-                        <input
-                          type="number"
-                          value={pendingAge}
-                          onChange={handleAgeInput}
-                          className="input-field flex-1"
-                          min="0"
-                          max="120"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleAgeSave}
-                            disabled={ageSaving}
-                            className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
-                          >
-                            {ageSaving ? t('common.saving') : t('common.save')}
-                          </button>
-                          <button
-                            onClick={() => setEditAge(false)}
-                            className="btn-secondary"
-                          >
-                            {t('common.cancel')}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                        <span className="mobile-text">{age || t('common.notSpecified')}</span>
-                        <button
-                          onClick={() => setEditAge(true)}
-                          className="btn-secondary"
-                        >
-                          {t('common.edit')}
-                        </button>
-                      </div>
-                    )}
+          {/* Name Section */}
+          <div className="card mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <label className="w-full sm:w-32 font-semibold">{t('name')}</label>
+              {editName ? (
+                <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="input-field flex-1"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleNameSave}
+                      disabled={nameSaving}
+                      className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                    >
+                      {nameSaving ? t('saving') : t('save')}
+                    </button>
+                    <button
+                      onClick={() => setEditName(false)}
+                      className="btn-secondary"
+                    >
+                      {t('cancel')}
+                    </button>
                   </div>
                 </div>
+              ) : (
+                <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <span className="mobile-text">{name || t('notSpecified')}</span>
+                  <button
+                    onClick={() => setEditName(true)}
+                    className="btn-secondary"
+                  >
+                    {t('edit')}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Email Section */}
+          <div className="card mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <label className="w-full sm:w-32 font-semibold">{t('email')}</label>
+              {editEmail ? (
+                <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input-field flex-1"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleEmailSave}
+                      disabled={emailSaving}
+                      className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                    >
+                      {emailSaving ? t('saving') : t('save')}
+                    </button>
+                    <button
+                      onClick={() => setEditEmail(false)}
+                      className="btn-secondary"
+                    >
+                      {t('cancel')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <span className="mobile-text">{email || t('notSpecified')}</span>
+                  <button
+                    onClick={() => setEditEmail(true)}
+                    className="btn-secondary"
+                  >
+                    {t('edit')}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Gender Section (only if set) */}
+          {gender && (
+            <div className="card mb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="w-full sm:w-32 font-semibold">{t('gender')}</label>
+                <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <span className="mobile-text">{t(`genderOptions.${gender}`)}</span>
+                  <button
+                    onClick={() => setEditGender(true)}
+                    className="btn-secondary"
+                  >
+                    {t('edit')}
+                  </button>
+                </div>
               </div>
+            </div>
+          )}
+
+          {/* Age Section */}
+          <div className="card mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <label className="w-full sm:w-32 font-semibold">{t('age')}</label>
+              {editAge ? (
+                <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="number"
+                    value={pendingAge}
+                    onChange={handleAgeInput}
+                    className="input-field flex-1"
+                    min="0"
+                    max="120"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleAgeSave}
+                      disabled={ageSaving}
+                      className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                    >
+                      {ageSaving ? t('saving') : t('save')}
+                    </button>
+                    <button
+                      onClick={() => setEditAge(false)}
+                      className="btn-secondary"
+                    >
+                      {t('cancel')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <span className="mobile-text">{age !== '' ? age : 'immortal'}</span>
+                  <button
+                    onClick={() => setEditAge(true)}
+                    className="btn-secondary"
+                  >
+                    {t('edit')}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Preferences Section */}
           <div className="card mb-8">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.preferences')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('preferences')}</h2>
             <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <input
-                  type="checkbox"
-                  id="wantsUpdates"
-                  checked={wantsUpdates}
-                  onChange={(e) => setWantsUpdates(e.target.checked)}
-                  className="w-5 h-5"
-                />
-                <label htmlFor="wantsUpdates" className="mobile-text">
-                  {t('account.wantsUpdates')}
-                </label>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="w-full sm:w-32 font-semibold">{t('wantsUpdates')}</label>
+                <div className="flex-1 flex flex-col gap-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={wantsUpdates}
+                      onChange={(e) => setWantsUpdates(e.target.checked)}
+                    />
+                    {t('wantsUpdates')}
+                  </label>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <input
-                  type="checkbox"
-                  id="isPrivate"
-                  checked={isPrivate}
-                  onChange={(e) => setIsPrivate(e.target.checked)}
-                  className="w-5 h-5"
-                />
-                <label htmlFor="isPrivate" className="mobile-text">
-                  {t('account.isPrivate')}
-                </label>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="w-full sm:w-32 font-semibold">{t('isPrivate')}</label>
+                <div className="flex-1 flex flex-col gap-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isPrivate}
+                      onChange={(e) => setIsPrivate(e.target.checked)}
+                    />
+                    {t('isPrivate')}
+                  </label>
+                </div>
               </div>
               <div className="flex justify-end">
                 <button
@@ -513,7 +493,7 @@ const Account = () => {
                   disabled={prefsSaving}
                   className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
                 >
-                  {prefsSaving ? t('common.saving') : t('common.save')}
+                  {prefsSaving ? t('saving') : t('save')}
                 </button>
               </div>
             </div>
@@ -521,13 +501,13 @@ const Account = () => {
 
           {/* Password Section */}
           <div className="card mb-8">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.password')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('password')}</h2>
             {showPwForm ? (
               <form onSubmit={handlePasswordSave} className="space-y-6">
                 <div className="flex flex-col gap-4">
                   <input
                     type="password"
-                    placeholder={t('account.currentPassword')}
+                    placeholder={t('currentPassword')}
                     value={pwForm.current}
                     onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
                     className="input-field"
@@ -535,49 +515,52 @@ const Account = () => {
                   />
                   <input
                     type="password"
-                    placeholder={t('account.newPassword')}
+                    placeholder={t('newPassword')}
                     value={pwForm.new}
                     onChange={(e) => setPwForm({ ...pwForm, new: e.target.value })}
                     className="input-field"
                   />
                   <input
                     type="password"
-                    placeholder={t('account.confirmPassword')}
+                    placeholder={t('confirmPassword')}
                     value={pwForm.confirm}
                     onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
                     className="input-field"
                   />
                 </div>
-                <FormStatus status={nameSaving ? 'loading' : nameSaving === false && pwForm.current && pwForm.new && pwForm.confirm ? 'success' : 'idle'} message={t('account.passwordChangeSuccess')} />
+                <FormStatus status={nameSaving ? 'loading' : nameSaving === false && pwForm.current && pwForm.new && pwForm.confirm ? 'success' : 'idle'} message={t('passwordChangeSuccess')} />
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="submit"
                     className="btn-primary active:scale-95 active:bg-[#b2dfdb] flex-1"
                   >
-                    {t('common.save')}
+                    {t('save')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowPwForm(false)}
                     className="btn-secondary active:scale-95 active:bg-[#b2dfdb] flex-1"
                   >
-                    {t('common.cancel')}
+                    {t('cancel')}
                   </button>
                 </div>
               </form>
             ) : (
-              <button
-                onClick={() => setShowPwForm(true)}
-                className="btn-secondary active:scale-95 active:bg-[#b2dfdb]"
-              >
-                {t('account.changePassword')}
-              </button>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="w-full sm:w-32 font-semibold">{t('changePassword')}</label>
+                <button
+                  onClick={() => setShowPwForm(true)}
+                  className="btn-secondary"
+                >
+                  {t('changePassword')}
+                </button>
+              </div>
             )}
           </div>
 
           {/* My Meetups Section */}
           <div className="card mb-8">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.myMeetups')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('myMeetups')}</h2>
             {meetupsLoading ? (
               <SkeletonLoader />
             ) : meetupsError ? (
@@ -589,23 +572,23 @@ const Account = () => {
 
           {/* Danger Zone */}
           <div className="card border-2 border-red-500">
-            <h2 className="text-2xl font-bold text-red-500 mb-6">{t('account.dangerZone')}</h2>
+            <h2 className="text-2xl font-bold text-red-500 mb-6">{t('dangerZone')}</h2>
             {showDeleteConfirm ? (
               <div className="space-y-4">
-                <p className="mobile-text text-red-500">{t('account.deleteConfirm')}</p>
+                <p className="mobile-text text-red-500">{t('deleteConfirm')}</p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={handleDeleteAccount}
                     disabled={deleting}
                     className="btn-primary bg-red-500 hover:bg-red-600 active:scale-95 active:bg-[#b2dfdb] flex-1"
                   >
-                    {deleting ? t('common.deleting') : t('account.confirmDelete')}
+                    {deleting ? t('common.deleting') : t('confirmDelete')}
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
                     className="btn-secondary active:scale-95 active:bg-[#b2dfdb] flex-1"
                   >
-                    {t('common.cancel')}
+                    {t('cancel')}
                   </button>
                 </div>
               </div>
@@ -614,7 +597,7 @@ const Account = () => {
                 onClick={() => setShowDeleteConfirm(true)}
                 className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-[#b2dfdb]"
               >
-                {t('account.deleteAccount')}
+                {t('deleteAccount')}
               </button>
             )}
           </div>
@@ -625,7 +608,7 @@ const Account = () => {
               onClick={handleLogout}
               className="btn-secondary active:scale-95 active:bg-[#b2dfdb]"
             >
-              {t('auth.logout')}
+              {t('logout')}
             </button>
           </div>
 

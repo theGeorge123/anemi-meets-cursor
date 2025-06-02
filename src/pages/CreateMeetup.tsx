@@ -515,10 +515,10 @@ const CreateMeetup = () => {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-4xl font-extrabold text-primary-600 mb-8">
-        {t('createMeetup.title')}
+        {t('createMeetupTitle')}
       </h1>
       <p className="text-gray-700 mb-8 text-lg">
-        {t('createMeetup.subtitle')}
+        {t('createMeetupSubtitle')}
       </p>
       {/* Voortgangsindicatie */}
       <div className="mb-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">

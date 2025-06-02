@@ -43,10 +43,10 @@ const PolicyContactForm = () => {
 
   return (
     <div className="mt-10">
-      <h2 className="text-xl font-semibold text-primary-600 mb-4">{t('common.contact')}</h2>
+      <h2 className="text-xl font-semibold text-primary-600 mb-4">{t('contact')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
         <div>
-          <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700">{t('common.contactName')}</label>
+          <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700">{t('contactName')}</label>
           <input
             id="contact-name"
             type="text"
@@ -55,13 +55,13 @@ const PolicyContactForm = () => {
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             required
             autoFocus
-            placeholder={t('common.namePlaceholder')}
+            placeholder={t('namePlaceholder')}
             inputMode="text"
             autoComplete="given-name"
           />
         </div>
         <div>
-          <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700">{t('common.contactEmail')}</label>
+          <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700">{t('contactEmail')}</label>
           <input
             id="contact-email"
             type="email"
@@ -69,13 +69,13 @@ const PolicyContactForm = () => {
             value={form.email}
             onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
             required
-            placeholder={t('common.emailPlaceholder')}
+            placeholder={t('emailPlaceholder')}
             inputMode="email"
             autoComplete="email"
           />
         </div>
         <div>
-          <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700">{t('common.contactMessage')}</label>
+          <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700">{t('contactMessage')}</label>
           <textarea
             id="contact-message"
             className="input-field mt-1 min-h-[48px] text-base"
@@ -83,11 +83,11 @@ const PolicyContactForm = () => {
             value={form.message}
             onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
             required
-            placeholder={t('common.messagePlaceholder')}
+            placeholder={t('messagePlaceholder')}
           />
         </div>
-        <button type="submit" className="btn-primary" disabled={loading}>{loading ? t('common.loading') : t('common.contactSend')}</button>
-        <FormStatus status={loading ? 'loading' : status} message={status === 'success' ? t('common.contactSuccess') : status === 'error' ? t('common.contactError') : undefined} />
+        <button type="submit" className="btn-primary" disabled={loading}>{loading ? t('loading') : t('contactSend')}</button>
+        <FormStatus status={loading ? 'loading' : status} message={status === 'success' ? t('contactSuccess') : status === 'error' ? t('contactError') : undefined} />
       </form>
     </div>
   );

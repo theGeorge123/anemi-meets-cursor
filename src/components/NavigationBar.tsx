@@ -35,9 +35,9 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
 
   // Menu links met vertaalde labels
   const NAV_LINKS = [
-    { to: '/dashboard', label: t('dashboard.title'), auth: true },
-    { to: '/create-meetup', label: t('common.newMeetup'), auth: true },
-    { to: '/login', label: t('common.login'), auth: false },
+    { to: '/dashboard', label: t('dashboardTitle'), auth: true },
+    { to: '/create-meetup', label: t('newMeetup'), auth: true },
+    { to: '/login', label: t('login'), auth: false },
   ];
 
   // Filter links op authenticatie
@@ -68,7 +68,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
               className={`px-3 py-1 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary-400 ${langMenuOpen ? 'ring-2 ring-primary-400' : ''}`}
               aria-haspopup="listbox"
               aria-expanded={langMenuOpen}
-              aria-label={t('common.selectLanguage', 'Select language')}
+              aria-label={t('selectLanguage', 'Select language')}
               onClick={() => setLangMenuOpen((v) => !v)}
               onBlur={e => {
                 if (!e.currentTarget.contains(e.relatedTarget)) setLangMenuOpen(false);
@@ -133,7 +133,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
               className={`px-3 py-2 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary-400 min-h-[44px] min-w-[44px]`}
               aria-haspopup="listbox"
               aria-expanded={langMenuOpen}
-              aria-label={t('common.selectLanguage', 'Select language')}
+              aria-label={t('selectLanguage', 'Select language')}
               onClick={() => setLangMenuOpen((v) => !v)}
               onBlur={e => {
                 if (!e.currentTarget.contains(e.relatedTarget)) setLangMenuOpen(false);
@@ -201,7 +201,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
                 className={`w-full px-3 py-3 rounded-xl border border-primary-200 text-primary-700 bg-white hover:bg-primary-50 font-medium transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary-400 ${langMenuOpen ? 'ring-2 ring-primary-400' : ''}`}
                 aria-haspopup="listbox"
                 aria-expanded={langMenuOpen}
-                aria-label={t('common.selectLanguage', 'Select language')}
+                aria-label={t('selectLanguage', 'Select language')}
                 onClick={() => setLangMenuOpen((v) => !v)}
                 onBlur={e => {
                   if (!e.currentTarget.contains(e.relatedTarget)) setLangMenuOpen(false);

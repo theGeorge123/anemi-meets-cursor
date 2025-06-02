@@ -41,7 +41,7 @@ const Dashboard = () => {
         navigate('/login');
         return;
       }
-      // Onboarding check
+      // Onboarding check: only show for first-time users
       if (!localStorage.getItem('anemi-onboarded')) {
         setShowOnboarding(true);
       }
@@ -75,7 +75,10 @@ const Dashboard = () => {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {showOnboarding && (
-        <OnboardingModal onFinish={() => setShowOnboarding(false)} />
+        <OnboardingModal onFinish={() => {
+          setShowOnboarding(false);
+          localStorage.setItem('anemi-onboarded', '1');
+        }} />
       )}
       {/* Welkomstbericht */}
       <div className="flex items-center gap-3 mb-6">

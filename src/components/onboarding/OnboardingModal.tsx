@@ -69,7 +69,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label={t('common.close')}
+            aria-label={t('close')}
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
@@ -116,13 +116,19 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </button>
               )}
               <button
+                onClick={onClose}
+                className="flex-1 px-4 py-2 text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {t('skip')}
+              </button>
+              <button
                 onClick={handleNext}
                 className={`flex-1 px-4 py-2 text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors ${
                   currentStep === 0 ? 'w-full' : ''
                 }`}
               >
                 {currentStep === steps.length - 1
-                  ? t('common.get_started')
+                  ? t('get_started')
                   : t('common.next')}
               </button>
             </div>

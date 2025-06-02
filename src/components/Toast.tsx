@@ -43,7 +43,7 @@ const Toast: React.FC<ToastProps> = ({ message, icon, duration = 5000, onClose, 
       <div className="flex-1 text-sm text-gray-900" style={{ wordBreak: 'break-word' }}>{message}</div>
       <button
         onClick={onClose}
-        aria-label={t('common.close')}
+        aria-label={t('close')}
         className="ml-2 text-gray-500 hover:text-gray-900 focus:outline-none"
       >
         <span aria-hidden="true">×</span>
