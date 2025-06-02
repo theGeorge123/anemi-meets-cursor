@@ -72,10 +72,19 @@ const ReportIssueModal: React.FC<Props> = ({ open, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 relative animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="report-issue-title"
+      aria-describedby="report-issue-desc"
+      tabIndex={-1}
+      onKeyDown={e => { if (e.key === 'Escape') onClose(); }}
+    >
+      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 relative animate-fade-in" tabIndex={0}>
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-primary-700 text-2xl" aria-label={t('common.cancel')}>×</button>
-        <h2 className="text-xl font-bold mb-2">{t('reportIssue.title')}</h2>
+        <h2 id="report-issue-title" className="text-xl font-bold mb-2">{t('reportIssue.title')}</h2>
+        <p id="report-issue-desc" className="text-gray-700 mb-4">{t('reportIssue.descriptionLabel')}</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             <span className="font-semibold">{t('reportIssue.descriptionLabel')} <span className="text-red-500">*</span></span>

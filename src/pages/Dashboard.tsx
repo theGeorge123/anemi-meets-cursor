@@ -121,7 +121,7 @@ const Dashboard = () => {
         {!loading && !error && upcoming.length > 0 && (
           <ul className="space-y-4">
             {upcoming.slice(0, 3).map(m => (
-              <li key={m.id} className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-[#b2dfdb]/20">
+              <li key={m.id} className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100">
                 <div>
                   <span className="font-semibold text-primary-700">{m.selected_date}</span>
                   {m.selected_time && <span> &bull; {m.selected_time}</span>}
@@ -138,21 +138,21 @@ const Dashboard = () => {
       {/* Call-to-action knoppen */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
         <button
-          className="btn-primary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
+          className="btn-primary flex-1 text-center active:scale-95 active:bg-primary-100"
           onClick={() => navigate('/create-meetup')}
           aria-label={t('ctaNewMeetup')}
         >
           {t('ctaNewMeetup')}
         </button>
         <button
-          className="btn-secondary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
+          className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
           onClick={() => navigate('/account')}
           aria-label={t('ctaProfile')}
         >
           {t('ctaProfile')}
         </button>
         <button
-          className="btn-secondary flex-1 text-center active:scale-95 active:bg-[#b2dfdb]"
+          className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
           onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }}
           aria-label={t('ctaLogout')}
         >

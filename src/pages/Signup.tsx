@@ -25,6 +25,7 @@ const Signup = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; confirmPassword?: string }>({});
 
   const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
 
@@ -38,18 +39,32 @@ const Signup = () => {
     return null;
   };
 
+  const validateEmail = (email: string) => {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return t('signup.emailInvalid', 'Invalid email address');
+    return null;
+  };
+
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    if (!form.name.trim()) newErrors.name = t('signup.nameRequired', 'Name is required');
+    const emailError = validateEmail(form.email);
+    if (emailError) newErrors.email = emailError;
+    const pwError = validatePassword(form.password);
+    if (pwError) newErrors.password = pwError;
+    if (form.password !== form.confirmPassword) newErrors.confirmPassword = t('signup.passwordMismatch', 'Passwords do not match');
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field: keyof SignupForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm(f => ({ ...f, [field]: e.target.value }));
+    setErrors(errs => ({ ...errs, [field]: undefined }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setLoading(true);
-    const pwError = validatePassword(form.password);
-    if (pwError) {
-      setLoading(false);
-      return;
-    }
-    if (form.password !== form.confirmPassword) {
-      setLoading(false);
-      return;
-    }
     // Probeer altijd te registreren, maar geef altijd dezelfde feedback
     const { error: signUpError } = await supabase.auth.signUp({
       email: form.email,
@@ -125,14 +140,14 @@ const Signup = () => {
   }, []);
 
   return (
-    <div className="max-w-md mx-auto">
+    <main className="max-w-md mx-auto">
       <div className="flex justify-end mb-2">
         <button
           onClick={() => {
             const newLang = i18n.language === 'en' ? 'nl' : 'en';
             i18n.changeLanguage(newLang);
           }}
-          className="px-4 py-2 rounded-full border-2 border-[#ff914d] bg-white text-primary-700 font-bold shadow hover:bg-[#ff914d] hover:text-white transition text-lg"
+          className="px-4 py-2 rounded-full border-2 border-accent-500 bg-white text-primary-700 font-bold shadow hover:bg-accent-500 hover:text-white transition text-lg"
         >
           {i18n.language === 'en' ? 'NL' : 'EN'}
         </button>
@@ -146,7 +161,7 @@ const Signup = () => {
           <div
             key={label}
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200
-              ${step === idx ? 'bg-[#ff914d] text-white scale-110 shadow-lg' : 'bg-[#b2dfdb] text-primary-700 opacity-60'}`}
+              ${step === idx ? 'bg-accent-500 text-white scale-110 shadow-lg' : 'bg-primary-100 text-primary-700 opacity-60'}`}
           >
             {label}
           </div>
@@ -162,15 +177,16 @@ const Signup = () => {
             <input
               type="text"
               id="signup-name"
-              className="input-field mt-1 min-h-[48px] text-base"
+              className={`input-field mt-1 min-h-[48px] text-base${errors.name ? ' border-red-500' : ''}`}
               value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              onChange={handleInputChange('name')}
               required
               autoFocus
               placeholder={t('createAccount')}
               inputMode="text"
               autoComplete="name"
             />
+            {errors.name && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.name}</p>}
           </div>
         )}
         {step === 1 && (
@@ -181,14 +197,15 @@ const Signup = () => {
             <input
               type="email"
               id="signup-email"
-              className="input-field mt-1 min-h-[48px] text-base"
+              className={`input-field mt-1 min-h-[48px] text-base${errors.email ? ' border-red-500' : ''}`}
               value={form.email}
-              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              onChange={handleInputChange('email')}
               required
               placeholder={t('signup.emailPlaceholder')}
               inputMode="email"
               autoComplete="email"
             />
+            {errors.email && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.email}</p>}
           </div>
         )}
         {step === 2 && (
@@ -199,14 +216,15 @@ const Signup = () => {
             <input
               type="password"
               id="signup-password"
-              className="input-field mt-1 min-h-[48px] text-base"
+              className={`input-field mt-1 min-h-[48px] text-base${errors.password ? ' border-red-500' : ''}`}
               value={form.password}
-              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+              onChange={handleInputChange('password')}
               required
               placeholder={t('signup.passwordPlaceholder')}
               inputMode="text"
               autoComplete="new-password"
             />
+            {errors.password && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.password}</p>}
           </div>
         )}
         {step === 3 && (
@@ -217,14 +235,15 @@ const Signup = () => {
             <input
               type="password"
               id="signup-confirm-password"
-              className="input-field mt-1 min-h-[48px] text-base"
+              className={`input-field mt-1 min-h-[48px] text-base${errors.confirmPassword ? ' border-red-500' : ''}`}
               value={form.confirmPassword}
-              onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
+              onChange={handleInputChange('confirmPassword')}
               required
               placeholder={t('signup.confirmPasswordPlaceholder')}
               inputMode="text"
               autoComplete="new-password"
             />
+            {errors.confirmPassword && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.confirmPassword}</p>}
           </div>
         )}
         <button
@@ -256,7 +275,7 @@ const Signup = () => {
           {t('testimonial1')}
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

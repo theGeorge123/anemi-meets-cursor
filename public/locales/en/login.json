@@ -13,5 +13,8 @@
   "error_email_not_confirmed": "Please confirm your email first.",
   "errorRateLimit": "Whoa, too many tries! Wait a bit and try again.",
   "reset_error_generic": "Couldn't send reset email. Try again?",
-  "reset_success": "Reset email sent! Check your inbox."
+  "reset_success": "Reset email sent! Check your inbox.",
+  "toast": {
+    "loginSuccess": "Login successful!"
+  }
 } 

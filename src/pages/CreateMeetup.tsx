@@ -11,6 +11,7 @@ import * as yup from 'yup';
 import Toast from '../components/Toast';
 import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import DateSelector from '../components/meetups/DateSelector';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
@@ -135,8 +136,8 @@ const CreateMeetup = () => {
   const validateStep = async (currentStep: number) => {
     try {
       if (currentStep === 1) {
-        await fullSchema.validateAt('name', { name: formData.name });
-        if (!user) await fullSchema.validateAt('email', { email });
+        await fullSchema.validateAt('name', { name: watchedName });
+        if (!user) await fullSchema.validateAt('email', { email: watchedEmail });
       } else if (currentStep === 2) {
         await fullSchema.validateAt('city', { city: formData.city });
       } else if (currentStep === 3) {
@@ -265,19 +266,12 @@ const CreateMeetup = () => {
     }
   }, []);
 
-  // Synchroniseer formData met react-hook-form (en vice versa)
-  useEffect(() => {
-    setFormData(prev => ({ ...prev, name: watchedName }));
-  }, [watchedName]);
-  useEffect(() => {
-    setEmail(watchedEmail || '');
-  }, [watchedEmail]);
-
   // Prefill name/email als user bekend is
   useEffect(() => {
     if (user && user.user_metadata?.full_name) {
-      setValue('name', user.user_metadata.full_name);
-      trigger('name');
+      setValue('name', user.user_metadata.full_name, { shouldValidate: true, shouldDirty: true });
+      setFormData(prev => ({ ...prev, name: user.user_metadata.full_name }));
+      trigger();
     }
   }, [user, setValue, trigger]);
 
@@ -612,64 +606,13 @@ const CreateMeetup = () => {
       )}
       {/* Stap 3: Datum/tijd kiezen */}
       {step === 3 && (
-        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.chooseDateTime')}</h2>
-          <div className="mb-6">
-            <DatePicker
-              selected={null}
-              onChange={handleDatePickerChange}
-              locale={dateLocale}
-              inline
-              minDate={new Date()}
-              customInput={<CustomInput />}
-            />
-            <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
-          </div>
-          {formData.dates.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="font-medium text-gray-700">{t('common.selectedDates')}</h3>
-              {formData.dates.map((date, idx) => {
-                const dateStr = getLocalDateString(date);
-                const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
-                return (
-                  <div key={idx} className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="font-medium">{date.toLocaleDateString()}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveDate(dateStr)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        {t('common.remove')}
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-                      {['morning', 'afternoon', 'evening'].map(time => {
-                        const isSelected = dateOpt?.times.includes(time) || false;
-                        const isPast = isTimeSlotPast(dateStr, time);
-                        return (
-                          <TimeSlotButton
-                            key={time}
-                            time={time}
-                            isSelected={isSelected}
-                            isPast={isPast}
-                            onClick={() => handleTimeToggle(dateStr, time)}
-                            t={t}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {formData.dates.length === 0 && <div className="text-red-500 text-sm mb-2">{t('createMeetup.errorDatesRequired')}</div>}
-          <div className="flex gap-4 mt-6">
-            <button type="button" onClick={() => goToStep(2)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={() => goToStep(4)} className="btn-primary flex-1" disabled={!hasValidDateTimeSelection()}>{t('common.continue')}</button>
-          </div>
-        </div>
+        <DateSelector
+          selectedDates={formData.dates}
+          setSelectedDates={(dates: Date[]) => setFormData(prev => ({ ...prev, dates }))}
+          dateTimeOptions={dateTimeOptions}
+          setDateTimeOptions={setDateTimeOptions}
+          error={formError}
+        />
       )}
       {/* Stap 4: Café kiezen */}
       {step === 4 && (
@@ -765,7 +708,7 @@ const CreateMeetup = () => {
           onClose={() => setShowMeetupToast(false)}
         />
       )}
-      {formError && <div className="text-red-500 text-sm mb-2">{formError}</div>}
+      {formError && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{formError}</div>}
       {queueCount > 0 && (
         <div className="mb-4 p-3 rounded bg-yellow-200 text-yellow-900 text-center font-semibold">
           {t('meetups:queueNotice', 'Er staan acties in de wachtrij. Ze worden verstuurd zodra je weer online bent.')}

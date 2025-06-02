@@ -44,7 +44,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
   const filteredLinks = NAV_LINKS.filter(link => !link.auth || isAuthenticated);
 
   return (
-    <nav className="w-full bg-white/90 border-b border-[#b2dfdb]/40 shadow-sm fixed top-0 left-0 z-40">
+    <nav className="w-full bg-white/90 border-b border-primary-100 shadow-sm fixed top-0 left-0 z-40" role="navigation">
       <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
         {/* Logo + naam replaced with styled span */}
         <Link to="/" className="flex items-center gap-2">
@@ -56,7 +56,8 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
             <Link
               key={link.to}
               to={link.to}
-              className={`px-3 py-2 rounded-xl font-medium transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center text-center ${activePath === link.to ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-primary-50'} active:scale-95 active:bg-[#b2dfdb]`}
+              className={`px-3 py-2 rounded-xl font-medium transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center text-center ${activePath === link.to ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-primary-50'} active:scale-95 active:bg-primary-100`}
+              aria-current={activePath === link.to ? 'page' : undefined}
             >
               {link.label}
             </Link>
@@ -72,6 +73,10 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
               onClick={() => setLangMenuOpen((v) => !v)}
               onBlur={e => {
                 if (!e.currentTarget.contains(e.relatedTarget)) setLangMenuOpen(false);
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Escape') setLangMenuOpen(false);
+                // Optionally: handle arrow keys for language selection
               }}
             >
               <span className="uppercase font-bold tracking-wider">{i18n.language}</span>
@@ -114,7 +119,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
         {/* Mobile hamburger menu */}
         <div className="md:hidden flex items-center gap-2">
           <button
-            className="flex items-center justify-center w-11 h-11 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 hover:bg-primary-50 transition-colors active:scale-95 active:bg-[#b2dfdb] min-h-[44px] min-w-[44px]"
+            className="flex items-center justify-center w-11 h-11 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 hover:bg-primary-50 transition-colors active:scale-95 active:bg-primary-100 min-h-[44px] min-w-[44px]"
             onClick={() => setMenuOpen(v => !v)}
             aria-label="Menu"
             aria-expanded={menuOpen}
@@ -180,9 +185,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`w-full text-center px-6 py-4 rounded-xl text-lg font-medium transition-colors min-h-[48px] flex items-center justify-center ${
-                  activePath === link.to ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-primary-50'
-                } active:scale-95 active:bg-[#b2dfdb]`}
+                className={`w-full text-center px-6 py-4 rounded-xl text-lg font-medium transition-colors min-h-[48px] flex items-center justify-center ${activePath === link.to ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-primary-50'} active:scale-95 active:bg-primary-100`}
                 onClick={() => setMenuOpen(false)}
               >
                 {link.label}

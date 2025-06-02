@@ -65,8 +65,6 @@ const Respond = () => {
         } else {
           setCafe(null);
         }
-      } else if (invitation.cafe_name && invitation.cafe_address) {
-        setCafe({ name: invitation.cafe_name, address: invitation.cafe_address });
       } else {
         setCafe(null);
       }
@@ -86,10 +84,7 @@ const Respond = () => {
     fetchData();
     // Prefill email if saved
     const savedEmail = localStorage.getItem(UPDATES_EMAIL_KEY);
-    if (savedEmail) {
-      setFormData((prev) => ({ ...prev, email: savedEmail }));
-      setWantsUpdates(true);
-    }
+    if (savedEmail) setFormData((prev) => ({ ...prev, email: savedEmail }));
   }, [location.search, t]);
 
   useEffect(() => {
@@ -230,7 +225,7 @@ const Respond = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <div className="card bg-[#fff7f3] shadow-2xl p-8 max-w-lg w-full flex flex-col items-center">
           <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>☕️</span>
-          <h2 className="text-2xl font-bold text-[#37474f] mb-2 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-primary-700 mb-2 flex items-center gap-2">
             {t('respond.meetupConfirmed')}
           </h2>
           <img src="/coffee-fun.gif" alt={t('respond.coffeeGifAlt')} style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />

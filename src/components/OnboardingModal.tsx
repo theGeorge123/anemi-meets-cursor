@@ -37,8 +37,16 @@ export default function OnboardingModal({ onFinish }: { onFinish: () => void }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 w-full max-w-xs sm:max-w-md relative animate-fade-in flex flex-col items-center">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-modal-title"
+      aria-describedby="onboarding-modal-desc"
+      tabIndex={-1}
+      onKeyDown={e => { if (e.key === 'Escape') handleSkip(); }}
+    >
+      <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 w-full max-w-xs sm:max-w-md relative animate-fade-in flex flex-col items-center" tabIndex={0}>
         {/* Skip knop */}
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-primary-600 text-lg font-bold"
@@ -52,8 +60,8 @@ export default function OnboardingModal({ onFinish }: { onFinish: () => void }) 
           <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 border border-primary-100 shadow-sm text-5xl sm:text-6xl">
             {steps[currentStep].emoji}
           </div>
-          <h2 className="text-xl font-bold text-primary-700 mb-2 text-center break-words">{steps[currentStep].title}</h2>
-          <p className="text-gray-700 text-center mb-2 text-base break-words">{steps[currentStep].description}</p>
+          <h2 id="onboarding-modal-title" className="text-xl font-bold text-primary-700 mb-2 text-center break-words">{steps[currentStep].title}</h2>
+          <p id="onboarding-modal-desc" className="text-gray-700 text-center mb-2 text-base break-words">{steps[currentStep].description}</p>
         </div>
         {/* Navigatie */}
         <div className="flex flex-col gap-3 w-full mt-2">

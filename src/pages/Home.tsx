@@ -19,20 +19,19 @@ const Home = () => {
           <button
             type="button"
             onClick={handleStartMeetup}
-            className="flex-1 card bg-[#b2dfdb]/80 flex flex-col items-center p-6 min-w-[180px] cursor-pointer transition transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#ff914d]/40"
-            style={{ border: '2px solid #b2dfdb' }}
+            className="flex-1 card border-2 border-primary-100 bg-primary-100/80 flex flex-col items-center p-6 min-w-[180px] cursor-pointer transition transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-accent-500/40"
             aria-label={t('fillIn')}
           >
             <span className="text-3xl mb-2" aria-hidden="true">📝</span>
             <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('fillIn')}</h2>
             <p className="text-gray-600 text-sm text-center">{t('fillInDesc')}</p>
           </button>
-          <div className="flex-1 card bg-[#ff914d]/80 flex flex-col items-center p-6 min-w-[180px]">
+          <div className="flex-1 card bg-accent-500/80 flex flex-col items-center p-6 min-w-[180px]">
             <span className="text-3xl mb-2" aria-hidden="true">📤</span>
             <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('send')}</h2>
             <p className="text-gray-600 text-sm text-center">{t('sendDesc')}</p>
           </div>
-          <div className="flex-1 card bg-[#c5cae9]/80 flex flex-col items-center p-6 min-w-[180px]">
+          <div className="flex-1 card bg-blue-100/80 flex flex-col items-center p-6 min-w-[180px]">
             <span className="text-3xl mb-2" aria-hidden="true">✅</span>
             <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('accept')}</h2>
             <p className="text-gray-600 text-sm text-center">{t('acceptDesc')}</p>
@@ -45,7 +44,7 @@ const Home = () => {
             {t('connectFaster')}
           </p>
         </div>
-        <div className="bg-[#b2dfdb]/80 rounded-3xl shadow-xl p-8 flex flex-col items-center gap-2 max-w-xl mx-auto">
+        <div className="bg-primary-100/80 rounded-3xl shadow-xl p-8 flex flex-col items-center gap-2 max-w-xl mx-auto">
           <h2 className="text-2xl font-bold text-primary-700 mb-2 flex items-center gap-2">
             <span role="img" aria-label={t('connectAria', 'connect')}>🤝</span> {t('strengthen')}
           </h2>
@@ -55,7 +54,7 @@ const Home = () => {
           </p>
           <button
             onClick={handleStartMeetup}
-            className="text-lg px-8 py-3 mt-4 rounded-2xl font-semibold shadow-xl bg-[#ff914d] text-white hover:bg-[#ffb184] transition-colors duration-300"
+            className="text-lg px-8 py-3 mt-4 rounded-2xl font-semibold shadow-xl bg-accent-500 text-white hover:bg-accent-400 transition-colors duration-300"
             aria-label={t('startNow')}
           >
             {t('startNow')}

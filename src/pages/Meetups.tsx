@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
+import Toast from '../components/Toast';
 
 interface Meetup {
   id: string;
@@ -18,7 +19,7 @@ interface Meetup {
 
 const LOCAL_CACHE_KEY = 'meetups_cache_v1';
 
-const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin, t }: { meetup: Meetup, onView: (id: string) => void, onJoin: (id: string) => void, t: any }) {
+const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin, t, joining, joinLoadingId }: { meetup: Meetup, onView: (id: string) => void, onJoin: (id: string) => void, t: any, joining: boolean, joinLoadingId: string | null }) {
   return (
     <div
       className="card hover:shadow-lg transition-shadow duration-300"
@@ -26,7 +27,7 @@ const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJo
     >
       <div className="flex flex-col h-full">
         <div className="flex-1">
-          <h2 className="mobile-heading text-[#37474f] mb-2">{meetup.title || meetup.cafe_name || t('meetups.untitled', 'Meetup')}</h2>
+          <h2 className="mobile-heading text-primary-700 mb-2">{meetup.title || meetup.cafe_name || t('meetups.untitled', 'Meetup')}</h2>
           <p className="mobile-text text-gray-600 mb-4 line-clamp-2">{meetup.description || ''}</p>
           <div className="space-y-3">
             <div className="flex items-center text-gray-600">
@@ -48,7 +49,14 @@ const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJo
         </div>
         <div className="flex gap-2 mt-4">
           <button className="btn-primary flex-1" onClick={() => onView(meetup.id)}>{t('meetups.view', 'Bekijk')}</button>
-          <button className="btn-secondary flex-1" onClick={() => onJoin(meetup.id)}>{t('meetups.join', 'Deelnemen')}</button>
+          <button className="btn-secondary flex-1 flex items-center justify-center" onClick={() => onJoin(meetup.id)} disabled={joining && joinLoadingId === meetup.id}>
+            {joining && joinLoadingId === meetup.id ? (
+              <>
+                <span className="mr-2"><svg className="animate-spin h-5 w-5 text-primary-600" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" /></svg></span>
+                {t('common.loading', 'Laden...')}
+              </>
+            ) : t('meetups.join', 'Deelnemen')}
+          </button>
         </div>
       </div>
     </div>
@@ -65,6 +73,8 @@ const Meetups: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [usingCache, setUsingCache] = useState(false);
+  const [joinLoadingId, setJoinLoadingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Detecteer online/offline status
   useEffect(() => {
@@ -137,13 +147,21 @@ const Meetups: React.FC = () => {
     navigate(`/meetup/${id}`);
   }, [navigate]);
 
-  const handleJoinMeetup = useCallback((id: string) => {
-    // TODO: Implement join meetup functionality
-    console.log('Joining meetup:', id);
-  }, []);
+  const handleJoinMeetup = useCallback(async (id: string) => {
+    setJoinLoadingId(id);
+    try {
+      // TODO: Replace with real join logic
+      await new Promise(res => setTimeout(res, 1200));
+      setToast({ type: 'success', message: t('meetups.joinSuccess', 'You have joined the meetup!') });
+    } catch (err) {
+      setToast({ type: 'error', message: t('meetups.joinError', 'Failed to join meetup. Please try again.') });
+    } finally {
+      setJoinLoadingId(null);
+    }
+  }, [t]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
+    <main className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
         {(isOffline || usingCache) && (
           <div className="mb-4 p-3 rounded bg-yellow-100 text-yellow-800 text-center font-semibold">
@@ -151,7 +169,7 @@ const Meetups: React.FC = () => {
           </div>
         )}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h1 className="mobile-heading text-[#37474f]">{t('meetups:title', 'Meetups')}</h1>
+          <h1 className="mobile-heading text-primary-700">{t('meetups:title', 'Meetups')}</h1>
           <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-4">
             <input
               type="text"
@@ -182,14 +200,29 @@ const Meetups: React.FC = () => {
           </div>
         ) : error ? (
           <div className="text-center py-12">
-            <p className="mobile-text text-red-600">{error}</p>
+            <p className="mobile-text text-red-600" aria-live="assertive">{error}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label={t('meetups:listAriaLabel', 'Meetup list')}>
+            {toast && (
+              <Toast
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast(null)}
+              />
+            )}
             {filteredMeetups.map(meetup => (
-              <MeetupListItem key={meetup.id} meetup={meetup} onView={handleViewMeetup} onJoin={handleJoinMeetup} t={t} />
+              <MeetupListItem
+                key={meetup.id}
+                meetup={meetup}
+                onView={handleViewMeetup}
+                onJoin={handleJoinMeetup}
+                t={t}
+                joining={!!joinLoadingId}
+                joinLoadingId={joinLoadingId}
+              />
             ))}
-          </div>
+          </section>
         )}
 
         {!loading && !error && filteredMeetups.length === 0 && (
@@ -198,7 +231,7 @@ const Meetups: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 };
 

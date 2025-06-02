@@ -136,7 +136,7 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto px-2 sm:px-0 py-6">
+    <main className="max-w-md mx-auto px-2 sm:px-0 py-6">
       <h1 className="mobile-heading text-primary-600 mb-6 text-center">
         {t('title')}
       </h1>
@@ -239,7 +239,9 @@ const Login = () => {
           onClose={() => setShowSuccess(false)}
         />
       )}
-    </div>
+
+      {error && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{error}</div>}
+    </main>
   );
 };
 

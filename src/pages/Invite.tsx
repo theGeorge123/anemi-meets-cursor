@@ -140,12 +140,7 @@ const Invite = () => {
       {invitation && (
         <div className="mb-6 bg-primary-50 rounded-xl p-4 shadow-md">
           <div className="font-semibold text-lg text-primary-700 mb-2">{t('invite.detailsHeading')}</div>
-          {invitation.cafe_name ? (
-            <>
-              <div className="mb-1">{t('common.cafe')}: <span className="font-mono">{invitation.cafe_name}</span></div>
-              <div className="mb-1">{t('common.address')}: <span className="font-mono">{invitation.cafe_address}</span></div>
-            </>
-          ) : invitation.cafe_id ? (
+          {invitation.cafe_id ? (
             <div className="mb-1">{t('common.cafe')}: <span className="font-mono">{invitation.cafe_id}</span></div>
           ) : (
             <div className="mb-1 text-gray-500">{t('invite.cafeInfoPending')}</div>

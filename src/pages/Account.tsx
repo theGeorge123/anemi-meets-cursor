@@ -289,7 +289,7 @@ const Account = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-extrabold text-[#37474f] mb-8">{t('title')}</h1>
+          <h1 className="text-4xl font-extrabold text-primary-700 mb-8">{t('title')}</h1>
 
           {/* Emoji Section */}
           <div className="card mb-6 flex flex-col items-center">
@@ -327,7 +327,7 @@ const Account = () => {
                     <button
                       onClick={handleNameSave}
                       disabled={nameSaving}
-                      className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                      className="btn-primary active:scale-95 active:bg-primary-100"
                     >
                       {nameSaving ? t('saving') : t('save')}
                     </button>
@@ -369,7 +369,7 @@ const Account = () => {
                     <button
                       onClick={handleEmailSave}
                       disabled={emailSaving}
-                      className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                      className="btn-primary active:scale-95 active:bg-primary-100"
                     >
                       {emailSaving ? t('saving') : t('save')}
                     </button>
@@ -431,7 +431,7 @@ const Account = () => {
                     <button
                       onClick={handleAgeSave}
                       disabled={ageSaving}
-                      className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                      className="btn-primary active:scale-95 active:bg-primary-100"
                     >
                       {ageSaving ? t('saving') : t('save')}
                     </button>
@@ -491,7 +491,7 @@ const Account = () => {
                 <button
                   onClick={handlePrefsSave}
                   disabled={prefsSaving}
-                  className="btn-primary active:scale-95 active:bg-[#b2dfdb]"
+                  className="btn-primary active:scale-95 active:bg-primary-100"
                 >
                   {prefsSaving ? t('saving') : t('save')}
                 </button>
@@ -532,14 +532,14 @@ const Account = () => {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="submit"
-                    className="btn-primary active:scale-95 active:bg-[#b2dfdb] flex-1"
+                    className="btn-primary active:scale-95 active:bg-primary-100 flex-1"
                   >
                     {t('save')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowPwForm(false)}
-                    className="btn-secondary active:scale-95 active:bg-[#b2dfdb] flex-1"
+                    className="btn-secondary active:scale-95 active:bg-primary-100 flex-1"
                   >
                     {t('cancel')}
                   </button>
@@ -580,13 +580,13 @@ const Account = () => {
                   <button
                     onClick={handleDeleteAccount}
                     disabled={deleting}
-                    className="btn-primary bg-red-500 hover:bg-red-600 active:scale-95 active:bg-[#b2dfdb] flex-1"
+                    className="btn-primary bg-red-500 hover:bg-red-600 active:scale-95 active:bg-primary-100 flex-1"
                   >
                     {deleting ? t('common.deleting') : t('confirmDelete')}
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="btn-secondary active:scale-95 active:bg-[#b2dfdb] flex-1"
+                    className="btn-secondary active:scale-95 active:bg-primary-100 flex-1"
                   >
                     {t('cancel')}
                   </button>
@@ -595,7 +595,7 @@ const Account = () => {
             ) : (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-[#b2dfdb]"
+                className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
               >
                 {t('deleteAccount')}
               </button>
@@ -606,7 +606,7 @@ const Account = () => {
           <div className="mt-8 flex justify-center">
             <button
               onClick={handleLogout}
-              className="btn-secondary active:scale-95 active:bg-[#b2dfdb]"
+              className="btn-secondary active:scale-95 active:bg-primary-100"
             >
               {t('logout')}
             </button>

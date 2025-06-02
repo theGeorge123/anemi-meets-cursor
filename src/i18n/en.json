@@ -1,0 +1,14 @@
+{
+  "createMeetup": {
+    "errorNameShort": "Your name is too short",
+    "errorEmailInvalid": "Please enter a valid email address",
+    "errorEmailRequired": "Email is required",
+    "errorNameRequired": "Name is required",
+    "errorCityRequired": "City is required",
+    "errorDatesRequired": "Please select at least one date",
+    "errorTimesRequired": "Please select at least one time slot",
+    "errorCafeRequired": "Please choose a café",
+    "suggestionName": "Try a fun or creative nickname"
+  },
+  "name": "Name"
+} 

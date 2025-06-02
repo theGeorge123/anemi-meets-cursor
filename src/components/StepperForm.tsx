@@ -111,10 +111,10 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
       case 0:
         return (
           <div className="space-y-6">
-            <h2 className="mobile-heading text-[#37474f]">{t('gegevens.title')}</h2>
+            <h2 className="mobile-heading text-primary-700">{t('gegevens.title')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block mobile-text font-semibold text-[#37474f] mb-2">
+                <label className="block mobile-text font-semibold text-primary-700 mb-2">
                   {t('gegevens.name')} <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -126,7 +126,7 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
                 />
               </div>
               <div>
-                <label className="block mobile-text font-semibold text-[#37474f] mb-2">
+                <label className="block mobile-text font-semibold text-primary-700 mb-2">
                   {t('gegevens.email')} <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -143,10 +143,10 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
       case 1:
         return (
           <div className="space-y-6">
-            <h2 className="mobile-heading text-[#37474f]">{t('datetime.title')}</h2>
+            <h2 className="mobile-heading text-primary-700">{t('datetime.title')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block mobile-text font-semibold text-[#37474f] mb-2">
+                <label className="block mobile-text font-semibold text-primary-700 mb-2">
                   {t('datetime.date')} <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -158,7 +158,7 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
                 />
               </div>
               <div>
-                <label className="block mobile-text font-semibold text-[#37474f] mb-2">
+                <label className="block mobile-text font-semibold text-primary-700 mb-2">
                   {t('datetime.time')} <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -179,9 +179,9 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
       case 2:
         return (
           <div className="space-y-6">
-            <h2 className="mobile-heading text-[#37474f]">{t('cafe.title')}</h2>
+            <h2 className="mobile-heading text-primary-700">{t('cafe.title')}</h2>
             <div className="space-y-4">
-              <label className="block mobile-text font-semibold text-[#37474f] mb-2">
+              <label className="block mobile-text font-semibold text-primary-700 mb-2">
                 {t('cafe.select')} <span className="text-red-500">*</span>
               </label>
               <select
@@ -201,7 +201,7 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
       case 3:
         return (
           <div className="space-y-6">
-            <h2 className="mobile-heading text-[#37474f]">{t('confirm.title')}</h2>
+            <h2 className="mobile-heading text-primary-700">{t('confirm.title')}</h2>
             <p>{t('confirm.info')}</p>
             <ul className="list-disc ml-6">
               <li>{t('gegevens.name')}: {form.name}</li>
@@ -230,7 +230,7 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
               style={{ width: '100%', height: '200px' }}
             />
           </div>
-          <h2 className="mobile-heading text-[#37474f] mb-4">{t('success.title')}</h2>
+          <h2 className="mobile-heading text-primary-700 mb-4">{t('success.title')}</h2>
           <p className="mobile-text text-gray-600 mb-8">{t('success.message')}</p>
           <div className="space-y-4">
             <button
@@ -278,7 +278,7 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
                 <div
                   key={index}
                   className={`flex-1 text-center ${
-                    index <= step ? 'text-[#37474f]' : 'text-gray-400'
+                    index <= step ? 'text-primary-700' : 'text-gray-400'
                   }`}
                 >
                   <div className="mobile-text font-semibold">{stepTitle}</div>
@@ -287,7 +287,7 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
             </div>
             <div className="relative h-2 bg-gray-200 rounded-full">
               <div
-                className="absolute h-full bg-[#b2dfdb] rounded-full transition-all duration-300"
+                className="absolute h-full bg-primary-100 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -307,7 +307,7 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
                   <button
                     type="button"
                     onClick={handlePrev}
-                    className="btn-secondary flex-1 active:scale-95 active:bg-[#b2dfdb]"
+                    className="btn-secondary flex-1 active:scale-95 active:bg-primary-100"
                   >
                     {t('prev')}
                   </button>
