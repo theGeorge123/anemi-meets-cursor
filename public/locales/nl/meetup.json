@@ -26,13 +26,13 @@
   "loadingCafes": "Cafés laden...",
   "errorCitiesFetch": "Kon steden niet laden.",
   "errorCafesFetch": "Kon cafés niet laden.",
-  "errorNameRequired": "Naam is verplicht.",
+  "errorNameRequired": "Naam is verplicht",
   "errorEmailRequired": "E-mail is verplicht",
   "errorCityRequired": "Stad is verplicht",
   "errorDatesRequired": "Selecteer minimaal één datum.",
   "errorTimesRequired": "Selecteer minimaal één tijd.",
   "errorCafeRequired": "Selecteer een café.",
   "suggestionName": "Gebruik een leuke bijnaam!",
-  "errorNameShort": "Naam is te kort.",
+  "errorNameShort": "Naam moet minstens 2 tekens zijn",
   "name": "Naam"
 } 
