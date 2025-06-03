@@ -24,12 +24,6 @@ const getLastCity = () => {
 
 const QUEUE_KEY = 'meetups_queue_v1';
 
-function queueMeetup(payload: any) {
-  const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-  queue.push(payload);
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-}
-
 async function flushMeetupQueue(supabase: any, onSuccess: () => void) {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
   if (!queue.length) return;
@@ -73,14 +67,12 @@ const CreateMeetup = () => {
   const [user, setUser] = useState<any>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [successSummary, setSuccessSummary] = useState<{date: string, time: string, cafe: string, token?: string} | null>(null);
+  const [queueCount, setQueueCount] = useState(0);
+  const navigate = useNavigate();
   const [loadingCities, setLoadingCities] = useState(false);
   const [citiesError, setCitiesError] = useState<string | null>(null);
   const [loadingCafes, setLoadingCafes] = useState(false);
   const [cafesError, setCafesError] = useState<string | null>(null);
-  const [showMeetupToast, setShowMeetupToast] = useState(false);
-  const [queueCount, setQueueCount] = useState(0);
-  const navigate = useNavigate();
 
   // Debug Supabase connection
   useEffect(() => {
@@ -115,7 +107,7 @@ const CreateMeetup = () => {
     cafe: yup.object().nullable().required(t('errorCafeRequired')),
   });
 
-  const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, setValue, trigger, watch } = useForm({
+  const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, watch } = useForm({
     mode: 'onChange',
     resolver: yupResolver(fullSchema),
     defaultValues: {
@@ -592,7 +584,7 @@ const CreateMeetup = () => {
           </div>
         </div>
       )}
-      {showSuccess && successSummary && (
+      {showSuccess && (
         <Toast
           message={t('toast.meetupCreated')}
           type="success"
@@ -612,13 +604,6 @@ const CreateMeetup = () => {
             tweenDuration={2000}
           />
         </div>
-      )}
-      {showMeetupToast && (
-        <Toast
-          message={t('toast.meetupCreated')}
-          type="success"
-          onClose={() => setShowMeetupToast(false)}
-        />
       )}
       {formError && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{formError}</div>}
       {queueCount > 0 && (
