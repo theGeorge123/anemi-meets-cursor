@@ -62,7 +62,6 @@ const CreateMeetup = () => {
   });
   const [user, setUser] = useState<any>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [queueCount, setQueueCount] = useState(0);
   const navigate = useNavigate();
   const [loadingCafes, setLoadingCafes] = useState(false);
@@ -594,13 +593,6 @@ const CreateMeetup = () => {
             <button type="button" onClick={handleSubmit} className="btn-primary flex-1">Submit</button>
           </div>
         </div>
-      )}
-      {showSuccess && (
-        <Toast
-          message={t('toast.meetupCreated')}
-          type="success"
-          onClose={() => setShowSuccess(false)}
-        />
       )}
       {/* Confetti bij succes */}
       {showConfetti && (
