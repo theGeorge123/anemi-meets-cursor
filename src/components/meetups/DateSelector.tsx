@@ -68,9 +68,9 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
   };
 
   return (
-    <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-      <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.chooseDateTime')}</h2>
-      <div className="mb-6">
+    <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
+      <h2 className="text-lg sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('createMeetup.chooseDateTime')}</h2>
+      <div className="mb-4 sm:mb-6">
         <DatePicker
           selected={null}
           onChange={handleDatePickerChange}
@@ -78,7 +78,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
           inline
           minDate={new Date()}
         />
-        <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
+        <p className="text-xs sm:text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
       </div>
       {selectedDates.length > 0 && (
         <div className="space-y-4">
@@ -87,15 +87,17 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
             const dateStr = getLocalDateString(date);
             const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
             return (
-              <div key={idx} className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-3">
+              <div key={idx} className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                <div className="flex justify-between items-center mb-2 sm:mb-3">
                   <span className="font-medium">{date.toLocaleDateString()}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveDate(dateStr)}
-                    className="text-red-500 hover:text-red-700"
+                    className="flex items-center gap-1 text-red-500 hover:text-white hover:bg-red-500 transition px-2 py-1 rounded focus-visible:ring-2 focus-visible:ring-primary-500"
+                    aria-label={t('common.remove')}
                   >
-                    {t('common.remove')}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <span className="hidden sm:inline">{t('common.remove')}</span>
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
@@ -106,7 +108,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
                         key={time}
                         type="button"
                         onClick={() => handleTimeToggle(dateStr, time)}
-                        className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150
+                        className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary-500
                           ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
                         aria-pressed={isSelected}
                       >
@@ -120,7 +122,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
           })}
         </div>
       )}
-      {selectedDates.length === 0 && error && <div className="text-red-500 text-sm mb-2" aria-live="assertive">{error}</div>}
+      {selectedDates.length === 0 && error && <div className="text-red-500 text-sm mb-2" aria-live="polite">{error}</div>}
     </div>
   );
 };

@@ -1,6 +1,11 @@
 {
-  "title": "Maak een Meetup",
-  "subtitle": "Vul de details in om je koffie-afspraak te plannen",
+  "title": "Laten we een koffiedate plannen! ☕️",
+  "subtitle": "Nog maar een paar stappen en je kunt uitnodigen!",
+  "step1": "Wie ben jij?",
+  "step2": "Kies een stad!",
+  "step3": "Kies datums",
+  "step4": "Kies een café",
+  "step5": "Klaar! 🎉",
   "chooseCity": "Kies je stad",
   "chooseCityInfo": "Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.",
   "chooseDates": "Kies je datums",

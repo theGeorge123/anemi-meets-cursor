@@ -387,163 +387,251 @@ const CreateMeetup = () => {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-4xl font-extrabold text-primary-600 mb-8">
-        {t('title')}
-      </h1>
-      <p className="text-gray-700 mb-8 text-lg">
-        {t('subtitle')}
-      </p>
-      {/* Voortgangsindicatie */}
-      <div className="mb-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-        <div className="flex gap-2 items-center">
-          {[1,2,3,4,5].map((s, i) => (
-            <React.Fragment key={s}>
-              <div className={`flex flex-col items-center mx-1`}>
-                <div className={`w-7 h-7 flex items-center justify-center rounded-full font-bold text-base border-2 ${step === s ? 'bg-primary-600 text-white border-primary-600' : 'bg-primary-100 text-primary-700 border-primary-200'}`}>{s}</div>
-                <span className={`text-xs mt-1 ${step === s ? 'text-primary-700 font-semibold' : 'text-gray-400'}`}>{[
-                  'Who are you?',
-                  'Pick a city',
-                  'Pick dates',
-                  'Pick a café',
-                  'Summary',
-                ][i]}</span>
-              </div>
-              {i < 4 && <div className="w-6 h-1 bg-primary-200 rounded-full mx-1" />}
-            </React.Fragment>
-          ))}
+    <div className="max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      {/* Sticky header for title and subtitle */}
+      <div className="sticky top-0 z-20 bg-primary-50/90 backdrop-blur-md pb-2 sm:static sm:bg-transparent sm:backdrop-blur-none">
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-primary-700 mb-2 sm:mb-4 text-center drop-shadow-sm">
+          {t('meetup.title', "Let's plan a coffee meetup! ☕️")}
+        </h1>
+        <p className="text-gray-600 mb-4 sm:mb-8 text-base sm:text-lg text-center font-medium">
+          {t('meetup.subtitle', "Just a few quick steps and you're ready to invite!")}
+        </p>
+      </div>
+      {/* Stepper with improved circles and labels */}
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+        <div className="flex gap-2 items-center w-full overflow-x-auto justify-center">
+          {(() => {
+            // Fun, informal, slightly longer step labels, i18n
+            const stepLabels = [
+              t('meetup.step1', 'Who are you?'),
+              t('meetup.step2', 'Pick a city!'),
+              t('meetup.step3', 'Choose dates'),
+              t('meetup.step4', 'Pick a café'),
+              t('meetup.step5', 'All done! 🎉'),
+            ];
+            return [1,2,3,4,5].map((s, i) => {
+              const isActive = step === s;
+              const isCompleted = step > s;
+              return (
+                <React.Fragment key={s}>
+                  <div className="flex flex-col items-center mx-1 min-w-[70px]">
+                    <div
+                      className={[
+                        'w-9 h-9 flex items-center justify-center rounded-full font-bold text-base border-2 transition-all duration-200',
+                        isActive
+                          ? 'bg-primary-600 text-white border-primary-700 shadow-md'
+                          : isCompleted
+                            ? 'bg-primary-500 text-white border-primary-500'
+                            : 'bg-white text-gray-400 border-gray-300',
+                      ].join(' ')}
+                      aria-current={isActive ? 'step' : undefined}
+                    >
+                      {isCompleted && !isActive ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      ) : (
+                        <span className="flex items-center justify-center w-full h-full">{s}</span>
+                      )}
+                    </div>
+                    <span className={`text-xs mt-1 max-w-[90px] text-center font-medium transition-all duration-200
+                      ${isActive ? 'text-primary-700 font-bold' : 'text-gray-400'}`}
+                      style={{whiteSpace: 'normal', overflowWrap: 'break-word'}}
+                    >{stepLabels[i]}</span>
+                  </div>
+                  {i < 4 && <div className={`w-5 h-0.5 rounded-full mx-1 transition-all duration-200 ${step > s ? 'bg-primary-400' : 'bg-primary-200'}`} />}
+                </React.Fragment>
+              );
+            });
+          })()}
         </div>
       </div>
       {/* Stap 1: Contactpersoon */}
       {step === 1 && (
-        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold text-primary-700 mb-4">
-            {t('createMeetup.chooseCityInfo')}
+        <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">
+            {t('meetup.contactInfo', 'Let\'s get to know you!')}
           </h2>
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2">
-              {t('common.name')}
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2" htmlFor="name">
+              {t('meetup.nameLabel', 'What\'s your beautiful name? (Or your nickname!)')}
             </label>
             <input
+              id="name"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4"
-              placeholder={t('common.name')}
+              className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4 focus-visible:ring-2 focus-visible:ring-primary-500"
+              placeholder={t('meetup.name', 'Name')}
             />
             {/* Email for non-logged-in users */}
             {!user && (
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">{t('common.email')}</label>
+                <label className="block text-gray-700 mb-2" htmlFor="email">{t('meetup.emailLabel', 'Your email address')}</label>
                 <input
+                  id="email"
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder={t('common.email')}
+                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500"
+                  placeholder={t('meetup.emailLabel', 'Your email address')}
                   required
                 />
-                {emailError && <div className="text-red-500 text-sm mt-1">{emailError}</div>}
-              </div>
-            )}
-            <label className="block text-gray-700 mb-2">
-              {t('createMeetup.chooseCityLabel')}
-            </label>
-            {/* Show city selection if cities are available */}
-            {cities.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {cities.map((city) => (
-                  <button
-                    key={city.id}
-                    type="button"
-                    onClick={() => handleCityChange(city.name)}
-                    className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center
-                      ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
-                    aria-pressed={formData.city === city.name}
-                  >
-                    {city.name}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              // Show message and default city button if no cities are available
-              <div>
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
-                  {t('createMeetup.noCitiesAvailable', 'No cities available. Using Rotterdam as default.')}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleCityChange('Rotterdam')}
-                  className="p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center border-primary-600 bg-primary-100 text-primary-800"
-                >
-                  Rotterdam
-                </button>
+                {emailError && <div className="text-red-500 text-sm mt-1" aria-live="polite">{emailError}</div>}
               </div>
             )}
           </div>
-          {/* Show any form errors */}
           {formError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800" aria-live="polite">
               {formError}
             </div>
           )}
-          <button
-            onClick={() => {
-              // Reset any previous errors
-              setFormError(null);
-              // Basic email validation for non-logged-in users
-              if (!user) {
-                if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-                  setEmailError(t('common.error_invalid_email', 'Please enter a valid email address'));
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button
+              onClick={() => {
+                setFormError(null);
+                if (!formData.name) {
+                  setFormError(t('meetup.errorNameRequired', 'Name is required'));
                   return;
-                } else {
-                  setEmailError('');
                 }
-              }
-              // If no city is selected but we have a name, use Rotterdam as default
-              if (!formData.city && formData.name) {
-                setFormData(prev => ({ ...prev, city: 'Rotterdam' }));
-              }
-              // If we still don't have a city, show error
-              if (!formData.city) {
-                setFormError(t('createMeetup.pleaseSelectCity', 'Please select a city'));
-                return;
-              }
-              // All good, proceed to next step
-              setStep(2);
-            }}
-            disabled={!formData.name || (!user && !email)}
-            className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-          >
-            {t('common.continue')}
-          </button>
+                if (!user) {
+                  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                    setEmailError(t('common.error_invalid_email', 'Please enter a valid email address'));
+                    return;
+                  } else {
+                    setEmailError('');
+                  }
+                }
+                setStep(2);
+              }}
+              disabled={!formData.name || (!user && !email)}
+              className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              {t('meetup.continue', 'Continue')}
+            </button>
+          </div>
         </div>
       )}
       {/* Stap 2: Datum/tijd kiezen */}
       {step === 2 && (
-        <DateSelector
-          selectedDates={formData.dates}
-          setSelectedDates={(dates: Date[]) => setFormData(prev => ({ ...prev, dates }))}
-          dateTimeOptions={dateTimeOptions}
-          setDateTimeOptions={setDateTimeOptions}
-          error={formError}
-        />
+        <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">
+            {t('meetup.chooseCity', 'Choose your city')}
+          </h2>
+          <p className="text-gray-700 mb-6 sm:mb-8 text-base sm:text-lg">
+            {t('meetup.chooseCityInfo', 'Choose your city! That way we know where to find the best spots for you')}
+          </p>
+          <label className="block text-gray-700 mb-2">
+            {t('meetup.chooseCityLabel', 'Pick a city')}
+          </label>
+          {cities.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+              {cities.map((city) => (
+                <button
+                  key={city.id}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, city: city.name }))}
+                  className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary-500
+                    ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
+                  aria-pressed={formData.city === city.name}
+                >
+                  {city.name}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+                {t('meetup.noCitiesAvailable', 'No cities available. Using Rotterdam as default.')}
+              </div>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, city: 'Rotterdam' }))}
+                className="p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center border-primary-600 bg-primary-100 text-primary-800 focus-visible:ring-2 focus-visible:ring-primary-500"
+              >
+                Rotterdam
+              </button>
+            </div>
+          )}
+          {formError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800" aria-live="polite">
+              {formError}
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button
+              onClick={() => {
+                setFormError(null);
+                if (!formData.city) {
+                  setFormError(t('meetup.pleaseSelectCity', 'Please select a city'));
+                  return;
+                }
+                setStep(3);
+              }}
+              disabled={!formData.city}
+              className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              {t('meetup.continue', 'Continue')}
+            </button>
+          </div>
+        </div>
       )}
       {/* Stap 3: Café kiezen */}
       {step === 3 && (
-        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('chooseCafe')}</h2>
+        <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
+          <h2 className="text-lg sm:text-xl font-semibold text-primary-700 mb-3 sm:mb-4">
+            {t('chooseDates', 'Pick your dates')}
+          </h2>
+          <p className="mb-3 sm:mb-4 text-gray-700 text-sm sm:text-base">{t('chooseTimes', 'Pick your preferred times for each date')}</p>
+          <DateSelector
+            selectedDates={formData.dates}
+            setSelectedDates={(dates: Date[]) => setFormData(prev => ({ ...prev, dates }))}
+            dateTimeOptions={dateTimeOptions}
+            setDateTimeOptions={setDateTimeOptions}
+            error={formError}
+          />
+          {formError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800" aria-live="polite">
+              {formError}
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4">
+            <button type="button" onClick={() => setStep(2)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('common.back')}</button>
+            <button
+              type="button"
+              className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500"
+              disabled={formData.dates.length === 0 || !dateTimeOptions.some(opt => opt.times && opt.times.length > 0)}
+              onClick={() => {
+                if (formData.dates.length === 0) {
+                  setFormError(t('errorDatesRequired', 'Please select at least one date.'));
+                  return;
+                }
+                if (!dateTimeOptions.some(opt => opt.times && opt.times.length > 0)) {
+                  setFormError(t('errorTimesRequired', 'Please select at least one time.'));
+                  return;
+                }
+                setFormError(null);
+                setStep(4);
+              }}
+            >
+              {t('common.continue')}
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Stap 4: Café kiezen */}
+      {step === 4 && (
+        <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('chooseCafe')}</h2>
           {selectedCafe && (
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
               {selectedCafe.image_url && (
                 <img
                   src={selectedCafe.image_url}
                   alt={selectedCafe.name}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-40 sm:h-48 object-cover"
                 />
               )}
               <div className="p-4">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{selectedCafe.name}</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">{selectedCafe.name}</h3>
                 <p className="text-gray-600 mb-2">{selectedCafe.address}</p>
                 {selectedCafe.description && (
                   <p className="text-gray-500 text-sm">{selectedCafe.description}</p>
@@ -551,76 +639,51 @@ const CreateMeetup = () => {
               </div>
             </div>
           )}
-          <div className="flex gap-4 mb-4">
-            <button type="button" onClick={shuffleCafe} disabled={shuffleCooldown || cafes.length <= 1} className="btn-secondary flex-1">{t('common.shuffle')}</button>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
+            <button type="button" onClick={shuffleCafe} disabled={shuffleCooldown || cafes.length <= 1} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('common.shuffle')}</button>
           </div>
-          <div className="flex gap-4">
-            <button type="button" onClick={() => goToStep(2)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={() => goToStep(4)} className="btn-primary flex-1" disabled={!selectedCafe}>{t('common.continue')}</button>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('common.back')}</button>
+            <button type="button" onClick={handleSubmit} className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500" disabled={!selectedCafe}>{t('common.continue')}</button>
           </div>
           {loadingCafes && <div className="text-sm text-gray-500 mb-2">{t('loadingCafes')}</div>}
-          {cafesError && <div className="text-red-500 text-sm mb-2">{t('errorCafesFetch')}</div>}
-          {!selectedCafe && <div className="text-red-500 text-sm mb-2">{t('errorCafeRequired')}</div>}
+          {cafesError && <div className="text-red-500 text-sm mb-2" aria-live="polite">{t('errorCafesFetch')}</div>}
+          {!selectedCafe && <div className="text-red-500 text-sm mb-2" aria-live="polite">{t('errorCafeRequired')}</div>}
           <p className="text-sm text-gray-500 mb-4">{t('chooseCafeInfo')}</p>
         </div>
       )}
-      {/* Stap 4: Samenvatting & bevestigen */}
-      {step === 4 && (
-        <div className="card bg-white border-2 border-primary-200 p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('summary')}</h2>
+      {/* Stap 5: Samenvatting & bevestigen */}
+      {step === 5 && (
+        <div className="card bg-white border-2 border-primary-200 p-4 sm:p-6 rounded-xl shadow-lg">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('meetup.summary')}</h2>
           <div className="mb-4">
-            <div className="mb-2"><span className="font-medium">{t('name')}:</span> {formData.name}</div>
-            <div className="mb-2"><span className="font-medium">{t('city')}:</span> {formData.city}</div>
-            <div className="mb-2"><span className="font-medium">{t('selectedDates')}:</span>
+            <div className="mb-2"><span className="font-medium">{t('meetup.name')}:</span> {formData.name}</div>
+            <div className="mb-2"><span className="font-medium">{t('meetup.city')}:</span> {formData.city}</div>
+            <div className="mb-2"><span className="font-medium">{t('meetup.selectedDates')}:</span>
               <ul className="list-disc ml-6">
                 {formData.dates.map((date, idx) => {
                   const dateStr = getLocalDateString(date);
                   const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
                   return (
                     <li key={idx}>
-                      {date.toLocaleDateString()} ({(dateOpt?.times || []).map(ti => t(`common.${ti}`)).join(', ')})
+                      {date.toLocaleDateString()} ({(dateOpt?.times || []).join(', ')})
                     </li>
                   );
                 })}
               </ul>
             </div>
             {selectedCafe && (
-              <div className="mb-2"><span className="font-medium">{t('cafe')}:</span> {selectedCafe.name}, {selectedCafe.address}</div>
+              <div className="mb-2"><span className="font-medium">{t('meetup.cafe')}:</span> {selectedCafe.name}, {selectedCafe.address}</div>
             )}
           </div>
-          <div className="flex gap-4">
-            <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={handleSubmit} className="btn-primary flex-1">Submit</button>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button type="button" onClick={() => goToStep(4)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.back')}</button>
+            <button type="button" onClick={handleSubmit} className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.submit')}</button>
           </div>
-        </div>
-      )}
-      {/* Confetti bij succes */}
-      {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-50">
-          <Confetti
-            width={windowSize.width}
-            height={windowSize.height}
-            recycle={false}
-            numberOfPieces={300}
-            gravity={0.2}
-            initialVelocityY={10}
-            tweenDuration={2000}
-          />
-        </div>
-      )}
-      {queueCount > 0 && (
-        <div className="mb-4 p-3 rounded bg-yellow-200 text-yellow-900 text-center font-semibold">
-          {t('queueNotice', 'Er staan acties in de wachtrij. Ze worden verstuurd zodra je weer online bent.')}
         </div>
       )}
     </div>
   );
 };
 
-const CreateMeetupWithBoundary = () => (
-  <ErrorBoundary>
-    <CreateMeetup />
-  </ErrorBoundary>
-);
-
-export default CreateMeetupWithBoundary; 
+export default CreateMeetup;

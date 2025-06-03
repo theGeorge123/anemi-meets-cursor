@@ -1,6 +1,11 @@
 {
-  "title": "Create a Meetup",
-  "subtitle": "Fill in the details to plan your coffee meetup",
+  "title": "Let's plan a coffee meetup! ☕️",
+  "subtitle": "Just a few quick steps and you're ready to invite!",
+  "step1": "Who are you?",
+  "step2": "Pick a city!",
+  "step3": "Choose dates",
+  "step4": "Pick a café",
+  "step5": "All done! 🎉",
   "chooseCity": "Choose your city",
   "chooseCityInfo": "Choose your city! That way we know where to find the best spots for you",
   "chooseDates": "Pick your dates",
