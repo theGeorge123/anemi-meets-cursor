@@ -73,6 +73,8 @@ const CreateMeetup = () => {
   const [citiesError, setCitiesError] = useState<string | null>(null);
   const [loadingCafes, setLoadingCafes] = useState(false);
   const [cafesError, setCafesError] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   // Debug Supabase connection
   useEffect(() => {
@@ -107,21 +109,11 @@ const CreateMeetup = () => {
     cafe: yup.object().nullable().required(t('errorCafeRequired')),
   });
 
-  const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, watch } = useForm({
-    mode: 'onChange',
-    resolver: yupResolver(fullSchema),
-    defaultValues: {
-      name: '',
-    },
-  });
-
-  const watchedName = watch('name');
-
   // 2. Add step validation logic
   const validateStep = async (currentStep: number) => {
     try {
       if (currentStep === 1) {
-        await fullSchema.validateAt('name', { name: watchedName });
+        await fullSchema.validateAt('name', { name: formData.name });
       } else if (currentStep === 2) {
         await fullSchema.validateAt('city', { city: formData.city });
       } else if (currentStep === 3) {
@@ -457,60 +449,111 @@ const CreateMeetup = () => {
       </div>
       {/* Stap 1: Contactpersoon */}
       {step === 1 && (
-        <form className="card bg-primary-50 p-6 rounded-xl shadow-md" onSubmit={rhfHandleSubmit(() => goToStep(2))} autoComplete="off">
-          <h2 className="text-2xl font-bold text-primary-700 mb-6">Who are you meeting up as today?</h2>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="name">Your name or nickname <span className='italic'>(make it fun!)</span></label>
+        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold text-primary-700 mb-4">
+            {t('createMeetup.chooseCityInfo')}
+          </h2>
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2">
+              {t('common.name')}
+            </label>
             <input
-              id="name"
               type="text"
-              {...register('name')}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-1 ${errors.name ? 'border-red-500' : watchedName ? 'border-green-500' : 'border-primary-200'}`}
-              placeholder={t('name')}
-              autoComplete="off"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4"
+              placeholder={t('common.name')}
             />
-            {errors.name && <div className="text-red-500 text-sm mb-2">{errors.name.message}</div>}
+            {/* Email for non-logged-in users */}
+            {!user && (
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">{t('common.email')}</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder={t('common.email')}
+                  required
+                />
+                {emailError && <div className="text-red-500 text-sm mt-1">{emailError}</div>}
+              </div>
+            )}
+            <label className="block text-gray-700 mb-2">
+              {t('createMeetup.chooseCityLabel')}
+            </label>
+            {/* Show city selection if cities are available */}
+            {cities.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {cities.map((city) => (
+                  <button
+                    key={city.id}
+                    type="button"
+                    onClick={() => handleCityChange(city.name)}
+                    className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center
+                      ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
+                    aria-pressed={formData.city === city.name}
+                  >
+                    {city.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              // Show message and default city button if no cities are available
+              <div>
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+                  {t('createMeetup.noCitiesAvailable', 'No cities available. Using Rotterdam as default.')}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCityChange('Rotterdam')}
+                  className="p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center border-primary-600 bg-primary-100 text-primary-800"
+                >
+                  Rotterdam
+                </button>
+              </div>
+            )}
           </div>
+          {/* Show any form errors */}
+          {formError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">
+              {formError}
+            </div>
+          )}
           <button
-            type="submit"
-            disabled={!isValid}
+            onClick={() => {
+              // Reset any previous errors
+              setFormError(null);
+              // Basic email validation for non-logged-in users
+              if (!user) {
+                if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                  setEmailError(t('common.error_invalid_email', 'Please enter a valid email address'));
+                  return;
+                } else {
+                  setEmailError('');
+                }
+              }
+              // If no city is selected but we have a name, use Rotterdam as default
+              if (!formData.city && formData.name) {
+                setFormData(prev => ({ ...prev, city: 'Rotterdam' }));
+              }
+              // If we still don't have a city, show error
+              if (!formData.city) {
+                setFormError(t('createMeetup.pleaseSelectCity', 'Please select a city'));
+                return;
+              }
+              // All good, proceed to next step
+              setStep(2);
+            }}
+            disabled={!formData.name || (!user && !email)}
             className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           >
-            {t('continue')}
+            {t('common.continue')}
           </button>
-          {/* Suggesties */}
-          {errors.name && <div className="text-xs text-gray-500 mt-1">{t('suggestionName')}</div>}
-        </form>
-      )}
-      {/* Stap 2: Stad kiezen */}
-      {step === 2 && (
-        <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('chooseCityLabel')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            {cities.map((city) => (
-              <button
-                key={city.id}
-                type="button"
-                onClick={() => handleCityChange(city.name)}
-                className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center
-                  ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
-                aria-pressed={formData.city === city.name}
-              >
-                {city.name}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-4">
-            <button type="button" onClick={() => goToStep(1)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={() => goToStep(3)} className="btn-primary flex-1" disabled={!formData.city}>{t('common.continue')}</button>
-          </div>
-          {loadingCities && <div className="text-sm text-gray-500 mb-2">{t('loadingCities')}</div>}
-          {citiesError && <div className="text-red-500 text-sm mb-2">{t('errorCitiesFetch')}</div>}
-          <p className="text-sm text-gray-500 mb-4">{t('chooseCityInfo')}</p>
         </div>
       )}
-      {/* Stap 3: Datum/tijd kiezen */}
-      {step === 3 && (
+      {/* Stap 2: Datum/tijd kiezen */}
+      {step === 2 && (
         <DateSelector
           selectedDates={formData.dates}
           setSelectedDates={(dates: Date[]) => setFormData(prev => ({ ...prev, dates }))}
@@ -519,8 +562,8 @@ const CreateMeetup = () => {
           error={formError}
         />
       )}
-      {/* Stap 4: Café kiezen */}
-      {step === 4 && (
+      {/* Stap 3: Café kiezen */}
+      {step === 3 && (
         <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
           <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('chooseCafe')}</h2>
           {selectedCafe && (
@@ -545,8 +588,8 @@ const CreateMeetup = () => {
             <button type="button" onClick={shuffleCafe} disabled={shuffleCooldown || cafes.length <= 1} className="btn-secondary flex-1">{t('common.shuffle')}</button>
           </div>
           <div className="flex gap-4">
-            <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1">{t('common.back')}</button>
-            <button type="button" onClick={() => goToStep(5)} className="btn-primary flex-1" disabled={!selectedCafe}>{t('common.continue')}</button>
+            <button type="button" onClick={() => goToStep(2)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={() => goToStep(4)} className="btn-primary flex-1" disabled={!selectedCafe}>{t('common.continue')}</button>
           </div>
           {loadingCafes && <div className="text-sm text-gray-500 mb-2">{t('loadingCafes')}</div>}
           {cafesError && <div className="text-red-500 text-sm mb-2">{t('errorCafesFetch')}</div>}
@@ -554,8 +597,8 @@ const CreateMeetup = () => {
           <p className="text-sm text-gray-500 mb-4">{t('chooseCafeInfo')}</p>
         </div>
       )}
-      {/* Stap 5: Samenvatting & bevestigen */}
-      {step === 5 && (
+      {/* Stap 4: Samenvatting & bevestigen */}
+      {step === 4 && (
         <div className="card bg-white border-2 border-primary-200 p-6 rounded-xl shadow-lg">
           <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('summary')}</h2>
           <div className="mb-4">
@@ -579,7 +622,7 @@ const CreateMeetup = () => {
             )}
           </div>
           <div className="flex gap-4">
-            <button type="button" onClick={() => goToStep(4)} className="btn-secondary flex-1">{t('common.back')}</button>
+            <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1">{t('common.back')}</button>
             <button type="button" onClick={handleSubmit} className="btn-primary flex-1">Submit</button>
           </div>
         </div>
@@ -605,7 +648,6 @@ const CreateMeetup = () => {
           />
         </div>
       )}
-      {formError && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{formError}</div>}
       {queueCount > 0 && (
         <div className="mb-4 p-3 rounded bg-yellow-200 text-yellow-900 text-center font-semibold">
           {t('queueNotice', 'Er staan acties in de wachtrij. Ze worden verstuurd zodra je weer online bent.')}

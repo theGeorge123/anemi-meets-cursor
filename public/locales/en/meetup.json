@@ -34,5 +34,6 @@
   "errorCafeRequired": "Please select a café.",
   "suggestionName": "Try a fun nickname!",
   "errorNameShort": "Name must be at least 2 characters",
-  "name": "Name"
+  "name": "Name",
+  "noCitiesAvailable": "No cities available. Please contact support or try again later."
 } 

@@ -34,5 +34,6 @@
   "errorCafeRequired": "Selecteer een café.",
   "suggestionName": "Gebruik een leuke bijnaam!",
   "errorNameShort": "Naam moet minstens 2 tekens zijn",
-  "name": "Naam"
+  "name": "Naam",
+  "noCitiesAvailable": "Geen steden beschikbaar. Neem contact op met support of probeer het later opnieuw."
 } 
