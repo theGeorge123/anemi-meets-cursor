@@ -1,10 +1,8 @@
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
-import Confetti from 'react-confetti';
-import React from 'react';
-import ErrorBoundary from '../components/ErrorBoundary';
 import DateSelector from '../components/meetups/DateSelector';
 import { useNavigate } from 'react-router-dom';
 
@@ -55,14 +53,8 @@ const CreateMeetup = () => {
   const [shuffleCooldown, setShuffleCooldown] = useState(false);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [step, setStep] = useState(1);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [windowSize, setWindowSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
   const [user, setUser] = useState<any>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [queueCount, setQueueCount] = useState(0);
   const navigate = useNavigate();
   const [loadingCafes, setLoadingCafes] = useState(false);
   const [cafesError, setCafesError] = useState<string | null>(null);
@@ -149,19 +141,6 @@ const CreateMeetup = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Update window size for confetti
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   // Check if user is logged in
   useEffect(() => {
     const checkSession = async () => {
@@ -181,17 +160,11 @@ const CreateMeetup = () => {
 
   // Flush queue bij online komen
   useEffect(() => {
-    const flush = () => flushMeetupQueue(supabase, () => setQueueCount(q => q - 1));
+    const flush = () => flushMeetupQueue(supabase, () => {});
     window.addEventListener('online', flush);
     // Initieel ook proberen flushen
     flush();
     return () => window.removeEventListener('online', flush);
-  }, []);
-
-  // Update queueCount
-  useEffect(() => {
-    const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-    setQueueCount(queue.length);
   }, []);
 
   // Helper for error translations with fallback
@@ -313,9 +286,7 @@ const CreateMeetup = () => {
       const responseToken = createdInvite.token;
 
       if (responseToken) {
-        setShowConfetti(true);
         setTimeout(() => {
-          setShowConfetti(false);
           if (typeof navigate === 'function') {
             navigate(`/invite/${responseToken}`);
           } else {
@@ -329,23 +300,6 @@ const CreateMeetup = () => {
       console.error('Unexpected error during submission:', err);
       setFormError(`Unexpected error: ${err instanceof Error ? err.message : String(err)}`);
     }
-  };
-
-  const handleCityChange = (city: string) => {
-    setFormData(prev => ({ ...prev, city }));
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('lastCity', city);
-    }
-    // Zoek cafés voor deze stad en selecteer er direct één (random)
-    supabase.from('cafes').select('*').eq('city', city).then(({ data }) => {
-      if (data && data.length > 0) {
-        setCafes(data as Cafe[]);
-        setSelectedCafe((data as Cafe[])[Math.floor(Math.random() * data.length)]);
-      } else {
-        setCafes([]);
-        setSelectedCafe(null);
-      }
-    });
   };
 
   const shuffleCafe = () => {
