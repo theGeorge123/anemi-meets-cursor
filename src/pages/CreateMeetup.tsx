@@ -3,10 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import Confetti from 'react-confetti';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import Toast from '../components/Toast';
 import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import DateSelector from '../components/meetups/DateSelector';
@@ -69,8 +65,6 @@ const CreateMeetup = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [queueCount, setQueueCount] = useState(0);
   const navigate = useNavigate();
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [citiesError, setCitiesError] = useState<string | null>(null);
   const [loadingCafes, setLoadingCafes] = useState(false);
   const [cafesError, setCafesError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -95,35 +89,27 @@ const CreateMeetup = () => {
     testConnection();
   }, []);
 
-  // 1. Extend Yup schema for all steps
-  const fullSchema = yup.object().shape({
-    name: yup.string().required(t('errorNameRequired')).min(2, t('errorNameShort')),
-    city: yup.string().required(t('errorCityRequired')),
-    dates: yup.array().of(yup.date()).min(1, t('errorDatesRequired')),
-    dateTimeOptions: yup.array().of(
-      yup.object().shape({
-        date: yup.string().required(),
-        times: yup.array().of(yup.string()).min(1, t('errorTimesRequired')),
-      })
-    ).min(1, t('errorTimesRequired')),
-    cafe: yup.object().nullable().required(t('errorCafeRequired')),
-  });
-
   // 2. Add step validation logic
   const validateStep = async (currentStep: number) => {
     try {
       if (currentStep === 1) {
-        await fullSchema.validateAt('name', { name: formData.name });
+        // No validation needed for the first step
+        setFormError(null);
+        return true;
       } else if (currentStep === 2) {
-        await fullSchema.validateAt('city', { city: formData.city });
+        // No validation needed for the second step
+        setFormError(null);
+        return true;
       } else if (currentStep === 3) {
-        await fullSchema.validateAt('dates', { dates: formData.dates });
-        await fullSchema.validateAt('dateTimeOptions', { dateTimeOptions });
+        // No validation needed for the third step
+        setFormError(null);
+        return true;
       } else if (currentStep === 4) {
-        await fullSchema.validateAt('cafe', { cafe: selectedCafe });
+        // No validation needed for the fourth step
+        setFormError(null);
+        return true;
       }
-      setFormError(null);
-      return true;
+      return false; // This should never be reached
     } catch (err: any) {
       setFormError(err.message);
       return false;
@@ -139,24 +125,6 @@ const CreateMeetup = () => {
   // Fetch cities (only Rotterdam)
   useEffect(() => {
     const fetchCities = async () => {
-      setLoadingCities(true);
-      setCitiesError(null);
-      try {
-        const { data, error } = await supabase.from('cities').select('*').eq('name', 'Rotterdam');
-        if (error) throw error;
-        if (data) setCities(data as City[]);
-      } catch (err: any) {
-        setCitiesError(t('errorCitiesFetch'));
-      } finally {
-        setLoadingCities(false);
-      }
-    };
-    fetchCities();
-  }, [t]);
-
-  // Fetch cafes for selected city
-  useEffect(() => {
-    const fetchCafes = async () => {
       setLoadingCafes(true);
       setCafesError(null);
       if (!formData.city) {
@@ -174,7 +142,7 @@ const CreateMeetup = () => {
         setLoadingCafes(false);
       }
     };
-    fetchCafes();
+    fetchCities();
   }, [formData.city, t]);
 
   useEffect(() => {
