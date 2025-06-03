@@ -48,7 +48,7 @@ const CreateMeetup = () => {
     city: '',
     email: '',
   });
-  const [cities, setCities] = useState<City[]>([]);
+  const [cities] = useState<City[]>([]);
   const [cafes, setCafes] = useState<Cafe[]>([]);
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [dateTimeOptions, setDateTimeOptions] = useState<{ date: string; times: string[] }[]>([]);
