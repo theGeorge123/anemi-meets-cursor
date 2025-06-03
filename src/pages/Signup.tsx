@@ -61,6 +61,14 @@ const Signup = () => {
     setErrors(errs => ({ ...errs, [field]: undefined }));
   };
 
+  const getErrorMessage = (key: string, error: any) => {
+    const translated = t(key);
+    if (translated === key) {
+      return `Error: ${error?.message || 'Unknown error'}`;
+    }
+    return translated;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -79,48 +87,40 @@ const Signup = () => {
       switch (code) {
         case 'user_already_exists':
         case 'email_exists':
+          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.userAlreadyExists', signUpError) }));
           setLoading(false);
           return;
         case 'email_address_invalid':
         case 'invalid_email':
+          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.invalidEmail', signUpError) }));
           setLoading(false);
           return;
         case 'weak_password':
+          setErrors(errs => ({ ...errs, password: getErrorMessage('signup.weakPassword', signUpError) }));
           setLoading(false);
           return;
         case 'over_email_send_rate_limit':
         case 'over_request_rate_limit':
+          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.rateLimit', signUpError) }));
           setLoading(false);
           return;
         case 'signup_disabled':
+          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.disabled', signUpError) }));
           setLoading(false);
           return;
         case 'validation_failed':
+          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.validationFailed', signUpError) }));
           setLoading(false);
           return;
         case 'unexpected_failure':
         case 'internal_server_error':
+          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.internalError', signUpError) }));
           setLoading(false);
           return;
         default:
-          // Fallback op message string als code ontbreekt
-          const errMsg = signUpError.message?.toLowerCase() || '';
-          if (errMsg.includes('user already registered')) {
-            setLoading(false);
-            return;
-          } else if (errMsg.includes('invalid email')) {
-            setLoading(false);
-            return;
-          } else if (errMsg.includes('weak password')) {
-            setLoading(false);
-            return;
-          } else if (errMsg.includes('rate limit')) {
-            setLoading(false);
-            return;
-          } else if (errMsg.includes('password')) {
-            setLoading(false);
-            return;
-          }
+          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.unknownError', signUpError) }));
+          setLoading(false);
+          return;
       }
     }
     setLoading(false);

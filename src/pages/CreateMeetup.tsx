@@ -10,6 +10,7 @@ import Toast from '../components/Toast';
 import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import DateSelector from '../components/meetups/DateSelector';
+import { useNavigate } from 'react-router-dom';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
@@ -49,12 +50,13 @@ async function flushMeetupQueue(supabase: any, onSuccess: () => void) {
 }
 
 const CreateMeetup = () => {
-  const { t } = useTranslation(['common', 'meetup']);
+  const { t } = useTranslation('meetup');
   const [formData, setFormData] = useState({
     name: '',
     dates: [] as Date[],
     timePreference: '',
     city: '',
+    email: '',
   });
   const [cities, setCities] = useState<City[]>([]);
   const [cafes, setCafes] = useState<Cafe[]>([]);
@@ -78,19 +80,39 @@ const CreateMeetup = () => {
   const [cafesError, setCafesError] = useState<string | null>(null);
   const [showMeetupToast, setShowMeetupToast] = useState(false);
   const [queueCount, setQueueCount] = useState(0);
+  const navigate = useNavigate();
+
+  // Debug Supabase connection
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        console.log('Testing Supabase connection...');
+        const { data, error } = await supabase.from('cities').select('count');
+        console.log('Supabase connection test:', { data, error });
+        
+        // Also log the current environment variables
+        console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+        console.log('Supabase Key (first 10 chars):', 
+          import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 10) + '...');
+      } catch (err) {
+        console.error('Supabase connection test failed:', err);
+      }
+    };
+    testConnection();
+  }, []);
 
   // 1. Extend Yup schema for all steps
   const fullSchema = yup.object().shape({
-    name: yup.string().required(t('createMeetup.errorNameRequired')).min(2, t('createMeetup.errorNameShort')),
-    city: yup.string().required(t('createMeetup.errorCityRequired')),
-    dates: yup.array().of(yup.date()).min(1, t('createMeetup.errorDatesRequired')),
+    name: yup.string().required(t('errorNameRequired')).min(2, t('errorNameShort')),
+    city: yup.string().required(t('errorCityRequired')),
+    dates: yup.array().of(yup.date()).min(1, t('errorDatesRequired')),
     dateTimeOptions: yup.array().of(
       yup.object().shape({
         date: yup.string().required(),
-        times: yup.array().of(yup.string()).min(1, t('createMeetup.errorTimesRequired')),
+        times: yup.array().of(yup.string()).min(1, t('errorTimesRequired')),
       })
-    ).min(1, t('createMeetup.errorTimesRequired')),
-    cafe: yup.object().nullable().required(t('createMeetup.errorCafeRequired')),
+    ).min(1, t('errorTimesRequired')),
+    cafe: yup.object().nullable().required(t('errorCafeRequired')),
   });
 
   const { register, handleSubmit: rhfHandleSubmit, formState: { errors, isValid }, setValue, trigger, watch } = useForm({
@@ -140,7 +162,7 @@ const CreateMeetup = () => {
         if (error) throw error;
         if (data) setCities(data as City[]);
       } catch (err: any) {
-        setCitiesError(t('createMeetup.errorCitiesFetch'));
+        setCitiesError(t('errorCitiesFetch'));
       } finally {
         setLoadingCities(false);
       }
@@ -163,7 +185,7 @@ const CreateMeetup = () => {
         if (error) throw error;
         if (data) setCafes(data as Cafe[]);
       } catch (err: any) {
-        setCafesError(t('createMeetup.errorCafesFetch'));
+        setCafesError(t('errorCafesFetch'));
       } finally {
         setLoadingCafes(false);
       }
@@ -175,36 +197,6 @@ const CreateMeetup = () => {
     // Scroll naar boven bij laden
     window.scrollTo(0, 0);
   }, []);
-
-  // Prefill name if logged in (prefer user_metadata, fallback to profiles)
-  useEffect(() => {
-    const fetchProfileName = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const metaName = session.user.user_metadata?.full_name;
-        if (metaName && !formData.name) {
-          setFormData(prev => {
-            setTimeout(() => { trigger('name'); }, 0);
-            return { ...prev, name: metaName };
-          });
-          return;
-        }
-        // Fallback: try profiles table
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        if (!profileError && profile && profile.full_name && !formData.name) {
-          setFormData(prev => {
-            setTimeout(() => { trigger('name'); }, 0);
-            return { ...prev, name: profile.full_name };
-          });
-        }
-      }
-    };
-    fetchProfileName();
-  }, [formData.name, trigger]);
 
   // Update window size for confetti
   useEffect(() => {
@@ -236,15 +228,6 @@ const CreateMeetup = () => {
     }
   }, []);
 
-  // Prefill name/email als user bekend is
-  useEffect(() => {
-    if (user && user.user_metadata?.full_name) {
-      setValue('name', user.user_metadata.full_name, { shouldValidate: true, shouldDirty: true });
-      setFormData(prev => ({ ...prev, name: user.user_metadata.full_name }));
-      trigger();
-    }
-  }, [user, setValue, trigger]);
-
   // Flush queue bij online komen
   useEffect(() => {
     const flush = () => flushMeetupQueue(supabase, () => setQueueCount(q => q - 1));
@@ -260,21 +243,36 @@ const CreateMeetup = () => {
     setQueueCount(queue.length);
   }, []);
 
+  // Helper for error translations with fallback
+  const getErrorMessage = (key: string, error: any) => {
+    const translated = t(key);
+    if (translated === key) {
+      return `Error: ${error?.message || 'Unknown error'}`;
+    }
+    return translated;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    // Validatie
+
+    // Log the form data for debugging
+    console.log('Submitting form data:', formData);
+    console.log('Selected cafe:', selectedCafe);
+    console.log('Date/time options:', dateTimeOptions);
+
+    // Validation (keep existing validation)
     if (formData.dates.length === 0) {
-      setFormError(t('common.requiredTime'));
+      setFormError(t('requiredTime'));
       return;
     }
     const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
     if (!hasAnyTime) {
-      setFormError(t('common.requiredTime'));
+      setFormError(t('requiredTime'));
       return;
     }
     if (!formData.name || !formData.city || !selectedCafe) {
-      setFormError(t('common.errorMissingFields', { fields: [!formData.name ? t('common.name') : '', !formData.city ? t('common.city') : '', !selectedCafe ? t('common.cafe') : ''].filter(Boolean).join(', ') }));
+      setFormError(t('errorMissingFields', { fields: [!formData.name ? t('name') : '', !formData.city ? t('city') : '', !selectedCafe ? t('cafe') : ''].filter(Boolean).join(', ') }));
       return;
     }
 
@@ -289,77 +287,96 @@ const CreateMeetup = () => {
 
     const firstDateOpt = filteredDateTimeOptions.find(opt => opt.times.length > 0);
     if (!firstDateOpt) {
-      setFormError(t('common.requiredTime'));
+      setFormError(t('requiredTime'));
       return;
     }
 
-    const selected_date = firstDateOpt.date;
-    const selected_time = firstDateOpt.times[0];
+    // Prepare payload
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+    console.log('Generated token:', token);
 
     const payload: any = {
       token,
       invitee_name: formData.name,
       status: "pending",
-      selected_date,
-      selected_time,
+      selected_date: firstDateOpt.date,
+      selected_time: firstDateOpt.times[0],
       cafe_id: selectedCafe.id,
       date_time_options: filteredDateTimeOptions
     };
 
-    if (!navigator.onLine) {
-      queueMeetup(payload);
-      setQueueCount(q => q + 1);
-      setShowSuccess(true);
-      setShowMeetupToast(true);
-      setTimeout(() => setShowConfetti(false), 2000);
-      return;
+    // If user is not logged in, add email if available
+    if (!user && formData.email) {
+      payload.email_b = formData.email;
     }
 
+    console.log('Payload to insert:', payload);
+
     try {
+      // First, check if we can read from the table
+      const { data: checkData, error: checkError } = await supabase
+        .from('invitations')
+        .select('count');
+
+      console.log('Table access check:', { data: checkData, error: checkError });
+
+      // Now try the insert
+      console.log('Attempting to insert invitation...');
       const { data: insertData, error: insertError } = await supabase
         .from('invitations')
         .insert(payload)
         .select();
-      if (insertError || !insertData || insertData.length === 0) {
-        let msg = t('common.errorCreatingInvite');
-        if (insertError) {
-          const code = insertError.code || '';
-          switch (code) {
-            case 'error_network':
-              msg = t('common.errorNetwork');
-              break;
-            case 'validation_failed':
-              msg = t('common.errorValidationFailed');
-              break;
-            default:
-              const errMsg = insertError.message?.toLowerCase() || '';
-              if (errMsg.includes('network')) {
-                msg = t('common.errorNetwork');
-              } else if (errMsg.includes('valid')) {
-                msg = t('common.errorValidationFailed');
-              }
-          }
+
+      console.log('Insert result:', { data: insertData, error: insertError });
+
+      if (insertError) {
+        console.error('Insert error details:', {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint
+        });
+
+        // Display a more detailed error message
+        let errorMessage = getErrorMessage('errorCreatingInvite', insertError);
+        if (insertError.details) {
+          errorMessage += ` (${insertError.details})`;
         }
-        setFormError(msg);
+        if (insertError.hint) {
+          errorMessage += ` Hint: ${insertError.hint}`;
+        }
+
+        setFormError(errorMessage);
         return;
       }
-      // Succes: samenvatting tonen
-      const inviteToken = (insertData && insertData[0] && insertData[0].token) || token;
-      setSuccessSummary({
-        date: selected_date,
-        time: selected_time,
-        cafe: selectedCafe?.name || '',
-        token: inviteToken,
-      });
-      setShowSuccess(true);
-      setShowConfetti(true);
-      setShowMeetupToast(true);
-      setTimeout(() => {
-        setShowConfetti(false);
-      }, 2000);
+
+      if (!insertData || insertData.length === 0) {
+        console.error('No data returned from insert');
+        setFormError('No data returned from database. The invitation might not have been created.');
+        return;
+      }
+
+      // Success path
+      const createdInvite = insertData[0];
+      console.log('Created invitation:', createdInvite);
+      const responseToken = createdInvite.token;
+
+      if (responseToken) {
+        setShowConfetti(true);
+        setTimeout(() => {
+          setShowConfetti(false);
+          if (typeof navigate === 'function') {
+            navigate(`/invite/${responseToken}`);
+          } else {
+            window.location.href = `/invite/${responseToken}`;
+          }
+        }, 2000);
+      } else {
+        setFormError('Created invitation is missing token');
+      }
     } catch (err) {
-      setFormError(t('common.errorNetwork'));
+      console.error('Unexpected error during submission:', err);
+      setFormError(`Unexpected error: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
@@ -421,10 +438,10 @@ const CreateMeetup = () => {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-4xl font-extrabold text-primary-600 mb-8">
-        {t('createMeetupTitle')}
+        {t('title')}
       </h1>
       <p className="text-gray-700 mb-8 text-lg">
-        {t('createMeetupSubtitle')}
+        {t('subtitle')}
       </p>
       {/* Voortgangsindicatie */}
       <div className="mb-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
@@ -470,13 +487,13 @@ const CreateMeetup = () => {
             {t('continue')}
           </button>
           {/* Suggesties */}
-          {errors.name && <div className="text-xs text-gray-500 mt-1">{t('createMeetup.suggestionName')}</div>}
+          {errors.name && <div className="text-xs text-gray-500 mt-1">{t('suggestionName')}</div>}
         </form>
       )}
       {/* Stap 2: Stad kiezen */}
       {step === 2 && (
         <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.chooseCityLabel')}</h2>
+          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('chooseCityLabel')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             {cities.map((city) => (
               <button
@@ -495,9 +512,9 @@ const CreateMeetup = () => {
             <button type="button" onClick={() => goToStep(1)} className="btn-secondary flex-1">{t('common.back')}</button>
             <button type="button" onClick={() => goToStep(3)} className="btn-primary flex-1" disabled={!formData.city}>{t('common.continue')}</button>
           </div>
-          {loadingCities && <div className="text-sm text-gray-500 mb-2">{t('createMeetup.loadingCities')}</div>}
-          {citiesError && <div className="text-red-500 text-sm mb-2">{citiesError}</div>}
-          <p className="text-sm text-gray-500 mb-4">{t('createMeetup.chooseCityInfo')}</p>
+          {loadingCities && <div className="text-sm text-gray-500 mb-2">{t('loadingCities')}</div>}
+          {citiesError && <div className="text-red-500 text-sm mb-2">{t('errorCitiesFetch')}</div>}
+          <p className="text-sm text-gray-500 mb-4">{t('chooseCityInfo')}</p>
         </div>
       )}
       {/* Stap 3: Datum/tijd kiezen */}
@@ -513,7 +530,7 @@ const CreateMeetup = () => {
       {/* Stap 4: Café kiezen */}
       {step === 4 && (
         <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
-          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.chooseCafe')}</h2>
+          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('chooseCafe')}</h2>
           {selectedCafe && (
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
               {selectedCafe.image_url && (
@@ -539,20 +556,20 @@ const CreateMeetup = () => {
             <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1">{t('common.back')}</button>
             <button type="button" onClick={() => goToStep(5)} className="btn-primary flex-1" disabled={!selectedCafe}>{t('common.continue')}</button>
           </div>
-          {loadingCafes && <div className="text-sm text-gray-500 mb-2">{t('createMeetup.loadingCafes')}</div>}
-          {cafesError && <div className="text-red-500 text-sm mb-2">{cafesError}</div>}
-          {!selectedCafe && <div className="text-red-500 text-sm mb-2">{t('createMeetup.errorCafeRequired')}</div>}
-          <p className="text-sm text-gray-500 mb-4">{t('createMeetup.chooseCafeInfo')}</p>
+          {loadingCafes && <div className="text-sm text-gray-500 mb-2">{t('loadingCafes')}</div>}
+          {cafesError && <div className="text-red-500 text-sm mb-2">{t('errorCafesFetch')}</div>}
+          {!selectedCafe && <div className="text-red-500 text-sm mb-2">{t('errorCafeRequired')}</div>}
+          <p className="text-sm text-gray-500 mb-4">{t('chooseCafeInfo')}</p>
         </div>
       )}
       {/* Stap 5: Samenvatting & bevestigen */}
       {step === 5 && (
         <div className="card bg-white border-2 border-primary-200 p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('createMeetup.summary')}</h2>
+          <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('summary')}</h2>
           <div className="mb-4">
-            <div className="mb-2"><span className="font-medium">{t('common.name')}:</span> {formData.name}</div>
-            <div className="mb-2"><span className="font-medium">{t('common.city')}:</span> {formData.city}</div>
-            <div className="mb-2"><span className="font-medium">{t('common.selectedDates')}:</span>
+            <div className="mb-2"><span className="font-medium">{t('name')}:</span> {formData.name}</div>
+            <div className="mb-2"><span className="font-medium">{t('city')}:</span> {formData.city}</div>
+            <div className="mb-2"><span className="font-medium">{t('selectedDates')}:</span>
               <ul className="list-disc ml-6">
                 {formData.dates.map((date, idx) => {
                   const dateStr = getLocalDateString(date);
@@ -566,7 +583,7 @@ const CreateMeetup = () => {
               </ul>
             </div>
             {selectedCafe && (
-              <div className="mb-2"><span className="font-medium">{t('common.cafe')}:</span> {selectedCafe.name}, {selectedCafe.address}</div>
+              <div className="mb-2"><span className="font-medium">{t('cafe')}:</span> {selectedCafe.name}, {selectedCafe.address}</div>
             )}
           </div>
           <div className="flex gap-4">
@@ -606,7 +623,7 @@ const CreateMeetup = () => {
       {formError && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{formError}</div>}
       {queueCount > 0 && (
         <div className="mb-4 p-3 rounded bg-yellow-200 text-yellow-900 text-center font-semibold">
-          {t('meetups:queueNotice', 'Er staan acties in de wachtrij. Ze worden verstuurd zodra je weer online bent.')}
+          {t('queueNotice', 'Er staan acties in de wachtrij. Ze worden verstuurd zodra je weer online bent.')}
         </div>
       )}
     </div>

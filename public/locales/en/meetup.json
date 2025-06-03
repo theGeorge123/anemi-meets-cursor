@@ -26,10 +26,13 @@
   "loadingCafes": "Loading cafés...",
   "errorCitiesFetch": "Could not load cities",
   "errorCafesFetch": "Could not load cafés",
-  "errorNameRequired": "Name is required",
+  "errorNameRequired": "Name is required.",
   "errorEmailRequired": "Email is required",
   "errorCityRequired": "City is required",
-  "errorDatesRequired": "Please select at least one date",
-  "errorTimesRequired": "Please select at least one time",
-  "errorCafeRequired": "Please select a café"
+  "errorDatesRequired": "Please select at least one date.",
+  "errorTimesRequired": "Please select at least one time.",
+  "errorCafeRequired": "Please select a café.",
+  "suggestionName": "Try a fun nickname!",
+  "errorNameShort": "Name is too short.",
+  "name": "Name"
 } 

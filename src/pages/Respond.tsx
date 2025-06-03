@@ -35,24 +35,32 @@ const Respond = () => {
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
+  const getErrorMessage = (key: string, error: any) => {
+    const translated = t(key);
+    if (translated === key) {
+      return `Error: ${error?.message || 'Unknown error'}`;
+    }
+    return translated;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const params = new URLSearchParams(location.search);
       const token = params.get('token');
       if (!token) {
-        setError(t('respond.invalidInvitation'));
+        setError(getErrorMessage('respond.invalidInvitation', null));
         setLoading(false);
         return;
       }
       // Haal invitation op
       const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).maybeSingle();
       if (invitationError) {
-        setError(t('respond.expiredOrMissing'));
+        setError(getErrorMessage('respond.expiredOrMissing', invitationError));
         setLoading(false);
         return;
       }
       if (!invitation) {
-        setError(t('respond.expiredOrMissing'));
+        setError(getErrorMessage('respond.expiredOrMissing', null));
         setLoading(false);
         return;
       }
@@ -109,31 +117,29 @@ const Respond = () => {
     // Check cafe_id presence
     const cafeId = invitation?.cafe_id;
     if (!cafeId) missing.push('cafe_id');
-    if (!datePart || !timePart || !/^\d{4}-\d{2}-\d{2}$/.test(datePart) || !['morning','afternoon','evening'].includes(timePart)) {
-      setErrorMsg(t('respond.invalidDateFormat'));
+    if (!datePart || !timePart || !/^[\d]{4}-[\d]{2}-[\d]{2}$/.test(datePart) || !['morning','afternoon','evening'].includes(timePart)) {
+      setErrorMsg(getErrorMessage('respond.invalidDateFormat', null));
       return;
     }
     if (missing.length > 0) {
       setErrorMsg(
-        t('common.errorMissingFields', {
-          fields: missing
-            .map((field) =>
-              field === 'email'
-                ? t('common.email')
-                : field === 'selectedTime'
-                ? t('common.time')
-                : field === 'cafe_id'
-                ? t('common.cafe')
-                : field
-            )
-            .join(', ')
-        })
+        getErrorMessage('common.errorMissingFields', { message: missing
+          .map((field) =>
+            field === 'email'
+              ? t('common.email')
+              : field === 'selectedTime'
+              ? t('common.time')
+              : field === 'cafe_id'
+              ? t('common.cafe')
+              : field
+          )
+          .join(', ') })
       );
       return;
     }
     setErrorMsg("");
     if (!invitation) {
-      setErrorMsg(t('respond.errorNoInvite'));
+      setErrorMsg(getErrorMessage('respond.errorNoInvite', null));
       return;
     }
     // Sla email op als updates gewenst
@@ -168,32 +174,32 @@ const Respond = () => {
       const data = await res.json();
       if (!res.ok || !data.success) {
         // Herkenbare foutmeldingen netjes vertalen
-        let msg = t('respond.genericError');
+        let msg = getErrorMessage('respond.genericError', data.error);
         const code = data.error_code || '';
         switch (code) {
           case 'missing_cafe_id':
-            msg = t('common.errorMissingFields', { fields: t('common.cafe') });
+            msg = getErrorMessage('common.errorMissingFields', { message: t('common.cafe') });
             break;
           case 'missing_email':
-            msg = t('common.errorMissingFields', { fields: t('common.email') });
+            msg = getErrorMessage('common.errorMissingFields', { message: t('common.email') });
             break;
           case 'authorization':
-            msg = t('respond.errorSendMail');
+            msg = getErrorMessage('respond.errorSendMail', data.error);
             break;
           case 'expired_or_missing':
-            msg = t('respond.expiredOrMissing');
+            msg = getErrorMessage('respond.expiredOrMissing', data.error);
             break;
           default:
             if (data && typeof data.error === 'string') {
               const err = data.error.toLowerCase();
               if (err.includes('missing cafe id')) {
-                msg = t('common.errorMissingFields', { fields: t('common.cafe') });
+                msg = getErrorMessage('common.errorMissingFields', { message: t('common.cafe') });
               } else if (err.includes('missing email')) {
-                msg = t('common.errorMissingFields', { fields: t('common.email') });
+                msg = getErrorMessage('common.errorMissingFields', { message: t('common.email') });
               } else if (err.includes('authorization')) {
-                msg = t('respond.errorSendMail');
+                msg = getErrorMessage('respond.errorSendMail', data.error);
               } else if (err.includes('expired') || err.includes('not found')) {
-                msg = t('respond.expiredOrMissing');
+                msg = getErrorMessage('respond.expiredOrMissing', data.error);
               }
             }
         }
@@ -215,7 +221,7 @@ const Respond = () => {
         }, 1200);
       }
     } catch (err) {
-      setErrorMsg(t('respond.genericError'));
+      setErrorMsg(getErrorMessage('respond.genericError', err));
       console.error("Netwerkfout:", err);
     }
   };
