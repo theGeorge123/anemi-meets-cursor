@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // @ts-expect-error Deno globals are available in Edge Functions
 Deno.serve(async (req: Request) => {
@@ -19,17 +20,13 @@ Deno.serve(async (req: Request) => {
   }
   const jwt = authHeader.replace('Bearer ', '');
 
-  // Decodeer JWT om user id te krijgen
-  let userId = '';
-  try {
-    const payload = JSON.parse(atob(jwt.split('.')[1]));
-    userId = payload.sub;
-  } catch (e) {
+  // Verify JWT via Supabase
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
+  const { data, error: verifyError } = await supabase.auth.getUser(jwt);
+  if (verifyError || !data?.user) {
     return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 });
   }
-  if (!userId) {
-    return new Response(JSON.stringify({ error: 'No user id' }), { status: 400 });
-  }
+  const userId = data.user.id;
 
   // Verwijder uit Auth
   const adminRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {

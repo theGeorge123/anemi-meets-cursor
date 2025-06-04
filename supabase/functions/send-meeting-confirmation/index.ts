@@ -40,11 +40,29 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Check invitation first to validate email and status
+    const { data: existing, error: fetchError } = await supabase
+      .from("invitations")
+      .select("email_b, status, email_a, cafe_id")
+      .eq("token", token)
+      .single();
+
+    if (fetchError || !existing) {
+      throw new Error(fetchError?.message || "Invitation not found.");
+    }
+
+    if (existing.status === "accepted") {
+      throw new Error("Invitation already used.");
+    }
+
+    if (existing.email_b && existing.email_b !== email_b) {
+      throw new Error("Email does not match invitation.");
+    }
+
     const { data: invitation, error } = await supabase
       .from("invitations")
       .update({ email_b, selected_date, selected_time, status: "accepted" })
       .eq("token", token)
-      .neq("status", "accepted")
       .select()
       .single();
 
