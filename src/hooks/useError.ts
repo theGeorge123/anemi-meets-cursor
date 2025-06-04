@@ -38,12 +38,14 @@ export const useError = (): UseErrorReturn => {
     }
 
     // Log error for debugging
-    console.error('Error occurred:', {
-      message: errorMessage,
-      code: errorCode,
-      details: errorDetails,
-      timestamp: new Date().toISOString(),
-    });
+    if (import.meta.env.MODE !== 'production') {
+      console.error('Error occurred:', {
+        message: errorMessage,
+        code: errorCode,
+        details: errorDetails,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     // Add Sentry breadcrumb
     Sentry.addBreadcrumb({
