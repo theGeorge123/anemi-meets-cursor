@@ -35,9 +35,9 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
 
   // Menu links met vertaalde labels
   const NAV_LINKS = [
-    { to: '/dashboard', label: t('dashboardTitle'), auth: true },
-    { to: '/create-meetup', label: t('newMeetup'), auth: true },
-    { to: '/login', label: t('login'), auth: false },
+    { to: '/dashboard', label: t('navigation.dashboard'), auth: true },
+    { to: '/create-meetup', label: t('navigation.plan'), auth: true },
+    { to: '/login', label: t('login.title'), auth: false },
   ];
 
   // Filter links op authenticatie

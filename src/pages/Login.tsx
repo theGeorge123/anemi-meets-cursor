@@ -231,8 +231,13 @@ const Login = () => {
         </button>
       </form>
 
-      <div className="text-center mt-4 text-primary-600 text-sm">
-        {t('login.noAccountCta')}
+      <div className="text-center mt-4">
+        <button
+          className="text-primary-600 underline hover:text-primary-800 text-sm"
+          onClick={() => navigate('/signup')}
+        >
+          {t('login.noAccountCta')}
+        </button>
       </div>
 
       {showSuccess && (

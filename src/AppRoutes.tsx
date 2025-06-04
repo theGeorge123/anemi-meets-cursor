@@ -57,7 +57,7 @@ const AppRoutes = () => {
       {sessionExpiresSoon && (
         <div className="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-900 text-center py-2 z-50 font-semibold shadow-lg">
           {t('sessionExpiresSoon')}
-          <Link to="/login" className="ml-4 underline text-primary-700">{t('login')}</Link>
+          <Link to="/login" className="ml-4 underline text-primary-700">{t('login.title')}</Link>
         </div>
       )}
       <Suspense fallback={<div className="text-center py-12 text-lg text-primary-700">{t('loading')}</div>}>
