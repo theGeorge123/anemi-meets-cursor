@@ -160,7 +160,7 @@ const Respond = () => {
         });
         console.log('DEBUG: fetch body:', body);
       }
-      const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/functions/v1/send-meeting-confirmation", {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
