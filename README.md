@@ -28,11 +28,12 @@ A modern, calming web application for coordinating coffee meetups with friends. 
    ```bash
    npm install
    ```
-3. Start the development server:
+3. Copy `.env.example` to `.env` and set your variables
+4. Start the development server:
    ```bash
    npm run dev
    ```
-4. Open [http://localhost:5173](http://localhost:5173) in your browser
+5. Open [http://localhost:5173](http://localhost:5173) in your browser
 
 ## Project Structure
 
