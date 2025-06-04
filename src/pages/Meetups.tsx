@@ -150,15 +150,41 @@ const Meetups: React.FC = () => {
   const handleJoinMeetup = useCallback(async (id: string) => {
     setJoinLoadingId(id);
     try {
-      // TODO: Replace with real join logic
-      await new Promise(res => setTimeout(res, 1200));
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData?.session?.user) {
+        throw new Error(sessionError?.message || 'No active session');
+      }
+      const meetup = meetups.find(m => m.id === id);
+      if (!meetup) throw new Error('Meetup not found');
+
+      const body = {
+        token: (meetup as any).token,
+        email_b: sessionData.session.user.email,
+        selected_date: meetup.selected_date,
+        selected_time: meetup.selected_time,
+        cafe_id: meetup.cafe_id,
+        lang: i18n.language
+      };
+
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Join failed');
+
+      setMeetups(prev => prev.map(m => m.id === id ? { ...m, status: 'confirmed' } : m));
       setToast({ type: 'success', message: t('meetups.joinSuccess', 'You have joined the meetup!') });
     } catch (err) {
       setToast({ type: 'error', message: t('meetups.joinError', 'Failed to join meetup. Please try again.') });
     } finally {
       setJoinLoadingId(null);
     }
-  }, [t]);
+  }, [t, meetups, i18n.language]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
