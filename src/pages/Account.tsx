@@ -187,7 +187,7 @@ const Account = () => {
               <span className="text-xl" aria-hidden>📝</span>
               <span className="font-semibold">{t('account.name')}</span>
               <span className="text-xs text-gray-400 italic sm:ml-0 ml-2">{t('account.nameEditHint')}</span>
-            </div>
+                  </div>
             <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
               <span className="mobile-text text-lg">{name || t('account.notSpecified')}</span>
             </div>
@@ -200,7 +200,7 @@ const Account = () => {
               <span className="text-xl" aria-hidden>✉️</span>
               <span className="font-semibold">{t('account.email')}</span>
               <span className="text-xs text-gray-400 italic sm:ml-0 ml-2">{t('account.emailEditHint')}</span>
-            </div>
+                  </div>
             <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
               <span className="mobile-text text-lg">{email || t('account.notSpecified')}</span>
             </div>
@@ -213,7 +213,7 @@ const Account = () => {
               <span className="text-xl" aria-hidden>🎂</span>
               <span className="font-semibold">{t('account.age')}</span>
               <span className="text-xs text-gray-400 italic sm:ml-0 ml-2">{t('account.ageEditHint')}</span>
-            </div>
+                  </div>
             <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
               <span className="mobile-text text-lg">{age !== '' ? age : 'immortal'}</span>
             </div>
@@ -336,11 +336,11 @@ const Account = () => {
           {/* Danger Zone */}
           <div className="card border-2 border-red-500">
             <h2 className="text-2xl font-bold text-red-500 mb-6">{t('account.dangerZone')}</h2>
-            <button
-              className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
-            >
+              <button
+                className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
+              >
               {t('account.deleteAccount')}
-            </button>
+              </button>
           </div>
 
           {/* Logout Button */}

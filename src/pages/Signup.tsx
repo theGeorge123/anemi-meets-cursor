@@ -119,8 +119,8 @@ const Signup = () => {
           return;
         default:
           setErrors(errs => ({ ...errs, email: getErrorMessage('signup.unknownError', signUpError) }));
-          setLoading(false);
-          return;
+            setLoading(false);
+            return;
       }
     }
     setLoading(false);

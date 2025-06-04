@@ -251,7 +251,7 @@ const CreateMeetup = () => {
 
       console.log('Insert result:', { data: insertData, error: insertError });
 
-      if (insertError) {
+        if (insertError) {
         console.error('Insert error details:', {
           code: insertError.code,
           message: insertError.message,
@@ -284,20 +284,20 @@ const CreateMeetup = () => {
       const responseToken = createdInvite.token;
 
       if (responseToken) {
-        setTimeout(() => {
+      setTimeout(() => {
           if (typeof navigate === 'function') {
             navigate(`/invite/${responseToken}`);
           } else {
             window.location.href = `/invite/${responseToken}`;
           }
-        }, 2000);
+      }, 2000);
       } else {
         setFormError('Created invitation is missing token');
       }
     } catch (err) {
       console.error('Unexpected error during submission:', err);
       setFormError(`Unexpected error: ${err instanceof Error ? err.message : String(err)}`);
-    }
+      }
   };
 
   const shuffleCafe = () => {
@@ -360,10 +360,10 @@ const CreateMeetup = () => {
       <div className="sticky top-0 z-20 bg-primary-50/90 backdrop-blur-md pb-2 sm:static sm:bg-transparent sm:backdrop-blur-none">
         <h1 className="text-2xl sm:text-4xl font-extrabold text-primary-700 mb-2 sm:mb-4 text-center drop-shadow-sm">
           {t('meetup.title', "Let's plan a coffee meetup! ☕️")}
-        </h1>
+      </h1>
         <p className="text-gray-600 mb-4 sm:mb-8 text-base sm:text-lg text-center font-medium">
           {t('meetup.subtitle', "Just a few quick steps and you're ready to invite!")}
-        </p>
+      </p>
       </div>
       {/* Stepper with improved circles and labels */}
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
@@ -381,7 +381,7 @@ const CreateMeetup = () => {
               const isActive = step === s;
               const isCompleted = step > s;
               return (
-                <React.Fragment key={s}>
+            <React.Fragment key={s}>
                   <div className="flex flex-col items-center mx-1 min-w-[70px]">
                     <div
                       className={[
@@ -404,9 +404,9 @@ const CreateMeetup = () => {
                       ${isActive ? 'text-primary-700 font-bold' : 'text-gray-400'}`}
                       style={{whiteSpace: 'normal', overflowWrap: 'break-word'}}
                     >{stepLabels[i]}</span>
-                  </div>
+              </div>
                   {i < 4 && <div className={`w-5 h-0.5 rounded-full mx-1 transition-all duration-200 ${step > s ? 'bg-primary-400' : 'bg-primary-200'}`} />}
-                </React.Fragment>
+            </React.Fragment>
               );
             });
           })()}
@@ -442,7 +442,7 @@ const CreateMeetup = () => {
                   className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500"
                   placeholder={t('meetup.emailLabel', 'Your email address')}
                   required
-                />
+            />
                 {emailError && <div className="text-red-500 text-sm mt-1" aria-live="polite">{emailError}</div>}
               </div>
             )}
@@ -453,7 +453,7 @@ const CreateMeetup = () => {
             </div>
           )}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button
+          <button
               onClick={() => {
                 setFormError(null);
                 if (!formData.name) {
@@ -476,9 +476,9 @@ const CreateMeetup = () => {
               }}
               disabled={!formData.name || (!user && !email)}
               className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
-            >
+          >
               {t('meetup.continue', 'Continue')}
-            </button>
+          </button>
           </div>
         </div>
       )}
@@ -504,19 +504,19 @@ const CreateMeetup = () => {
             </div>
           ) : cities.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
-              {cities.map((city) => (
-                <button
-                  key={city.id}
-                  type="button"
+            {cities.map((city) => (
+              <button
+                key={city.id}
+                type="button"
                   onClick={() => setFormData(prev => ({ ...prev, city: city.name }))}
                   className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary-500
-                    ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
-                  aria-pressed={formData.city === city.name}
-                >
-                  {city.name}
-                </button>
-              ))}
-            </div>
+                  ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
+                aria-pressed={formData.city === city.name}
+              >
+                {city.name}
+              </button>
+            ))}
+          </div>
           ) : (
             <div>
               <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
@@ -561,13 +561,13 @@ const CreateMeetup = () => {
             {t('chooseDates', 'Pick your dates')}
           </h2>
           <p className="mb-3 sm:mb-4 text-gray-700 text-sm sm:text-base">{t('chooseTimes', 'Pick your preferred times for each date')}</p>
-          <DateSelector
-            selectedDates={formData.dates}
-            setSelectedDates={(dates: Date[]) => setFormData(prev => ({ ...prev, dates }))}
-            dateTimeOptions={dateTimeOptions}
-            setDateTimeOptions={setDateTimeOptions}
-            error={formError}
-          />
+        <DateSelector
+          selectedDates={formData.dates}
+          setSelectedDates={(dates: Date[]) => setFormData(prev => ({ ...prev, dates }))}
+          dateTimeOptions={dateTimeOptions}
+          setDateTimeOptions={setDateTimeOptions}
+          error={formError}
+        />
           {formError && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800" aria-live="polite">
               {formError}

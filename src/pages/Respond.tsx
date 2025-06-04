@@ -124,9 +124,9 @@ const Respond = () => {
     if (missing.length > 0) {
       setErrorMsg(
         getErrorMessage('common.errorMissingFields', { message: missing
-          .map((field) =>
+            .map((field) =>
             field
-          )
+            )
           .join(', ') })
       );
       return;
@@ -153,12 +153,12 @@ const Respond = () => {
       };
       const authKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       if (import.meta.env.DEV) {
-        console.log('DEBUG: VITE_SUPABASE_ANON_KEY:', authKey);
-        console.log('DEBUG: fetch headers:', {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authKey}`
-        });
-        console.log('DEBUG: fetch body:', body);
+      console.log('DEBUG: VITE_SUPABASE_ANON_KEY:', authKey);
+      console.log('DEBUG: fetch headers:', {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authKey}`
+      });
+      console.log('DEBUG: fetch body:', body);
       }
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
         method: "POST",
