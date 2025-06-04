@@ -152,12 +152,14 @@ const Respond = () => {
         cafe_id: cafeId
       };
       const authKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      console.log('DEBUG: VITE_SUPABASE_ANON_KEY:', authKey);
-      console.log('DEBUG: fetch headers:', {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${authKey}`
-      });
-      console.log('DEBUG: fetch body:', body);
+      if (import.meta.env.DEV) {
+        console.log('DEBUG: VITE_SUPABASE_ANON_KEY:', authKey);
+        console.log('DEBUG: fetch headers:', {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authKey}`
+        });
+        console.log('DEBUG: fetch body:', body);
+      }
       const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/functions/v1/send-meeting-confirmation", {
         method: "POST",
         headers: {
@@ -226,7 +228,7 @@ const Respond = () => {
       } else {
         setSubmitted(true);
         // Log en bewaar de response data
-        console.log('Meeting bevestigd:', data);
+        if (import.meta.env.DEV) console.log('Meeting bevestigd:', data);
         setConfirmationInfo({
           cafe_name: data.cafe_name,
           cafe_address: data.cafe_address,
