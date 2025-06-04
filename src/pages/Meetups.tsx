@@ -19,7 +19,7 @@ interface Meetup {
 
 const LOCAL_CACHE_KEY = 'meetups_cache_v1';
 
-const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin, t, joining, joinLoadingId }: { meetup: Meetup, onView: (id: string) => void, onJoin: (id: string) => void, t: any, joining: boolean, joinLoadingId: string | null }) {
+const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin, t, i18n, joining, joinLoadingId }: { meetup: Meetup, onView: (id: string) => void, onJoin: (id: string) => void, t: any, i18n: any, joining: boolean, joinLoadingId: string | null }) {
   return (
     <div
       className="card hover:shadow-lg transition-shadow duration-300"
@@ -218,6 +218,7 @@ const Meetups: React.FC = () => {
                 onView={handleViewMeetup}
                 onJoin={handleJoinMeetup}
                 t={t}
+                i18n={i18n}
                 joining={!!joinLoadingId}
                 joinLoadingId={joinLoadingId}
               />

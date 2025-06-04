@@ -40,8 +40,8 @@ const Account = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm] = useState(false);
+  const [deleting] = useState(false);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [wantsUpdates, setWantsUpdates] = useState(false);
@@ -338,32 +338,11 @@ const Account = () => {
           {/* Danger Zone */}
           <div className="card border-2 border-red-500">
             <h2 className="text-2xl font-bold text-red-500 mb-6">{t('account.dangerZone')}</h2>
-            {showDeleteConfirm ? (
-              <div className="space-y-4">
-                <p className="mobile-text text-red-500">{t('account.deleteConfirm')}</p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    disabled={deleting}
-                    className="btn-primary bg-red-500 hover:bg-red-600 active:scale-95 active:bg-primary-100 flex-1"
-                  >
-                    {deleting ? t('account.saving') : t('account.confirmDelete')}
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="btn-secondary active:scale-95 active:bg-primary-100 flex-1"
-                  >
-                    {t('account.cancel')}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
-              >
-                {t('account.deleteAccount')}
-              </button>
-            )}
+            <button
+              className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
+            >
+              {t('account.deleteAccount')}
+            </button>
           </div>
 
           {/* Logout Button */}
