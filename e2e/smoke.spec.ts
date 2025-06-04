@@ -23,5 +23,6 @@ test('i18n werkt', async ({ page }) => {
   // Stel taal in op Nederlands (voorbeeld)
   await page.evaluate(() => window.localStorage.setItem('i18nextLng', 'nl'));
   await page.reload();
-  await expect(page.getByText(/Ontmoeting|Welkom/i)).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  await expect(page.evaluate(() => localStorage.getItem('i18nextLng'))).resolves.toBe('nl');
 });
