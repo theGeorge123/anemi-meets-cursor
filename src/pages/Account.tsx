@@ -40,16 +40,14 @@ const Account = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
-  const [showDeleteConfirm] = useState(false);
-  const [deleting] = useState(false);
-  const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
   const [showProfileToast, setShowProfileToast] = useState(false);
   const [showPasswordToast, setShowPasswordToast] = useState(false);
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
 
