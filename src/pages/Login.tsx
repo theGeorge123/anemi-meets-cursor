@@ -106,7 +106,7 @@ const Login = () => {
     setLoading(false);
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
+  const handlePasswordReset = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
     setResetMsg(null);
     setResetLoading(true);
@@ -196,18 +196,24 @@ const Login = () => {
           </button>
         </div>
 
+
         {showReset && (
-          <form onSubmit={handlePasswordReset} className="mt-2 space-y-2 bg-white/80 p-3 rounded-xl border border-primary-100">
+          <div className="mt-2 space-y-2 bg-white/80 p-3 rounded-xl border border-primary-100" role="region" aria-label={t('login.forgotPassword')}>
+            <label htmlFor="resetEmail" className="sr-only">
+              {i18n.language === 'nl' ? 'Jouw e-mailadres' : 'Your email address'}
+            </label>
             <input
               type="email"
+              id="resetEmail"
               className="input-field"
-              placeholder="Jouw e-mailadres"
+              placeholder={t('login.emailPlaceholder')}
               value={resetEmail}
               onChange={e => setResetEmail(e.target.value)}
               required
             />
             <button
-              type="submit"
+              type="button"
+              onClick={handlePasswordReset}
               className="btn-secondary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium"
               disabled={resetLoading}
             >
@@ -216,8 +222,8 @@ const Login = () => {
               ) : null}
               {resetLoading ? (i18n.language === 'nl' ? 'Laden...' : 'Loading...') : t('login.forgotPassword')}
             </button>
-            {resetMsg && <div className="text-xs mt-1 text-green-700">{resetMsg}</div>}
-          </form>
+            {resetMsg && <div className="text-xs mt-1 text-green-700" aria-live="polite">{resetMsg}</div>}
+          </div>
         )}
 
         <FormStatus status={loading ? 'loading' : error ? 'error' : 'idle'} message={error || undefined} />
