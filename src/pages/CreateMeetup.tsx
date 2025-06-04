@@ -38,7 +38,7 @@ async function flushMeetupQueue(supabase: any, onSuccess: () => void) {
 }
 
 const CreateMeetup = () => {
-  const { t } = useTranslation('meetup');
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     dates: [] as Date[],
@@ -46,7 +46,7 @@ const CreateMeetup = () => {
     city: '',
     email: '',
   });
-  const [cities] = useState<City[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
   const [cafes, setCafes] = useState<Cafe[]>([]);
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [dateTimeOptions, setDateTimeOptions] = useState<{ date: string; times: string[] }[]>([]);
@@ -60,6 +60,8 @@ const CreateMeetup = () => {
   const [cafesError, setCafesError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [errorCities, setErrorCities] = useState<string | null>(null);
 
   // Debug Supabase connection
   useEffect(() => {
@@ -116,25 +118,21 @@ const CreateMeetup = () => {
   // Fetch cities (only Rotterdam)
   useEffect(() => {
     const fetchCities = async () => {
-      setLoadingCafes(true);
-      setCafesError(null);
-      if (!formData.city) {
-        setCafes([]);
-        setLoadingCafes(false);
-        return;
-      }
+      setLoadingCities(true);
+      setErrorCities(null);
       try {
-        const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
+        const { data, error } = await supabase.from('cities').select('*');
         if (error) throw error;
-        if (data) setCafes(data as Cafe[]);
+        setCities(data || []);
       } catch (err: any) {
-        setCafesError(t('errorCafesFetch'));
+        setErrorCities(t('meetup.errorCitiesFetch', 'Could not load cities'));
+        setCities([]);
       } finally {
-        setLoadingCafes(false);
+        setLoadingCities(false);
       }
     };
     fetchCities();
-  }, [formData.city, t]);
+  }, [t]);
 
   useEffect(() => {
     // Scroll naar boven bij laden
@@ -187,16 +185,16 @@ const CreateMeetup = () => {
 
     // Validation (keep existing validation)
     if (formData.dates.length === 0) {
-      setFormError(t('requiredTime'));
+      setFormError(t('meetup.requiredTime'));
       return;
     }
     const hasAnyTime = dateTimeOptions.some(opt => opt.times.length > 0);
     if (!hasAnyTime) {
-      setFormError(t('requiredTime'));
+      setFormError(t('meetup.requiredTime'));
       return;
     }
     if (!formData.name || !formData.city || !selectedCafe) {
-      setFormError(t('errorMissingFields', { fields: [!formData.name ? t('name') : '', !formData.city ? t('city') : '', !selectedCafe ? t('cafe') : ''].filter(Boolean).join(', ') }));
+      setFormError(t('meetup.errorMissingFields', { fields: [!formData.name ? t('meetup.name') : '', !formData.city ? t('meetup.city') : '', !selectedCafe ? t('meetup.cafe') : ''].filter(Boolean).join(', ') }));
       return;
     }
 
@@ -211,7 +209,7 @@ const CreateMeetup = () => {
 
     const firstDateOpt = filteredDateTimeOptions.find(opt => opt.times.length > 0);
     if (!firstDateOpt) {
-      setFormError(t('requiredTime'));
+      setFormError(t('meetup.requiredTime'));
       return;
     }
 
@@ -340,6 +338,22 @@ const CreateMeetup = () => {
     }
   }, []);
 
+  // Voeg deze useEffect toe na de cities useEffect
+  useEffect(() => {
+    if (!formData.city) return;
+    setLoadingCafes(true);
+    setCafesError(null);
+    supabase
+      .from('cafes')
+      .select('*')
+      .eq('city', formData.city)
+      .then(({ data, error }) => {
+        if (error) setCafesError(error.message);
+        setCafes(data || []);
+        setLoadingCafes(false);
+      });
+  }, [formData.city]);
+
   return (
     <div className="max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
       {/* Sticky header for title and subtitle */}
@@ -447,7 +461,11 @@ const CreateMeetup = () => {
                   return;
                 }
                 if (!user) {
-                  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                  if (!email) {
+                    setEmailError(t('meetup.errorEmailRequired', 'Email is required'));
+                    return;
+                  }
+                  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
                     setEmailError(t('common.error_invalid_email', 'Please enter a valid email address'));
                     return;
                   } else {
@@ -476,7 +494,15 @@ const CreateMeetup = () => {
           <label className="block text-gray-700 mb-2">
             {t('meetup.chooseCityLabel', 'Pick a city')}
           </label>
-          {cities.length > 0 ? (
+          {loadingCities ? (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
+              {t('meetup.loadingCities', 'Loading cities...')}
+            </div>
+          ) : errorCities ? (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">
+              {errorCities}
+            </div>
+          ) : cities.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
               {cities.map((city) => (
                 <button
@@ -548,7 +574,7 @@ const CreateMeetup = () => {
             </div>
           )}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4">
-            <button type="button" onClick={() => setStep(2)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('common.back')}</button>
+            <button type="button" onClick={() => setStep(2)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.back', 'Back')}</button>
             <button
               type="button"
               className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500"
@@ -566,7 +592,7 @@ const CreateMeetup = () => {
                 setStep(4);
               }}
             >
-              {t('common.continue')}
+              {t('meetup.continue', "Let's go!")}
             </button>
           </div>
         </div>
@@ -574,7 +600,7 @@ const CreateMeetup = () => {
       {/* Stap 4: Café kiezen */}
       {step === 4 && (
         <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
-          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('chooseCafe')}</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('meetup.chooseCafe', 'Pick your café!')}</h2>
           {selectedCafe && (
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
               {selectedCafe.image_url && (
@@ -594,16 +620,25 @@ const CreateMeetup = () => {
             </div>
           )}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
-            <button type="button" onClick={shuffleCafe} disabled={shuffleCooldown || cafes.length <= 1} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('common.shuffle')}</button>
+            <button type="button" onClick={shuffleCafe} disabled={shuffleCooldown || cafes.length <= 1} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">
+              {/* Shuffle button */}
+              {t('meetup.shuffle', 'Shuffle!') === 'meetup.shuffle' ? 'Shuffle!' : t('meetup.shuffle', 'Shuffle!')}
+            </button>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('common.back')}</button>
-            <button type="button" onClick={handleSubmit} className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500" disabled={!selectedCafe}>{t('common.continue')}</button>
+            <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">
+              {/* Back button */}
+              {t('meetup.back', 'Back') === 'meetup.back' ? 'Back' : t('meetup.back', 'Back')}
+            </button>
+            <button type="button" onClick={handleSubmit} className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500" disabled={!selectedCafe}>
+              {/* Continue button */}
+              {t('meetup.continue', "Let's go!") === 'meetup.continue' ? "Let's go!" : t('meetup.continue', "Let's go!")}
+            </button>
           </div>
-          {loadingCafes && <div className="text-sm text-gray-500 mb-2">{t('loadingCafes')}</div>}
-          {cafesError && <div className="text-red-500 text-sm mb-2" aria-live="polite">{t('errorCafesFetch')}</div>}
-          {!selectedCafe && <div className="text-red-500 text-sm mb-2" aria-live="polite">{t('errorCafeRequired')}</div>}
-          <p className="text-sm text-gray-500 mb-4">{t('chooseCafeInfo')}</p>
+          {loadingCafes && <div className="text-sm text-gray-500 mb-2">{t('meetup.loadingCafes')}</div>}
+          {cafesError && <div className="text-red-500 text-sm mb-2" aria-live="polite">{t('meetup.errorCafesFetch')}</div>}
+          {!selectedCafe && <div className="text-red-500 text-sm mb-2" aria-live="polite">{t('meetup.errorCafeRequired')}</div>}
+          <p className="text-sm text-gray-500 mb-4">{t('meetup.chooseCafeInfo', 'Pick your favorite spot or shuffle for a surprise!')}</p>
         </div>
       )}
       {/* Stap 5: Samenvatting & bevestigen */}
@@ -631,7 +666,7 @@ const CreateMeetup = () => {
             )}
           </div>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button type="button" onClick={() => goToStep(4)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.back')}</button>
+            <button type="button" onClick={() => goToStep(4)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.back', 'Back')}</button>
             <button type="button" onClick={handleSubmit} className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.submit')}</button>
           </div>
         </div>

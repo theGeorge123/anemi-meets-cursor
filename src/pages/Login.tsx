@@ -10,7 +10,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
 const Login = () => {
-  const { t } = useTranslation(['login', 'common']);
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -146,17 +146,17 @@ const Login = () => {
   return (
     <main className="max-w-md mx-auto px-2 sm:px-0 py-6">
       <h1 className="mobile-heading text-primary-600 mb-6 text-center">
-        {t('title')}
+        {t('login.title')}
       </h1>
       <div className="bg-[#fff7f3] rounded-2xl shadow p-4 sm:p-6 mb-6 text-center">
         <div className="text-2xl mb-2">👋✨</div>
-        <div className="text-lg font-semibold text-primary-700 mb-1">{t('welcomeBack')}</div>
-        <div className="text-gray-700 text-base">{t('welcomeDesc')}</div>
+        <div className="text-lg font-semibold text-primary-700 mb-1">{t('login.welcomeBack')}</div>
+        <div className="text-gray-700 text-base">{t('login.welcomeDesc')}</div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 bg-white/90 p-4 sm:p-6 rounded-xl shadow-2xl border border-primary-100 flex flex-col justify-between">
         <div>
           <label htmlFor="email" className="block mobile-text font-medium text-gray-700 mb-2">
-            {t('email')}
+            {i18n.language === 'nl' ? 'Jouw e-mailadres' : 'Your email address'}
           </label>
           <input
             type="email"
@@ -166,7 +166,7 @@ const Login = () => {
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
             autoFocus
-            placeholder={t('emailPlaceholder')}
+            placeholder={t('login.emailPlaceholder')}
             inputMode="email"
             autoComplete="email"
           />
@@ -174,7 +174,7 @@ const Login = () => {
 
         <div>
           <label htmlFor="password" className="block mobile-text font-medium text-gray-700 mb-2">
-            {t('password')}
+            {i18n.language === 'nl' ? 'Jouw wachtwoord' : 'Your super secret password'}
           </label>
           <input
             type="password"
@@ -183,7 +183,7 @@ const Login = () => {
             value={formData.password}
             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
             required
-            placeholder={t('passwordPlaceholder')}
+            placeholder={t('login.passwordPlaceholder')}
             inputMode="text"
             autoComplete="current-password"
           />
@@ -192,7 +192,7 @@ const Login = () => {
             className="text-primary-600 underline text-xs mt-2 ml-1 hover:text-primary-800"
             onClick={() => setShowReset(v => !v)}
           >
-            {t('forgotPassword')}
+            {t('login.forgotPassword')}
           </button>
         </div>
 
@@ -212,9 +212,9 @@ const Login = () => {
               disabled={resetLoading}
             >
               {resetLoading ? (
-                <LoadingIndicator size="sm" label={t('common.loading')} className="mr-2" />
+                <LoadingIndicator size="sm" label={i18n.language === 'nl' ? 'Laden...' : 'Loading...'} className="mr-2" />
               ) : null}
-              {resetLoading ? t('common.loading') : t('forgotPassword')}
+              {resetLoading ? (i18n.language === 'nl' ? 'Laden...' : 'Loading...') : t('login.forgotPassword')}
             </button>
             {resetMsg && <div className="text-xs mt-1 text-green-700">{resetMsg}</div>}
           </form>
@@ -224,20 +224,15 @@ const Login = () => {
 
         <button
           type="submit"
-          className="btn-primary w-full min-h-[48px] text-base mt-2"
+          className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
           disabled={loading}
         >
-          {t('title')}
+          {t('login.loginButton')}
         </button>
       </form>
 
-      <div className="text-center mt-6">
-        <button
-          className="text-primary-600 underline hover:text-primary-800 text-sm"
-          onClick={() => navigate('/signup')}
-        >
-          {t('noAccountCta')}
-        </button>
+      <div className="text-center mt-4 text-primary-600 text-sm">
+        {t('login.noAccountCta')}
       </div>
 
       {showSuccess && (

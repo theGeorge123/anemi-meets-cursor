@@ -75,6 +75,21 @@
     box-shadow: 0 2px 8px #9e9e9ecc;
   }
 
+  /* Prevent underlines on all buttons and pressable elements */
+  button,
+  .btn,
+  [role="button"] {
+    text-decoration: none !important;
+  }
+  button:hover,
+  .btn:hover,
+  [role="button"]:hover,
+  button:focus,
+  .btn:focus,
+  [role="button"]:focus {
+    text-decoration: none !important;
+  }
+
   /* --- LINKS --- */
   a {
     @apply transition-all duration-200 ease-in-out;
@@ -84,12 +99,12 @@
   a:hover,
   a:focus-visible {
     color: #0d47a1;
-    text-decoration: underline;
+    text-decoration: none;
     outline: none;
   }
   a:active {
     color: #1976d2;
-    text-decoration: underline;
+    text-decoration: none;
   }
 
   /* --- NAVIGATION ITEMS --- */
@@ -182,6 +197,26 @@
 
   .mobile-heading {
     @apply text-2xl sm:text-3xl font-bold;
+  }
+
+  .footer-link {
+    text-decoration: none;
+    color: #374151; /* Tailwind gray-600 */
+    padding: 0 0.5rem;
+    transition: color 0.2s;
+    display: inline-block;
+  }
+  .footer-link:hover, .footer-link:focus {
+    color: #1976d2; /* Tailwind primary-700 */
+    text-decoration: none;
+    outline: none;
+  }
+  .divider {
+    margin: 0 0.75rem;
+    color: #d1d5db; /* Tailwind gray-300 */
+    font-weight: 400;
+    font-size: 1.1em;
+    user-select: none;
   }
 }
 
@@ -333,4 +368,29 @@ select:focus {
   border-color: #1573ff;
   box-shadow: 0 0 0 2px #b2dfdb55;
   background: #e0f2f1;
+}
+
+@media (max-width: 640px) {
+  footer[aria-label="Site footer"] {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1.2rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  .footer-link {
+    font-size: 1.05rem;
+    padding: 0.2rem 0;
+    width: 100%;
+    text-align: center;
+  }
+  .divider {
+    margin: 0.1rem 0;
+    font-size: 1em;
+  }
+  .btn-secondary {
+    width: 100% !important;
+    margin-top: 1rem !important;
+    margin-left: 0 !important;
+  }
 } 

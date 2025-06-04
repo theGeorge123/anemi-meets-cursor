@@ -31,11 +31,11 @@ const Signup = () => {
 
   // Helper voor sterke wachtwoordvalidatie
   const validatePassword = (pw: string) => {
-    if (pw.length < 8) return t('common.passwordTooShort');
-    if (!/[A-Z]/.test(pw)) return t('common.passwordNoUpper');
-    if (!/[a-z]/.test(pw)) return t('common.passwordNoLower');
-    if (!/[0-9]/.test(pw)) return t('common.passwordNoNumber');
-    if (!/[!@#$%^&*(),.?":{}|<>\[\]\\/;'+=_-]/.test(pw)) return t('common.passwordNoSpecial');
+    if (pw.length < 8) return i18n.language === 'nl' ? 'Wachtwoord moet minstens 8 tekens zijn!' : 'Password must be at least 8 characters!';
+    if (!/[A-Z]/.test(pw)) return i18n.language === 'nl' ? 'Gebruik minstens één hoofdletter!' : 'Use at least one capital letter!';
+    if (!/[a-z]/.test(pw)) return i18n.language === 'nl' ? 'Gebruik minstens één kleine letter!' : 'Use at least one lowercase letter!';
+    if (!/[0-9]/.test(pw)) return i18n.language === 'nl' ? 'Voeg een cijfer toe!' : 'Add a number!';
+    if (!/[!@#$%^&*(),.?":{}|<>\[\]\\/;'+=_-]/.test(pw)) return i18n.language === 'nl' ? 'Voeg een speciaal teken toe!' : 'Add a special character!';
     return null;
   };
 

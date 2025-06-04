@@ -16,6 +16,8 @@ import Dashboard from './pages/Dashboard';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotFound from './pages/NotFound';
+import Explore from './pages/Explore';
+import CafeDetails from './pages/CafeDetails';
 
 const AppRoutes = () => {
   const { t } = useTranslation();
@@ -72,6 +74,8 @@ const AppRoutes = () => {
           <Route path="/confirmed" element={<Confirmed />} />
           <Route path="/account" element={<Account />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/cafe/:id" element={<CafeDetails />} />
           <Route path="*" element={<NotFound />} errorElement={<NotFound />} />
         </Routes>
       </Suspense>

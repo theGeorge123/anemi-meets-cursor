@@ -20,11 +20,11 @@ interface Profile {
   id: string;
   full_name: string;
   emoji?: string;
-  last_sign_in_at?: string;
+  last_seen?: string;
 }
 
 const Dashboard = () => {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation();
   const [meetups, setMeetups] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,14 +41,19 @@ const Dashboard = () => {
         navigate('/login');
         return;
       }
+      // Update last_seen on dashboard visit
+      await supabase
+        .from('profiles')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('id', session.user.id);
       // Onboarding check: only show for first-time users
       if (!localStorage.getItem('anemi-onboarded')) {
         setShowOnboarding(true);
       }
-      // Profiel ophalen
+      // Profiel ophalen (inclusief last_seen)
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id, full_name, emoji')
+        .select('id, full_name, emoji, last_seen')
         .eq('id', session.user.id)
         .maybeSingle();
       setProfile(profileData as Profile);
@@ -58,7 +63,7 @@ const Dashboard = () => {
         .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
         .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
       if (error) {
-        setError(t('account.errorLoadingMeetups'));
+        setError(t('dashboard.errorLoadingMeetups'));
       } else {
         setMeetups((data || []) as Invitation[]);
       }
@@ -85,11 +90,11 @@ const Dashboard = () => {
         {profile?.emoji && <span className="text-4xl" title={profile.full_name}>{profile.emoji}</span>}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
-            {t('welcome')}, {profile?.full_name || t('user')}!
+            {t('dashboard.welcome')}, {profile?.full_name || t('dashboard.user')}!
           </h1>
           {profile && (
             <div className="text-gray-600 text-sm">
-              {t('lastLogin', { date: profile.last_sign_in_at ? new Date(profile.last_sign_in_at).toLocaleString() : '' })}
+              {t('dashboard.lastLogin', { date: profile.last_seen ? new Date(profile.last_seen).toLocaleDateString() : '' })}
             </div>
           )}
         </div>
@@ -99,7 +104,7 @@ const Dashboard = () => {
       {lastActivity && (
         <div className="mb-6">
           <div className="text-gray-700 text-base">
-            {t('lastActivity')}: <span className="font-semibold">{lastActivity.selected_date}{lastActivity.selected_time && `, ${lastActivity.selected_time}`}</span>
+            {t('dashboard.lastActivity')}: <span className="font-semibold">{lastActivity.selected_date}{lastActivity.selected_time && `, ${lastActivity.selected_time}`}</span>
             {lastActivity.cafe_name && <span> @ {lastActivity.cafe_name}</span>}
           </div>
         </div>
@@ -107,16 +112,16 @@ const Dashboard = () => {
 
       {/* Samenvatting aankomende meetups */}
       <div className="mb-8">
-        <h2 className="text-lg font-bold text-primary-700 mb-2">{t('upcomingMeetups')}</h2>
+        <h2 className="text-lg font-bold text-primary-700 mb-2">{t('dashboard.upcomingMeetups')}</h2>
         {loading && (
           <>
-            <LoadingIndicator label={t('common.loading')} size="md" className="my-4" />
-            <SkeletonLoader count={2} height="h-16" className="my-2" ariaLabel={t('common.loading')} />
+            <LoadingIndicator label={i18n.language === 'nl' ? 'Laden...' : 'Loading...'} size="md" className="my-4" />
+            <SkeletonLoader count={2} height="h-16" className="my-2" ariaLabel={i18n.language === 'nl' ? 'Laden...' : 'Loading...'} />
           </>
         )}
         {error && <div className="text-red-500 mb-4">{error}</div>}
         {!loading && !error && upcoming.length === 0 && (
-          <div className="text-gray-600 text-center">{t('noMeetups')}</div>
+          <div className="text-gray-600 text-center">{t('dashboard.noMeetups')}</div>
         )}
         {!loading && !error && upcoming.length > 0 && (
           <ul className="space-y-4">
@@ -140,23 +145,23 @@ const Dashboard = () => {
         <button
           className="btn-primary flex-1 text-center active:scale-95 active:bg-primary-100"
           onClick={() => navigate('/create-meetup')}
-          aria-label={t('ctaNewMeetup')}
+          aria-label={t('dashboard.ctaNewMeetup')}
         >
-          {t('ctaNewMeetup')}
+          {t('dashboard.ctaNewMeetup')}
         </button>
         <button
           className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
           onClick={() => navigate('/account')}
-          aria-label={t('ctaProfile')}
+          aria-label={t('dashboard.ctaProfile')}
         >
-          {t('ctaProfile')}
+          {t('dashboard.ctaProfile')}
         </button>
         <button
           className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
           onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }}
-          aria-label={t('ctaLogout')}
+          aria-label={t('dashboard.ctaLogout')}
         >
-          {t('ctaLogout')}
+          {t('dashboard.ctaLogout')}
         </button>
       </div>
     </div>

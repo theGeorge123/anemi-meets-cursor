@@ -15,7 +15,7 @@ type InvitationWithCafe = {
 };
 
 const Invite = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [inviteLink, setInviteLink] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const { token } = useParams();
@@ -127,30 +127,30 @@ const Invite = () => {
     <div className="max-w-2xl mx-auto text-center px-2 sm:px-4 py-6">
       {inviteLink && <Confetti numberOfPieces={180} recycle={false} />}
       <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-4">
-        {t('invite.titleStepCloser')} 🎉
+        {t('invite.titleStepCloser', "You're almost there! 🎉") === 'invite.titleStepCloser' ? "You're almost there! 🎉" : t('invite.titleStepCloser', "You're almost there! 🎉")}
       </h1>
       {/* <img src={happyGif} alt="Happy connect" className="mx-auto mb-6 w-40 sm:w-56 rounded-xl shadow-lg" style={{maxWidth:'100%'}} /> */}
       {loading && (
         <>
-          <LoadingIndicator label={t('common.loading')} size="md" className="my-4" />
-          <SkeletonLoader count={1} height="h-24" className="my-2" ariaLabel={t('common.loading')} />
+          <LoadingIndicator label={i18n.language === 'nl' ? 'Laden...' : 'Loading...'} size="md" className="my-4" />
+          <SkeletonLoader count={1} height="h-24" className="my-2" ariaLabel={i18n.language === 'nl' ? 'Laden...' : 'Loading...'} />
         </>
       )}
       {error && <div className="text-red-600 font-semibold text-lg mb-4">{error}</div>}
       {invitation && (
         <div className="mb-6 bg-primary-50 rounded-xl p-4 shadow-md">
-          <div className="font-semibold text-lg text-primary-700 mb-2">{t('invite.detailsHeading')}</div>
-          {invitation.cafe_id ? (
-            <div className="mb-1">{t('common.cafe')}: <span className="font-mono">{invitation.cafe_id}</span></div>
+          <div className="font-semibold text-lg text-primary-700 mb-2">{t('invite.detailsHeading', 'Here are the details for your meetup!')}</div>
+          {invitation.cafe_name ? (
+            <div className="mb-1">☕ <b>{invitation.cafe_name}</b> {invitation.cafe_address ? `- ${invitation.cafe_address}` : ''}</div>
           ) : (
-            <div className="mb-1 text-gray-500">{t('invite.cafeInfoPending')}</div>
+            <div className="mb-1 text-gray-500">🕵️‍♂️ Café will be revealed soon! Stay tuned!</div>
           )}
         </div>
       )}
       
       <div className="card bg-primary-50 mb-8 p-4 rounded-xl shadow-md">
         <p className="text-gray-700 mb-4 text-base sm:text-lg">
-          {t('invite.shareInstructions')}
+          {t('invite.shareInstructions', 'Share this link with your friend and let the coffee magic happen! ☕✨') === 'invite.shareInstructions' ? 'Share this link with your friend and let the coffee magic happen! ☕✨' : t('invite.shareInstructions', 'Share this link with your friend and let the coffee magic happen! ☕✨')}
         </p>
         <div className="bg-white p-4 rounded-lg border border-primary-200 overflow-x-auto">
           <code className="text-primary-600 break-all text-sm sm:text-base">
@@ -166,7 +166,7 @@ const Invite = () => {
             className="btn-primary w-full sm:w-auto py-3 px-6 text-lg rounded-lg"
             disabled={!inviteLink}
           >
-            {t('invite.share')}
+            {t('invite.share', 'Share the magic! ✨') === 'invite.share' ? 'Share the magic! ✨' : t('invite.share', 'Share the magic! ✨')}
           </button>
         ) : (
           <button
@@ -174,7 +174,7 @@ const Invite = () => {
             className="btn-secondary w-full sm:w-auto py-3 px-6 text-lg rounded-lg"
             disabled={!inviteLink}
           >
-            {t('invite.copyLink')}
+            {t('invite.copyLink', 'Copy link & send! 📋') === 'invite.copyLink' ? 'Copy link & send! 📋' : t('invite.copyLink', 'Copy link & send! 📋')}
           </button>
         )}
       </div>

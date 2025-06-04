@@ -30,8 +30,8 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
   setDateTimeOptions,
   error,
 }) => {
-  const { t, i18n } = useTranslation(['common', 'meetup']);
-  const dateLocale = i18n.language === 'en' ? undefined : undefined; // Add locale if needed
+  const { t } = useTranslation('meetup');
+  const dateLocale = undefined; // locale logic if needed
 
   // Helper: get local date string in YYYY-MM-DD
   const getLocalDateString = (date: Date) =>
@@ -69,7 +69,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
 
   return (
     <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
-      <h2 className="text-lg sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('createMeetup.chooseDateTime')}</h2>
+      <h2 className="text-lg sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('meetup.chooseDates', 'Pick your dates!')}</h2>
       <div className="mb-4 sm:mb-6">
         <DatePicker
           selected={null}
@@ -78,11 +78,11 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
           inline
           minDate={new Date()}
         />
-        <p className="text-xs sm:text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
+        <p className="text-xs sm:text-sm text-gray-500 mt-2">{t('meetup.chooseDaysInfo', 'Pick as many days as you like! The more, the merrier ☀️')}</p>
       </div>
       {selectedDates.length > 0 && (
         <div className="space-y-4">
-          <h3 className="font-medium text-gray-700">{t('common.selectedDates')}</h3>
+          <h3 className="font-medium text-gray-700">{t('meetup.selectedDates', 'Your picked days')}</h3>
           {selectedDates.map((date, idx) => {
             const dateStr = getLocalDateString(date);
             const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
@@ -94,10 +94,10 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
                     type="button"
                     onClick={() => handleRemoveDate(dateStr)}
                     className="flex items-center gap-1 text-red-500 hover:text-white hover:bg-red-500 transition px-2 py-1 rounded focus-visible:ring-2 focus-visible:ring-primary-500"
-                    aria-label={t('common.remove')}
+                    aria-label={t('meetup.remove', 'Remove this day')}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                    <span className="hidden sm:inline">{t('common.remove')}</span>
+                    <span className="hidden sm:inline">{t('meetup.remove', 'Remove')}</span>
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
@@ -112,7 +112,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
                           ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
                         aria-pressed={isSelected}
                       >
-                        {t(`common.${time}`)}
+                        {t(time, { ns: 'common' })}
                       </button>
                     );
                   })}
