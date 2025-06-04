@@ -96,6 +96,7 @@ export const en = {
   meetup: {
     errorEmailRequired: "Email is required",
     chooseCityLabel: "Which city do you want?",
+    chooseCafeInfo: "Shuffle for a surprise café!",
   },
   dashboard: {
     title: "Your Dashboard",

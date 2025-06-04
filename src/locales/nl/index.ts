@@ -138,6 +138,7 @@ export const nl = {
     name: "Naam",
     noCitiesAvailable: "Geen steden beschikbaar. Neem contact op met support of probeer het later opnieuw.",
     chooseCityLabel: "Welke stad wil je?",
+    chooseCafeInfo: "Shuffle voor een verrassingscafé!",
   },
   dashboard: {
     title: "Jouw Dashboard",
