@@ -6,7 +6,8 @@
   "terms": "Terms & Conditions",
   "contact": "Contact Us",
   "reportIssue": {
-    "title": "Report an Issue"
+    "title": "Report an Issue",
+    "screenshotLabel": "Screenshot (optional)"
   },
   "close": "Close",
   "loading": "Loading...",
