@@ -34,14 +34,11 @@ const Account = () => {
   const [user, setUser] = useState<Profile | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [age, setAge] = useState<number | ''>('');
-  const [ageSaving, setAgeSaving] = useState(false);
   const [myMeetups, setMyMeetups] = useState<Invitation[]>([]);
   const [meetupsLoading, setMeetupsLoading] = useState(false);
   const [meetupsError, setMeetupsError] = useState<string | null>(null);
   const [name, setName] = useState('');
-  const [nameSaving, setNameSaving] = useState(false);
   const [email, setEmail] = useState('');
-  const [emailSaving, setEmailSaving] = useState(false);
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -50,9 +47,6 @@ const Account = () => {
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
-  const [editName, setEditName] = useState(false);
-  const [editEmail, setEditEmail] = useState(false);
-  const [editAge, setEditAge] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
   const [showProfileToast, setShowProfileToast] = useState(false);
   const [showPasswordToast, setShowPasswordToast] = useState(false);
@@ -147,105 +141,6 @@ const Account = () => {
     }
   };
 
-  const handleAgeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (val === '') setAge('');
-    else if (/^\d{0,3}$/.test(val)) setAge(Number(val));
-  };
-
-  const handleAgeSave = async () => {
-    if (!user || !user.id) return;
-    setAgeSaving(true);
-    const value = age === '' ? undefined : age;
-    const { error } = await supabase.from('profiles').update({ age: value }).eq('id', user.id);
-    if (error) {
-      console.error('Fout bij opslaan age:', error);
-    } else {
-      setAge(value === undefined ? '' : value);
-      setShowProfileToast(true);
-    }
-    setAgeSaving(false);
-  };
-
-  // Profielnaam wijzigen
-  const handleNameSave = async () => {
-    if (!user || !user.id) return;
-    if (!name.trim()) {
-      return;
-    }
-    setNameSaving(true);
-    // Update in profiles
-    const { error } = await supabase.from('profiles').update({ full_name: name.trim() }).eq('id', user.id);
-    // Update in user_metadata
-    const { error: metaError } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
-    if (error || metaError) {
-      console.error('Fout bij opslaan naam:', error || metaError);
-    } else {
-      setShowProfileToast(true);
-    }
-    setNameSaving(false);
-  };
-
-  // E-mail wijzigen
-  const handleEmailSave = async () => {
-    if (!user) return;
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      return;
-    }
-    setEmailSaving(true);
-    const { error } = await supabase.auth.updateUser({ email });
-    if (error) {
-      console.error('Fout bij opslaan email:', error);
-    } else {
-      setShowProfileToast(true);
-    }
-    setEmailSaving(false);
-  };
-
-  // Wachtwoord wijzigen
-  const handlePasswordSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pwForm.new.length < 8) {
-      return;
-    }
-    if (pwForm.new !== pwForm.confirm) {
-      return;
-    }
-    setPwForm({ current: '', new: '', confirm: '' });
-    setShowPasswordToast(true);
-  };
-
-  // Account verwijderen
-  const handleDeleteAccount = async () => {
-    setDeleting(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const jwt = session?.access_token;
-      if (!jwt) {
-        return;
-      }
-      const res = await fetch('/functions/v1/delete-account', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${jwt}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        console.error('Fout bij verwijderen account:', data.message || data.toString());
-        return;
-      }
-      await supabase.auth.signOut();
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
-    } catch (e) {
-      console.error('Onverwachte fout bij verwijderen account:', e);
-    }
-    setDeleting(false);
-  };
-
   // Notificatie- en privacyvoorkeuren opslaan
   const handlePrefsSave = async () => {
     if (!user || !user.id) return;
@@ -297,12 +192,6 @@ const Account = () => {
             </div>
             <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
               <span className="mobile-text text-lg">{name || t('account.notSpecified')}</span>
-              <button
-                onClick={() => setEditName(true)}
-                className="btn-secondary w-full sm:w-auto min-h-[44px]"
-              >
-                {t('account.edit')}
-              </button>
             </div>
           </div>
           <hr className="my-2 border-gray-200" />
@@ -316,12 +205,6 @@ const Account = () => {
             </div>
             <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
               <span className="mobile-text text-lg">{email || t('account.notSpecified')}</span>
-              <button
-                onClick={() => setEditEmail(true)}
-                className="btn-secondary w-full sm:w-auto min-h-[44px]"
-              >
-                {t('account.edit')}
-              </button>
             </div>
           </div>
           <hr className="my-2 border-gray-200" />
@@ -335,12 +218,6 @@ const Account = () => {
             </div>
             <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
               <span className="mobile-text text-lg">{age !== '' ? age : 'immortal'}</span>
-              <button
-                onClick={() => setEditAge(true)}
-                className="btn-secondary w-full sm:w-auto min-h-[44px]"
-              >
-                {t('account.edit')}
-              </button>
             </div>
           </div>
           <hr className="my-2 border-gray-200" />
@@ -391,7 +268,7 @@ const Account = () => {
           <div className="card mb-8">
             <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.password')}</h2>
             {showPwForm ? (
-              <form onSubmit={handlePasswordSave} className="space-y-6">
+              <form onSubmit={e => e.preventDefault()} className="space-y-6">
                 <div className="flex flex-col gap-4">
                   <input
                     type="password"
@@ -416,7 +293,7 @@ const Account = () => {
                     className="input-field"
                   />
                 </div>
-                <FormStatus status={nameSaving ? 'loading' : nameSaving === false && pwForm.current && pwForm.new && pwForm.confirm ? 'success' : 'idle'} message={t('account.passwordChangeSuccess')} />
+                <FormStatus status={'idle'} message={t('account.passwordChangeSuccess')} />
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="submit"
@@ -454,7 +331,7 @@ const Account = () => {
             ) : meetupsError ? (
               <div className="text-red-500">{t('account.errorLoadingMeetupsDetails', { details: meetupsError })}</div>
             ) : (
-              <MeetupsList meetups={myMeetups} t={t} />
+              <MeetupsList meetups={myMeetups} t={t} i18n={i18n} />
             )}
           </div>
 
@@ -466,7 +343,6 @@ const Account = () => {
                 <p className="mobile-text text-red-500">{t('account.deleteConfirm')}</p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
-                    onClick={handleDeleteAccount}
                     disabled={deleting}
                     className="btn-primary bg-red-500 hover:bg-red-600 active:scale-95 active:bg-primary-100 flex-1"
                   >
@@ -520,7 +396,7 @@ const Account = () => {
   );
 };
 
-const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels }: { m: Invitation, t: any, statusLabels: Record<string, string> }) {
+const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels, i18n }: { m: Invitation, t: any, statusLabels: Record<string, string>, i18n: any }) {
   return (
     <li key={m.id} className="bg-white rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100 mb-2 transition hover:shadow-md">
       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
@@ -537,7 +413,7 @@ const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels }
   );
 });
 
-const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
+const MeetupsList = ({ meetups, t, i18n }: { meetups: Invitation[], t: any, i18n: any }) => {
   const statusLabels: Record<string, string> = {
     confirmed: t('account.status.confirmed', 'Confirmed'),
     pending: t('account.status.pending', 'Pending'),
@@ -560,7 +436,7 @@ const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
         <div>
           <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.upcomingMeetups')}</h3>
           <ul className="space-y-2">
-            {upcoming.map(m => <MeetupListItem key={m.id} m={m} t={t} statusLabels={statusLabels} />)}
+            {upcoming.map(m => <MeetupListItem key={m.id} m={m} t={t} statusLabels={statusLabels} i18n={i18n} />)}
           </ul>
         </div>
       )}
@@ -568,7 +444,7 @@ const MeetupsList = ({ meetups, t }: { meetups: Invitation[], t: any }) => {
         <div>
           <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.pastMeetups')}</h3>
           <ul className="space-y-2">
-            {past.map(m => <MeetupListItem key={m.id} m={m} t={t} statusLabels={statusLabels} />)}
+            {past.map(m => <MeetupListItem key={m.id} m={m} t={t} statusLabels={statusLabels} i18n={i18n} />)}
           </ul>
         </div>
       )}
