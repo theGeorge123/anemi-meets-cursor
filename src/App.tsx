@@ -1,5 +1,6 @@
 // import { useTranslation } from 'react-i18next'; // Verwijderd, niet gebruikt
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Footer from './components/Footer';
 import AppRoutes from './AppRoutes';
 import NavigationBar from './components/NavigationBar';
@@ -8,7 +9,7 @@ import { NavigationProvider } from './context/NavigationContext';
 import * as Sentry from '@sentry/react';
 
 function useSentryTracking() {
-  // const location = useLocation();
+  const location = useLocation();
   useEffect(() => {
     // Route change breadcrumb
     Sentry.addBreadcrumb({
@@ -17,7 +18,7 @@ function useSentryTracking() {
       level: 'info',
     });
     Sentry.setContext('route', { pathname: location.pathname });
-  }, []);
+  }, [location]);
 
   useEffect(() => {
     // Set browser context
