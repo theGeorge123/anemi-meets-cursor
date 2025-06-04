@@ -152,7 +152,8 @@ const Respond = () => {
         cafe_id: cafeId
       };
       const authKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const res = await fetch("https://bijyercgpgaheeoeumtv.supabase.co/functions/v1/send-meeting-confirmation", {
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const res = await fetch(`${baseUrl}/functions/v1/send-meeting-confirmation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
