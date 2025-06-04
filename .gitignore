@@ -1,3 +1,35 @@
-.env
+# Node
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Env files
+.env*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Sentry build plugin
+dotenv.sentry-build-plugin
 .env.sentry-build-plugin
+
+# Misc
+*.tgz
+confetti.json
+public/confetti.json
+
 anemi-meets/.env
