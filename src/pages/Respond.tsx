@@ -91,55 +91,83 @@ const Respond = () => {
   }
 
   useEffect(() => {
+    let didCancel = false;
     const fetchData = async () => {
-      const params = new URLSearchParams(location.search);
-      const token = params.get('token');
-      if (!token) {
-        setError(getRespondErrorMessage(t, i18n, 'respond.invalidInvitation', null));
-        setLoading(false);
-        return;
-      }
-      // Haal invitation op
-      const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).maybeSingle();
-      if (invitationError) {
-        setError(getRespondErrorMessage(t, i18n, 'respond.expiredOrMissing', invitationError));
-        setLoading(false);
-        return;
-      }
-      if (!invitation) {
-        setError(getRespondErrorMessage(t, i18n, 'respond.expiredOrMissing', null));
-        setLoading(false);
-        return;
-      }
-      setInvitation(invitation as Invitation);
-      // Haal cafe details op via cafe_id
-      if (invitation.cafe_id) {
-        const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address, image_url').eq('id', invitation.cafe_id).maybeSingle();
-        if (!cafeError && cafeData) {
-          setCafe({ name: cafeData.name, address: cafeData.address, image_url: cafeData.image_url } as Cafe);
+      try {
+        const params = new URLSearchParams(location.search);
+        const token = params.get('token');
+        if (!token) {
+          if (!didCancel) {
+            setError(getRespondErrorMessage(t, i18n, 'respond.invalidInvitation', null));
+            setLoading(false);
+          }
+          return;
+        }
+        // Haal invitation op
+        const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).maybeSingle();
+        if (invitationError) {
+          console.error('Supabase invitation error:', invitationError);
+          if (!didCancel) {
+            setError(getRespondErrorMessage(t, i18n, 'respond.expiredOrMissing', invitationError));
+            setLoading(false);
+          }
+          return;
+        }
+        if (!invitation) {
+          if (!didCancel) {
+            setError(getRespondErrorMessage(t, i18n, 'respond.expiredOrMissing', null));
+            setLoading(false);
+          }
+          return;
+        }
+        setInvitation(invitation as Invitation);
+        // Haal cafe details op via cafe_id
+        if (invitation.cafe_id) {
+          const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address, image_url').eq('id', invitation.cafe_id).maybeSingle();
+          if (!cafeError && cafeData) {
+            setCafe({ name: cafeData.name, address: cafeData.address, image_url: cafeData.image_url } as Cafe);
+          } else {
+            if (cafeError) console.error('Supabase cafe error:', cafeError);
+            setCafe(null);
+          }
         } else {
           setCafe(null);
         }
-      } else {
-        setCafe(null);
-      }
-      // Zet beschikbare tijden
-      let times: {date: string, time: string}[] = [];
-      if (invitation.date_time_options && Array.isArray(invitation.date_time_options)) {
-        invitation.date_time_options.forEach((opt: {date: string, times: string[]}) => {
-          (opt.times || []).forEach((time: string) => {
-            times.push({ date: opt.date, time });
+        // Zet beschikbare tijden
+        let times: {date: string, time: string}[] = [];
+        if (invitation.date_time_options && Array.isArray(invitation.date_time_options)) {
+          invitation.date_time_options.forEach((opt: {date: string, times: string[]}) => {
+            (opt.times || []).forEach((time: string) => {
+              times.push({ date: opt.date, time });
+            });
           });
-        });
+        }
+        setAvailableTimes(times);
+        setFormData((prev) => ({ ...prev, email: "" }));
+        if (!didCancel) setLoading(false);
+      } catch (err) {
+        console.error('Unexpected error in fetchData:', err);
+        if (!didCancel) {
+          setError('Something went wrong loading the invite. Please try again later.');
+          setLoading(false);
+        }
       }
-      setAvailableTimes(times);
-      setFormData((prev) => ({ ...prev, email: "" }));
-      setLoading(false);
     };
     fetchData();
     // Prefill email if saved
     const savedEmail = localStorage.getItem(UPDATES_EMAIL_KEY);
     if (savedEmail) setFormData((prev) => ({ ...prev, email: savedEmail }));
+    // Timeout fallback: after 10 seconds, show error if still loading
+    const timeout = setTimeout(() => {
+      if (!didCancel && loading) {
+        setError('Loading is taking too long. Please check your invite link or try again later.');
+        setLoading(false);
+      }
+    }, 10000);
+    return () => {
+      didCancel = true;
+      clearTimeout(timeout);
+    };
   }, [location.search, t]);
 
   useEffect(() => {
