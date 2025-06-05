@@ -140,7 +140,7 @@ const Signup = () => {
   }, []);
 
   return (
-    <main className="max-w-md mx-auto">
+    <main className="max-w-md mx-auto px-2 sm:px-0 py-6">
       <div className="flex justify-end mb-2">
         <button
           onClick={() => {
@@ -155,7 +155,7 @@ const Signup = () => {
       <div className="bg-[#fff7f3] rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base">
         {t('freeAccountInfo')}
       </div>
-      <h1 className="text-3xl font-bold text-primary-600 mb-8 text-center">{t('createAccount')}</h1>
+      <h1 className="mobile-heading text-primary-600 mb-8 text-center">{t('createAccount')}</h1>
       <div className="flex justify-center gap-2 mb-8 mt-6">
         {(t('signup.steps', { returnObjects: true }) as string[]).map((label, idx) => (
           <div
