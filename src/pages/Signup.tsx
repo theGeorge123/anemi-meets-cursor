@@ -15,7 +15,7 @@ interface SignupForm {
 const Signup = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const steps = [t('signup.steps')[0], t('signup.steps')[1], t('signup.steps')[2], t('signup.overviewTitle')];
+  const steps = t('signup.steps', { returnObjects: true }) as string[];
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<SignupForm>({
     name: '',
@@ -141,23 +141,12 @@ const Signup = () => {
 
   return (
     <main className="max-w-md mx-auto px-2 sm:px-0 py-6">
-      <div className="flex justify-end mb-2">
-        <button
-          onClick={() => {
-            const newLang = i18n.language === 'en' ? 'nl' : 'en';
-            i18n.changeLanguage(newLang);
-          }}
-          className="px-4 py-2 rounded-full border-2 border-accent-500 bg-white text-primary-700 font-bold shadow hover:bg-accent-500 hover:text-white transition text-lg"
-        >
-          {i18n.language === 'en' ? 'NL' : 'EN'}
-        </button>
-      </div>
       <div className="bg-[#fff7f3] rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base">
-        {t('freeAccountInfo')}
+        {t('freeAccountInfo', 'Create a free account to get started!')}
       </div>
-      <h1 className="mobile-heading text-primary-600 mb-8 text-center">{t('createAccount')}</h1>
+      <h1 className="mobile-heading text-primary-600 mb-8 text-center">{t('createAccount', 'Create Account')}</h1>
       <div className="flex justify-center gap-2 mb-8 mt-6">
-        {(t('signup.steps', { returnObjects: true }) as string[]).map((label, idx) => (
+        {steps.map((label, idx) => (
           <div
             key={label}
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200
@@ -172,7 +161,7 @@ const Signup = () => {
         {step === 0 && (
           <div>
             <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">😊</span> {t('signup.namePrompt')}
+              <span className="text-2xl">😊</span> {t('signup.namePrompt', "We're glad you're here! What should we call you?")}
             </label>
             <input
               type="text"
@@ -182,7 +171,7 @@ const Signup = () => {
               onChange={handleInputChange('name')}
               required
               autoFocus
-              placeholder={t('createAccount')}
+              placeholder={t('signup.namePlaceholder', 'Your name')}
               inputMode="text"
               autoComplete="name"
             />
@@ -261,13 +250,8 @@ const Signup = () => {
           />
         )}
       </form>
-      <div className="text-center mt-6">
-        <button
-          className="text-primary-600 underline hover:text-primary-800 text-sm"
-          onClick={() => navigate('/login')}
-        >
-          {t('alreadyHaveAccount')}
-        </button>
+      <div className="mt-4 text-center text-primary-600">
+        {t('alreadyHaveAccount', 'Already have an account?')}
       </div>
       <div className="text-center mt-10">
         <h2 className="text-xl font-bold text-primary-700 mb-2">{t('testimonialsTitle')}</h2>
