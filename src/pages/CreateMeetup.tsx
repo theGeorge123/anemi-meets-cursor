@@ -226,9 +226,11 @@ const CreateMeetup = () => {
       date_time_options: filteredDateTimeOptions
     };
 
-    // If user is not logged in, add email if available
-    if (!user && formData.email) {
-      payload.email_b = formData.email;
+    // Store the creator's email so the confirmation can be sent later
+    if (user?.email) {
+      payload.email_a = user.email;
+    } else if (formData.email) {
+      payload.email_a = formData.email;
     }
 
     console.log('Payload to insert:', payload);
@@ -273,28 +275,24 @@ const CreateMeetup = () => {
           return;
         }
 
+      let responseToken = token;
       if (!insertData || insertData.length === 0) {
-        console.error('No data returned from insert');
-        setFormError('No data returned from database. The invitation might not have been created.');
-        return;
-      }
-
-      // Success path
-      const createdInvite = insertData[0];
-      console.log('Created invitation:', createdInvite);
-      const responseToken = createdInvite.token;
-
-      if (responseToken) {
-      setTimeout(() => {
-          if (typeof navigate === 'function') {
-            navigate(`/invite/${responseToken}`);
-          } else {
-            window.location.href = `/invite/${responseToken}`;
-          }
-      }, 2000);
+        console.warn('No data returned from insert; using generated token');
       } else {
-        setFormError('Created invitation is missing token');
+        console.log('Created invitation:', insertData[0]);
+        if (insertData[0].token) {
+          responseToken = insertData[0].token as string;
+        }
       }
+
+      // Navigate to the invite page regardless of the returned data
+      setTimeout(() => {
+        if (typeof navigate === 'function') {
+          navigate(`/invite/${responseToken}`);
+        } else {
+          window.location.href = `/invite/${responseToken}`;
+        }
+      }, 2000);
     } catch (err) {
       console.error('Exception during invitation creation:', err);
       setFormError(t('common.errorNetwork'));
