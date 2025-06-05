@@ -140,123 +140,115 @@ const Signup = () => {
   }, []);
 
   return (
-    <main className="max-w-md mx-auto px-2 sm:px-0 py-6">
-      <div className="bg-[#fff7f3] rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base">
+    <main className="max-w-md mx-auto px-2 sm:px-0 py-8">
+      <div className="bg-primary-50 rounded-xl p-4 mb-6 text-center shadow text-primary-700 font-medium text-base">
         {t('freeAccountInfo', 'Create a free account to get started!')}
       </div>
-      <h1 className="mobile-heading text-primary-600 mb-8 text-center">{t('createAccount', 'Create Account')}</h1>
-      <div className="flex justify-center gap-2 mb-8 mt-6">
-        {steps.map((label, idx) => (
-          <div
-            key={label}
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200
-              ${step === idx ? 'bg-accent-500 text-white scale-110 shadow-lg' : 'bg-primary-100 text-primary-700 opacity-60'}`}
+      <div className="card bg-white rounded-xl shadow-md p-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-6">{t('createAccount', 'Create Account')}</h1>
+        {/* Stepper */}
+        <div className="flex justify-center gap-4 mb-8">
+          {steps.map((label, idx) => (
+            <div key={label} className="flex flex-col items-center">
+              <div className={`w-9 h-9 flex items-center justify-center rounded-full font-bold text-base border-2
+                ${step === idx ? 'bg-primary-600 text-white border-primary-700 shadow-md' : 'bg-white text-gray-400 border-gray-300'}`}>
+                {idx + 1}
+              </div>
+              <span className={`mt-1 text-xs ${step === idx ? 'text-primary-700 font-semibold' : 'text-gray-400'}`}>{label}</span>
+            </div>
+          ))}
+        </div>
+        <form onSubmit={step === steps.length - 1 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }}
+          className="space-y-4 flex flex-col justify-between mt-2">
+          {step === 0 && (
+            <div>
+              <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
+                <span className="text-2xl">😊</span> {t('signup.namePrompt', "Let's get started! What's your name?")}
+              </label>
+              <input
+                type="text"
+                id="signup-name"
+                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${errors.name ? ' border-red-500' : ''}`}
+                value={form.name}
+                onChange={handleInputChange('name')}
+                required
+                autoFocus
+                placeholder={t('signup.namePlaceholder', 'Your name')}
+                inputMode="text"
+                autoComplete="name"
+              />
+              {errors.name && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.name}</p>}
+            </div>
+          )}
+          {step === 1 && (
+            <div>
+              <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
+                <span className="text-2xl">📧</span> {t('signup.emailPrompt')}
+              </label>
+              <input
+                type="email"
+                id="signup-email"
+                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${errors.email ? ' border-red-500' : ''}`}
+                value={form.email}
+                onChange={handleInputChange('email')}
+                required
+                placeholder={t('signup.emailPlaceholder')}
+                inputMode="email"
+                autoComplete="email"
+              />
+              {errors.email && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.email}</p>}
+            </div>
+          )}
+          {step === 2 && (
+            <div>
+              <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
+                <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
+              </label>
+              <input
+                type="password"
+                id="signup-password"
+                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${errors.password ? ' border-red-500' : ''}`}
+                value={form.password}
+                onChange={handleInputChange('password')}
+                required
+                placeholder={t('signup.passwordPlaceholder')}
+                inputMode="text"
+                autoComplete="new-password"
+              />
+              {errors.password && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.password}</p>}
+            </div>
+          )}
+          {step === 3 && (
+            <div>
+              <label htmlFor="signup-confirm-password" className="block text-lg font-medium text-gray-700 mb-2">
+                <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
+              </label>
+              <input
+                type="password"
+                id="signup-confirm-password"
+                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${errors.confirmPassword ? ' border-red-500' : ''}`}
+                value={form.confirmPassword}
+                onChange={handleInputChange('confirmPassword')}
+                required
+                placeholder={t('signup.confirmPasswordPlaceholder')}
+                inputMode="text"
+                autoComplete="new-password"
+              />
+              {errors.confirmPassword && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.confirmPassword}</p>}
+            </div>
+          )}
+          <button
+            type="submit"
+            className="btn-primary w-full py-3 px-6 text-lg rounded-lg"
+            disabled={loading}
           >
-            {label}
-          </div>
-        ))}
-      </div>
-      <form onSubmit={step === steps.length - 1 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }}
-        className="space-y-4 bg-white/90 p-3 rounded-xl shadow-2xl border border-primary-100 flex flex-col justify-between mt-2 px-2 sm:px-0">
-        {step === 0 && (
-          <div>
-            <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">😊</span> {t('signup.namePrompt', "We're glad you're here! What should we call you?")}
-            </label>
-            <input
-              type="text"
-              id="signup-name"
-              className={`input-field mt-1 min-h-[48px] text-base${errors.name ? ' border-red-500' : ''}`}
-              value={form.name}
-              onChange={handleInputChange('name')}
-              required
-              autoFocus
-              placeholder={t('signup.namePlaceholder', 'Your name')}
-              inputMode="text"
-              autoComplete="name"
-            />
-            {errors.name && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.name}</p>}
-          </div>
-        )}
-        {step === 1 && (
-          <div>
-            <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">📧</span> {t('signup.emailPrompt')}
-            </label>
-            <input
-              type="email"
-              id="signup-email"
-              className={`input-field mt-1 min-h-[48px] text-base${errors.email ? ' border-red-500' : ''}`}
-              value={form.email}
-              onChange={handleInputChange('email')}
-              required
-              placeholder={t('signup.emailPlaceholder')}
-              inputMode="email"
-              autoComplete="email"
-            />
-            {errors.email && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.email}</p>}
-          </div>
-        )}
-        {step === 2 && (
-          <div>
-            <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
-            </label>
-            <input
-              type="password"
-              id="signup-password"
-              className={`input-field mt-1 min-h-[48px] text-base${errors.password ? ' border-red-500' : ''}`}
-              value={form.password}
-              onChange={handleInputChange('password')}
-              required
-              placeholder={t('signup.passwordPlaceholder')}
-              inputMode="text"
-              autoComplete="new-password"
-            />
-            {errors.password && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.password}</p>}
-          </div>
-        )}
-        {step === 3 && (
-          <div>
-            <label htmlFor="signup-confirm-password" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
-            </label>
-            <input
-              type="password"
-              id="signup-confirm-password"
-              className={`input-field mt-1 min-h-[48px] text-base${errors.confirmPassword ? ' border-red-500' : ''}`}
-              value={form.confirmPassword}
-              onChange={handleInputChange('confirmPassword')}
-              required
-              placeholder={t('signup.confirmPasswordPlaceholder')}
-              inputMode="text"
-              autoComplete="new-password"
-            />
-            {errors.confirmPassword && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.confirmPassword}</p>}
-          </div>
-        )}
-        <button
-          type="submit"
-          className="btn-primary w-full min-h-[48px] text-base mt-2"
-          disabled={loading}
-        >
-          {step === steps.length - 1 ? t('signup.submit') : t('next')}
-        </button>
-        {showSuccess && (
-          <Toast
-            message={t('toast.signupSuccess')}
-            type="success"
-            onClose={() => setShowSuccess(false)}
-          />
-        )}
-      </form>
-      <div className="mt-4 text-center text-primary-600">
-        {t('alreadyHaveAccount', 'Already have an account?')}
-      </div>
-      <div className="text-center mt-10">
-        <h2 className="text-xl font-bold text-primary-700 mb-2">{t('testimonialsTitle')}</h2>
-        <div className="italic text-gray-700 bg-white/70 rounded-xl p-4 shadow max-w-xs mx-auto">
-          {t('testimonial1')}
+            {t('next', 'Next')}
+          </button>
+        </form>
+        <div className="mt-6 text-center">
+          <a href="/login" className="text-primary-600 underline hover:text-primary-800 text-sm">
+            {t('alreadyHaveAccount', 'Already have an account?')}
+          </a>
         </div>
       </div>
     </main>
