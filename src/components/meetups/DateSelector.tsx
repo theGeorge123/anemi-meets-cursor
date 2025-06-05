@@ -22,9 +22,11 @@ registerLocale('nl', nl);
  */
 export interface DateSelectorProps {
   selectedDates: Date[];
-  setSelectedDates: (dates: Date[]) => void;
+  setSelectedDates: React.Dispatch<React.SetStateAction<Date[]>>;
   dateTimeOptions: { date: string; times: string[] }[];
-  setDateTimeOptions: (opts: { date: string; times: string[] }[]) => void;
+  setDateTimeOptions: React.Dispatch<
+    React.SetStateAction<{ date: string; times: string[] }[]>
+  >;
   error?: string | null;
 }
 
@@ -49,7 +51,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
   const dayClassName = (date: Date) => {
     const dateStr = getLocalDateString(date);
     const exists = selectedDates.some(d => getLocalDateString(d) === dateStr);
-    return exists ? 'date-selected' : undefined;
+    return exists ? 'date-selected' : null;
   };
 
   // Add or remove a date
@@ -112,7 +114,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
       {selectedDates.length > 0 && (
         <div className="space-y-4">
           <h3 className="font-medium text-gray-700">{t('meetup.selectedDates', 'Your picked days')}</h3>
-          {selectedDates.map((date, idx) => {
+          {selectedDates.map(date => {
             const dateStr = getLocalDateString(date);
             const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
             // New: compact date display

@@ -530,7 +530,15 @@ const CreateMeetup = () => {
           <p className="mb-3 sm:mb-4 text-gray-700 text-sm sm:text-base">{t('chooseTimes', 'Pick your preferred times for each date')}</p>
         <DateSelector
           selectedDates={formData.dates}
-          setSelectedDates={(dates: Date[]) => setFormData(prev => ({ ...prev, dates }))}
+          setSelectedDates={update =>
+            setFormData(prev => ({
+              ...prev,
+              dates:
+                typeof update === 'function'
+                  ? update(prev.dates)
+                  : update,
+            }))
+          }
           dateTimeOptions={dateTimeOptions}
           setDateTimeOptions={setDateTimeOptions}
           error={formError}
@@ -615,7 +623,7 @@ const CreateMeetup = () => {
             <div className="mb-2"><span className="font-medium">{t('meetup.city')}:</span> {formData.city}</div>
             <div className="mb-2"><span className="font-medium">{t('meetup.selectedDates')}:</span>
               <ul className="list-disc ml-6">
-                {formData.dates.map((date, idx) => {
+                {formData.dates.map(date => {
                   const dateStr = getLocalDateString(date);
                   const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
                   return (
