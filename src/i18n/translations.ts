@@ -46,6 +46,11 @@ export const translations = {
       cafe: 'Café',
       address: 'Address',
       age: 'Age',
+      home: 'Home',
+      dashboard: 'Dashboard',
+      createMeetup: 'Create Meetup',
+      account: 'Account',
+      switchLanguage: 'Switch language',
       genderOptions: [
         { value: 'man', label: 'Man' },
         { value: 'vrouw', label: 'Woman' },

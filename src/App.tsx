@@ -5,7 +5,7 @@ import Footer from './components/Footer';
 import AppRoutes from './AppRoutes';
 
 function App() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [language, setLanguage] = useState('nl');
 
   const toggleLanguage = () => {
@@ -46,18 +46,30 @@ function App() {
             <div className="flex justify-between h-16 items-center">
               <div className="flex-shrink-0">
                 <Link to="/">
-                  <h1 className="text-2xl font-bold text-primary-600 cursor-pointer">anemi meets</h1>
+                  <h1 className="text-2xl font-bold text-primary-600 cursor-pointer">Anemi Meets</h1>
+                </Link>
+              </div>
+              <div className="hidden md:flex space-x-4">
+                <Link to="/" className="px-3 py-2 text-primary-600 hover:text-primary-800">
+                  {t('common.home')}
+                </Link>
+                <Link to="/create-meetup" className="px-3 py-2 text-primary-600 hover:text-primary-800">
+                  {t('common.createMeetup')}
+                </Link>
+                <Link to="/dashboard" className="px-3 py-2 text-primary-600 hover:text-primary-800">
+                  {t('common.dashboard')}
                 </Link>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={toggleLanguage}
                   className="px-4 py-2 rounded-full border-2 border-[#ff914d] bg-white text-primary-700 font-bold shadow hover:bg-[#ff914d] hover:text-white transition text-lg"
+                  aria-label={t('common.switchLanguage')}
                 >
                   {language === 'en' ? 'NL' : 'EN'}
                 </button>
-                <Link to="/account" className="ml-2 text-2xl hover:text-primary-600 transition-colors" title="Account">
-                  <span role="img" aria-label="account">👤</span>
+                <Link to="/account" className="ml-2 text-2xl hover:text-primary-600 transition-colors" title={t('common.account')}>
+                  <span role="img" aria-label={t('common.account')}>👤</span>
                 </Link>
               </div>
             </div>

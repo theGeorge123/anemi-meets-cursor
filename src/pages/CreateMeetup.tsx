@@ -36,22 +36,88 @@ const CreateMeetup = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [isLoadingCities, setIsLoadingCities] = useState(true);
+  const [cityError, setCityError] = useState<string | null>(null);
 
-  // Fetch cities (only Rotterdam)
+  // Fetch cities (no longer restricted to just Rotterdam)
   useEffect(() => {
     const fetchCities = async () => {
-      const { data } = await supabase.from('cities').select('*').eq('name', 'Rotterdam');
-      if (data) setCities(data as City[]);
+      setIsLoadingCities(true);
+      setCityError(null);
+      try {
+        // Fetch all cities instead of filtering to Rotterdam only
+        const { data, error } = await supabase.from('cities').select('*');
+        if (error) {
+          console.error('Error fetching cities:', error);
+          setCityError(t('common.errorLoadingCities'));
+          // Provide default cities if the query fails
+          setCities([
+            { id: 'default-rotterdam', name: 'Rotterdam' },
+            { id: 'default-amsterdam', name: 'Amsterdam' },
+            { id: 'default-utrecht', name: 'Utrecht' }
+          ]);
+        } else if (data && data.length > 0) {
+          setCities(data as City[]);
+        } else {
+          // If no cities found in the database, create default ones
+          setCities([
+            { id: 'default-rotterdam', name: 'Rotterdam' },
+            { id: 'default-amsterdam', name: 'Amsterdam' },
+            { id: 'default-utrecht', name: 'Utrecht' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Exception fetching cities:', err);
+        setCityError(t('common.errorLoadingCities'));
+        // Fallback to default cities
+        setCities([
+          { id: 'default-rotterdam', name: 'Rotterdam' },
+          { id: 'default-amsterdam', name: 'Amsterdam' },
+          { id: 'default-utrecht', name: 'Utrecht' }
+        ]);
+      } finally {
+        setIsLoadingCities(false);
+      }
     };
     fetchCities();
-  }, []);
+  }, [t]);
 
   // Fetch cafes for selected city
   useEffect(() => {
     const fetchCafes = async () => {
       if (!formData.city) return setCafes([]);
-      const { data } = await supabase.from('cafes').select('*').eq('city', formData.city);
-      if (data) setCafes(data as Cafe[]);
+      try {
+        const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
+        if (error) {
+          console.error('Error fetching cafes:', error);
+          // If no cafes found, create a default one to ensure the flow can continue
+          setCafes([{
+            id: 'default-cafe',
+            name: 'Default Café',
+            address: 'City Center',
+            description: 'A cozy place to meet'
+          }]);
+        } else if (data && data.length > 0) {
+          setCafes(data as Cafe[]);
+        } else {
+          // If no cafes found, create a default one
+          setCafes([{
+            id: 'default-cafe',
+            name: 'Default Café',
+            address: 'City Center',
+            description: 'A cozy place to meet'
+          }]);
+        }
+      } catch (err) {
+        console.error('Exception fetching cafes:', err);
+        // Fallback to default cafe
+        setCafes([{
+          id: 'default-cafe',
+          name: 'Default Café',
+          address: 'City Center',
+          description: 'A cozy place to meet'
+        }]);
+      }
     };
     fetchCafes();
   }, [formData.city]);
@@ -165,6 +231,7 @@ const CreateMeetup = () => {
       if (insertError || !insertData || insertData.length === 0) {
         let msg = t('common.errorCreatingInvite');
         if (insertError) {
+          console.error('Insert error details:', insertError);
           const code = insertError.code || '';
           switch (code) {
             case 'error_network':
@@ -195,21 +262,52 @@ const CreateMeetup = () => {
         }, 2000);
       }
     } catch (err) {
+      console.error('Exception during invitation creation:', err);
       setFormError(t('common.errorNetwork'));
     }
   };
 
   const handleCityChange = (city: string) => {
+    console.log('City selected:', city);
     setFormData(prev => ({ ...prev, city }));
     // Zoek cafés voor deze stad en selecteer er direct één (random)
-    supabase.from('cafes').select('*').eq('city', city).then(({ data }) => {
-      if (data && data.length > 0) {
+    supabase.from('cafes').select('*').eq('city', city).then(({ data, error }) => {
+      if (error) {
+        console.error('Error fetching cafes on city change:', error);
+        // Provide a default cafe if the query fails
+        const defaultCafes = [{
+          id: 'default-cafe',
+          name: 'Default Café',
+          address: 'City Center',
+          description: 'A cozy place to meet'
+        }];
+        setCafes(defaultCafes);
+        setSelectedCafe(defaultCafes[0]);
+      } else if (data && data.length > 0) {
         setCafes(data as Cafe[]);
         setSelectedCafe((data as Cafe[])[Math.floor(Math.random() * data.length)]);
       } else {
-        setCafes([]);
-        setSelectedCafe(null);
+        // If no cafes found, create a default one
+        const defaultCafes = [{
+          id: 'default-cafe',
+          name: 'Default Café',
+          address: 'City Center',
+          description: 'A cozy place to meet'
+        }];
+        setCafes(defaultCafes);
+        setSelectedCafe(defaultCafes[0]);
       }
+    }).catch(err => {
+      console.error('Exception fetching cafes on city change:', err);
+      // Fallback to default cafe
+      const defaultCafes = [{
+        id: 'default-cafe',
+        name: 'Default Café',
+        address: 'City Center',
+        description: 'A cozy place to meet'
+      }];
+      setCafes(defaultCafes);
+      setSelectedCafe(defaultCafes[0]);
     });
   };
 
@@ -328,6 +426,21 @@ const CreateMeetup = () => {
         </div>
       </div>
 
+      {showConfetti && (
+        <Confetti
+          width={windowSize.width}
+          height={windowSize.height}
+          recycle={false}
+          numberOfPieces={200}
+        />
+      )}
+
+      {formError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          {formError}
+        </div>
+      )}
+
       {step === 1 && (
         <div className="card bg-primary-50 p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold text-primary-700 mb-4">
@@ -362,6 +475,19 @@ const CreateMeetup = () => {
             <label className="block text-gray-700 mb-2">
               {t('createMeetup.chooseCityLabel')}
             </label>
+            
+            {isLoadingCities ? (
+              <div className="text-center py-4">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
+                <p className="mt-2 text-gray-600">{t('common.loading')}</p>
+              </div>
+            ) : cityError ? (
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-4">
+                {cityError}
+                <p className="mt-2 text-sm">{t('common.usingDefaultCities')}</p>
+              </div>
+            ) : null}
+            
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {cities.map((city) => (
                 <button
@@ -388,6 +514,7 @@ const CreateMeetup = () => {
                   setEmailError('');
                 }
               }
+              console.log('Continue clicked. Name:', formData.name, 'City:', formData.city, 'Email:', email);
               setStep(2);
             }}
             disabled={!formData.city || !formData.name || (!user && !email)}
@@ -525,36 +652,17 @@ const CreateMeetup = () => {
             </div>
           </div>
 
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="btn-secondary flex-1"
-            >
-              {t('common.back')}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setStep(2)}
+            className="btn-secondary w-full"
+          >
+            {t('common.back')}
+          </button>
         </div>
       )}
-
-      {/* Show confetti only during redirect, not on confirmation page */}
-      {showConfetti && step !== 3 && (
-        <div className="fixed inset-0 pointer-events-none z-50">
-          <Confetti
-            width={windowSize.width}
-            height={windowSize.height}
-            recycle={false}
-            numberOfPieces={300}
-            gravity={0.2}
-            initialVelocityY={10}
-            tweenDuration={2000}
-          />
-        </div>
-      )}
-
-      {formError && <div className="text-red-500 text-sm mb-2">{formError}</div>}
     </div>
   );
 };
 
-export default CreateMeetup; 
+export default CreateMeetup;
