@@ -174,24 +174,6 @@ const CreateMeetup = () => {
     return () => window.removeEventListener('online', flush);
   }, []);
 
-  const handleDatePickerChange = (date: Date) => {
-    // Implement your logic here
-  };
-
-  const dateLocale = undefined; // Set to your locale if needed
-
-  const CustomInput = undefined; // Replace with your custom input if needed
-
-  const handleRemoveDate = (dateStr: string) => {
-    // Implement your logic here
-  };
-
-  const handleTimeToggle = (dateStr: string, time: string) => {
-    // Implement your logic here
-  };
-
-  const isTimeSlotPast = (dateStr: string, time: string) => false; // Replace with real logic if needed
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -317,50 +299,6 @@ const CreateMeetup = () => {
     } catch (err) {
       console.error('Exception during invitation creation:', err);
       setFormError(t('common.errorNetwork'));
-    }
-  };
-
-  const handleCityChange = async (city: string) => {
-    console.log('City selected:', city);
-    setFormData(prev => ({ ...prev, city }));
-    try {
-      const { data, error } = await supabase.from('cafes').select('*').eq('city', city);
-      if (error) {
-        console.error('Error fetching cafes on city change:', error);
-        // Provide a default cafe if the query fails
-        const defaultCafes = [{
-          id: 'default-cafe',
-          name: 'Default Café',
-          address: 'City Center',
-          description: 'A cozy place to meet'
-        }];
-        setCafes(defaultCafes);
-        setSelectedCafe(defaultCafes[0]);
-      } else if (data && data.length > 0) {
-        setCafes(data as Cafe[]);
-        setSelectedCafe((data as Cafe[])[Math.floor(Math.random() * data.length)]);
-      } else {
-        // If no cafes found, create a default one
-        const defaultCafes = [{
-          id: 'default-cafe',
-          name: 'Default Café',
-          address: 'City Center',
-          description: 'A cozy place to meet'
-        }];
-        setCafes(defaultCafes);
-        setSelectedCafe(defaultCafes[0]);
-      }
-    } catch (err) {
-      console.error('Exception fetching cafes on city change:', err);
-      // Fallback to default cafe
-      const defaultCafes = [{
-        id: 'default-cafe',
-        name: 'Default Café',
-        address: 'City Center',
-        description: 'A cozy place to meet'
-      }];
-      setCafes(defaultCafes);
-      setSelectedCafe(defaultCafes[0]);
     }
   };
 
@@ -528,8 +466,8 @@ const CreateMeetup = () => {
             <div className="relative">
               <DatePicker
                 selected={null}
-                onChange={handleDatePickerChange}
-                locale={dateLocale}
+                onChange={() => {}}
+                locale={undefined}
                 inline
                 minDate={new Date()}
               />
@@ -547,13 +485,6 @@ const CreateMeetup = () => {
                   <div key={idx} className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center mb-3">
                       <span className="font-medium">{date.toLocaleDateString()}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveDate(dateStr)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        {t('common.remove')}
-                      </button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
                       {['morning', 'afternoon', 'evening'].map(time => {
@@ -562,11 +493,9 @@ const CreateMeetup = () => {
                           <button
                             key={time}
                             type="button"
-                            onClick={() => handleTimeToggle(dateStr, time)}
-                            disabled={isTimeSlotPast(dateStr, time)}
+                            onClick={() => {}}
                             className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150
-                              ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}
-                              ${isTimeSlotPast(dateStr, time) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
                             aria-pressed={isSelected}
                           >
                             {t(`common.${time}`)}
