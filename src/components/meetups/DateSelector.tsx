@@ -43,6 +43,13 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
   const getLocalDateString = (date: Date) =>
     date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 
+  // Highlight dates that are already selected
+  const dayClassName = (date: Date) => {
+    const dateStr = getLocalDateString(date);
+    const exists = selectedDates.some(d => getLocalDateString(d) === dateStr);
+    return exists ? 'date-selected' : undefined;
+  };
+
   // Add or remove a date
   const handleDatePickerChange = (date: Date) => {
     const dateStr = getLocalDateString(date);
@@ -82,6 +89,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
           onChange={handleDatePickerChange}
           locale={dateLocale}
           className="anemi-datepicker"
+          dayClassName={dayClassName}
           inline
           minDate={new Date()}
         />
