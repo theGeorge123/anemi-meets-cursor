@@ -5,7 +5,6 @@ import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../components/meetups/DateSelector';
 import { useNavigate } from 'react-router-dom';
-import DatePicker from 'react-datepicker';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
