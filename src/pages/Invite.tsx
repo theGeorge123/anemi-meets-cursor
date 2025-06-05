@@ -32,7 +32,7 @@ const Invite = () => {
 
   useEffect(() => {
     if (token) {
-      setInviteLink(`${window.location.origin}/invite/${token}`);
+      setInviteLink(`${window.location.origin}/respond?token=${token}`);
       (async () => {
         setLoading(true);
         setError(null);
