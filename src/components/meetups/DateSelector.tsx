@@ -55,31 +55,43 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
   // Add or remove a date
   const handleDatePickerChange = (date: Date) => {
     const dateStr = getLocalDateString(date);
-    const exists = selectedDates.some(d => getLocalDateString(d) === dateStr);
-    if (exists) {
-      setSelectedDates(selectedDates.filter(d => getLocalDateString(d) !== dateStr));
-      setDateTimeOptions(dateTimeOptions.filter(opt => opt.date !== dateStr));
-    } else {
-      setSelectedDates([...selectedDates, date]);
-      setDateTimeOptions([...dateTimeOptions, { date: dateStr, times: [] }]);
-    }
+    setSelectedDates(prevSelected => {
+      const exists = prevSelected.some(d => getLocalDateString(d) === dateStr);
+      setDateTimeOptions(prevOptions =>
+        exists
+          ? prevOptions.filter(opt => opt.date !== dateStr)
+          : [...prevOptions, { date: dateStr, times: [] }]
+      );
+      return exists
+        ? prevSelected.filter(d => getLocalDateString(d) !== dateStr)
+        : [...prevSelected, date];
+    });
   };
 
   // Toggle a time slot for a date
   const handleTimeToggle = (dateStr: string, time: string) => {
-    // If setDateTimeOptions does not accept an updater, compute new value first
-    const newOptions = dateTimeOptions.map((opt: { date: string; times: string[] }) =>
-      opt.date === dateStr
-        ? { ...opt, times: opt.times.includes(time) ? opt.times.filter((t: string) => t !== time) : [...opt.times, time] }
-        : opt
+    setDateTimeOptions(prevOptions =>
+      prevOptions.map(opt =>
+        opt.date === dateStr
+          ? {
+              ...opt,
+              times: opt.times.includes(time)
+                ? opt.times.filter(t => t !== time)
+                : [...opt.times, time],
+            }
+          : opt
+      )
     );
-    setDateTimeOptions(newOptions);
   };
 
   // Remove a date
   const handleRemoveDate = (dateStr: string) => {
-    setSelectedDates(selectedDates.filter(d => getLocalDateString(d) !== dateStr));
-    setDateTimeOptions(dateTimeOptions.filter(opt => opt.date !== dateStr));
+    setSelectedDates(prevDates =>
+      prevDates.filter(d => getLocalDateString(d) !== dateStr)
+    );
+    setDateTimeOptions(prevOptions =>
+      prevOptions.filter(opt => opt.date !== dateStr)
+    );
   };
 
   return (
