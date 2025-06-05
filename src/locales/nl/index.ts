@@ -18,6 +18,10 @@ export const nl = {
       title: "Probleem melden"
     },
     testimonialsTitle: "Wat anderen zeggen",
+    testimonial1: "Anemi Meets bespaart me zoveel tijd! — Sophie, Rotterdam",
+    freeAccountInfo: "Met een gratis account kun je direct Meetups plannen en uitnodigingen versturen.",
+    alreadyHaveAccount: "Al een account? Inloggen",
+    createAccount: "Account aanmaken",
     error_invalid_email: "Voer een geldig e-mailadres in",
     morning: "Ochtend",
     afternoon: "Middag",
@@ -200,7 +204,8 @@ export const nl = {
     pastMeetups: "Afgelopen meetups",
   },
   toast: {
-    profileUpdated: "Profiel bijgewerkt!"
+    profileUpdated: "Profiel bijgewerkt!",
+    signupSuccess: "Account aangemaakt! Alles is geregeld! ✨"
   },
   sessionExpiresSoon: "Je sessie verloopt bijna. Log opnieuw in.",
 
@@ -226,6 +231,21 @@ export const nl = {
     emailPlaceholder: "Jouw e-mailadres",
     passwordPlaceholder: "Je geheime wachtwoord",
     loginButton: "Laat me binnen!",
+  },
+  signup: {
+    title: "Registreren",
+    subtitle: "Maak gratis je account aan om te beginnen",
+    namePrompt: "Leuk dat je er bent! Hoe mogen we je noemen?",
+    namePlaceholder: "Jouw naam",
+    emailPrompt: "Op welk e-mailadres kunnen we je bereiken?",
+    emailPlaceholder: "Jouw e-mailadres",
+    passwordPrompt: "Welk wachtwoord wil je gebruiken voor dit account?",
+    passwordPlaceholder: "Jouw wachtwoord",
+    confirmPasswordPrompt: "Sorry, maar we moeten even checken of je je wachtwoord goed hebt getypt",
+    confirmPasswordPlaceholder: "Bevestig je wachtwoord",
+    overviewTitle: "Overzicht van je gegevens",
+    submit: "Registreren",
+    steps: ["Naam", "E-mail", "Wachtwoord", "Overzicht"],
   },
   onboarding: {
     welcome: {
