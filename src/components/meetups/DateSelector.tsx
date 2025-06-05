@@ -5,6 +5,10 @@ import { enGB } from 'date-fns/locale/en-GB';
 import { nl } from 'date-fns/locale/nl';
 import { getHolidaysForDate } from '../../utils/holidays';
 
+// Register locales once when the module is loaded
+registerLocale('en-GB', enGB);
+registerLocale('nl', nl);
+
 /**
  * DateSelector component for selecting dates and times for a meetup.
  * Handles date picking, time slot selection, and validation.
@@ -35,8 +39,6 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
 }) => {
   const { t, i18n } = useTranslation('meetup');
 
-  registerLocale('en-GB', enGB);
-  registerLocale('nl', nl);
   const dateLocale = i18n.language === 'nl' ? 'nl' : 'en-GB';
 
   // Helper: get local date string in YYYY-MM-DD
