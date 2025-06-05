@@ -17,7 +17,7 @@
     "@sentry/react": "^9.24.0",
     "@sentry/tracing": "^7.120.3",
     "@sentry/vite-plugin": "^3.5.0",
-    "@supabase/supabase-js": "^2.49.8",
+    "@supabase/supabase-js": "^2.49.10",
     "axios": "^1.9.0",
     "date-fns": "^3.3.1",
     "framer-motion": "^12.15.0",
