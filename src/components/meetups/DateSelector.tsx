@@ -1,6 +1,7 @@
 import React from 'react';
 import DatePicker from 'react-datepicker';
 import { useTranslation } from 'react-i18next';
+import { getHolidaysForDate } from '../../utils/holidays';
 
 /**
  * DateSelector component for selecting dates and times for a meetup.
@@ -86,10 +87,19 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
           {selectedDates.map((date, idx) => {
             const dateStr = getLocalDateString(date);
             const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
+            // New: compact date display
+            const dayShort = date.toLocaleDateString(undefined, { weekday: 'short' });
+            const dayNum = date.getDate();
+            const monthShort = date.toLocaleDateString(undefined, { month: 'short' }).toLowerCase();
+            const holidays = getHolidaysForDate(date);
             return (
               <div key={idx} className="bg-gray-50 p-3 sm:p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-2 sm:mb-3">
-                  <span className="font-medium">{date.toLocaleDateString()}</span>
+                  <span className="font-medium flex flex-col items-start">
+                    <span className="text-xs text-gray-500">{dayShort}</span>
+                    <span className="text-2xl font-bold leading-none">{dayNum}</span>
+                    <span className="text-xs text-gray-400 lowercase">{monthShort}</span>
+                  </span>
                   <button
                     type="button"
                     onClick={() => handleRemoveDate(dateStr)}
@@ -100,6 +110,15 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
                     <span className="hidden sm:inline">{t('meetup.remove', 'Remove')}</span>
                   </button>
                 </div>
+                {holidays.length > 0 && (
+                  <div className="text-xs text-blue-600 mb-1">
+                    {holidays.map((h, i) => (
+                      <div key={i}>
+                        {t('meetup.holidayInfo', 'Did you know this day is {{holiday}} in {{country}}?', { holiday: h.name, country: h.country })}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
                   {TIME_SLOTS.map((time: string) => {
                     const isSelected = dateOpt?.times.includes(time) || false;

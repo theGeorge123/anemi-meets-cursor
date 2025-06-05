@@ -594,6 +594,7 @@ const CreateMeetup = () => {
               {t('meetup.shuffle', 'Shuffle!') === 'meetup.shuffle' ? 'Shuffle!' : t('meetup.shuffle', 'Shuffle!')}
             </button>
           </div>
+          <p className="text-sm text-gray-500 mb-4 text-center">{t('meetup.chooseCafeInfo', 'Pick your favorite spot or shuffle for a surprise!')}</p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button type="button" onClick={() => setStep(3)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">
               {/* Back button */}
@@ -605,7 +606,6 @@ const CreateMeetup = () => {
             </button>
           </div>
           {formError && <div className="text-red-500 text-sm mb-2" aria-live="polite">{formError}</div>}
-          <p className="text-sm text-gray-500 mb-4">{t('meetup.chooseCafeInfo', 'Pick your favorite spot or shuffle for a surprise!')}</p>
         </div>
       )}
       {/* Stap 5: Samenvatting & bevestigen */}
