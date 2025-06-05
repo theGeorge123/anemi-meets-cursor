@@ -99,7 +99,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
             const monthShort = date.toLocaleDateString(undefined, { month: 'short' }).toLowerCase();
             const holidays = getHolidaysForDate(date);
             return (
-              <div key={idx} className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <div key={dateStr} className="bg-gray-50 p-3 sm:p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-2 sm:mb-3">
                   <span className="font-medium flex flex-col items-start">
                     <span className="text-xs text-gray-500">{dayShort}</span>

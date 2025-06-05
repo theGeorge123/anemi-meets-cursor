@@ -619,7 +619,7 @@ const CreateMeetup = () => {
                   const dateStr = getLocalDateString(date);
                   const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
                   return (
-                    <li key={idx}>
+                    <li key={dateStr}>
                       {date.toLocaleDateString()} ({(dateOpt?.times || []).join(', ')})
                     </li>
                   );
