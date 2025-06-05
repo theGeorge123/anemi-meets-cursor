@@ -456,110 +456,34 @@ const CreateMeetup = () => {
           </div>
         </div>
       )}
-      {/* Stap 2: Datum/tijd kiezen */}
+      {/* Stap 2: Stad kiezen */}
       {step === 2 && (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('common.date')}
-            </label>
-            <div className="relative">
-              <DatePicker
-                selected={null}
-                onChange={() => {}}
-                locale={undefined}
-                inline
-                minDate={new Date()}
-              />
-            </div>
-            <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
-          </div>
-
-          {formData.dates.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="font-medium text-gray-700">{t('common.selectedDates')}</h3>
-              {formData.dates.map((date, idx) => {
-                const dateStr = getLocalDateString(date);
-                const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
-                return (
-                  <div key={idx} className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="font-medium">{date.toLocaleDateString()}</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-                      {['morning', 'afternoon', 'evening'].map(time => {
-                        const isSelected = dateOpt?.times.includes(time) || false;
-                        return (
-                          <button
-                            key={time}
-                            type="button"
-                            onClick={() => {}}
-                            className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150
-                              ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
-                            aria-pressed={isSelected}
-                          >
-                            {t(`common.${time}`)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button
-              onClick={() => {
-                setFormError(null);
-                if (!formData.name) {
-                  setFormError(t('meetup.errorNameRequired', 'Name is required'));
-                  return;
-                }
-                if (!user) {
-                  if (!formData.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
-                    setFormError(t('common.error_invalid_email', 'Please enter a valid email address'));
-                    return;
-                  }
-                }
-                setStep(2);
-              }}
-              disabled={!formData.name || (!user && !formData.email)}
-              className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
-            >
-              {t('meetup.continue', 'Continue')}
-            </button>
-          </div>
-        </div>
-      )}
-      {/* Stap 2: Datum/tijd kiezen */}
-      {step === 2 && (
-        <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
-          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">
+        <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md flex flex-col items-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6 text-center">
             {t('meetup.chooseCity', 'Choose your city')}
           </h2>
-          <p className="text-gray-700 mb-6 sm:mb-8 text-base sm:text-lg">
-            {t('meetup.chooseCityInfo', 'Choose your city! That way we know where to find the best spots for you')}
+          <p className="text-gray-700 mb-6 sm:mb-8 text-base sm:text-lg text-center">
+            {t('createMeetup.chooseCityInfo', 'Choose your city! That way we know where to find the best spots for you')}
           </p>
-          <label className="block text-gray-700 mb-2">
-            {t('meetup.chooseCityLabel', 'Pick a city')}
+          <label className="block text-gray-700 mb-2 text-center">
+            {t('createMeetup.chooseCityLabel', 'Pick a city')}
           </label>
           {isLoadingCities ? (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-center">
               {t('meetup.loadingCities', 'Loading cities...')}
             </div>
           ) : cityError ? (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-center">
               {cityError}
             </div>
           ) : cities.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 w-full max-w-md mx-auto">
             {cities.map((city) => (
               <button
                 key={city.id}
                 type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, city: city.name }))}
-                  className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary-500
+                onClick={() => setFormData(prev => ({ ...prev, city: city.name }))}
+                className={`p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary-500 w-full
                   ${formData.city === city.name ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
                 aria-pressed={formData.city === city.name}
               >
@@ -569,25 +493,35 @@ const CreateMeetup = () => {
           </div>
           ) : (
             <div>
-              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-center">
                 {t('meetup.noCitiesAvailable', 'No cities available. Using Rotterdam as default.')}
               </div>
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, city: 'Rotterdam' }))}
-                className="p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center border-primary-600 bg-primary-100 text-primary-800 focus-visible:ring-2 focus-visible:ring-primary-500"
+                className="p-4 rounded-xl border-2 transition-all duration-150 font-semibold text-lg shadow-sm flex items-center justify-center border-primary-600 bg-primary-100 text-primary-800 focus-visible:ring-2 focus-visible:ring-primary-500 w-full"
               >
                 Rotterdam
               </button>
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => setStep(2)}
-            className="btn-secondary w-full"
-          >
-            {t('common.back')}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              {t('meetup.back', 'Back')}
+            </button>
+            <button
+              type="button"
+              className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500"
+              disabled={!formData.city}
+              onClick={() => setStep(3)}
+            >
+              {t('meetup.continue', "Let's go!")}
+            </button>
+          </div>
         </div>
       )}
       {/* Stap 3: Café kiezen */}

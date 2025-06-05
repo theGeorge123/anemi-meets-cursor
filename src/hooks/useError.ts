@@ -12,7 +12,7 @@ interface ErrorState {
 interface UseErrorReturn {
   error: ErrorState | null;
   setError: (error: ErrorState | null) => void;
-  handleError: (error: unknown) => void;
+  handleError: (error: unknown, reportToSentry?: boolean) => void;
   clearError: () => void;
 }
 
@@ -20,7 +20,7 @@ export const useError = (): UseErrorReturn => {
   const [error, setError] = useState<ErrorState | null>(null);
   const { t } = useTranslation();
 
-  const handleError = useCallback((error: unknown) => {
+  const handleError = useCallback((error: unknown, reportToSentry: boolean = true) => {
     let errorMessage = t('errors.unknown');
     let errorCode: string | undefined;
     let errorDetails: unknown;
@@ -56,7 +56,9 @@ export const useError = (): UseErrorReturn => {
     });
 
     // Report to Sentry
-    Sentry.captureException(error);
+    if (reportToSentry) {
+      Sentry.captureException(error);
+    }
 
     // Set error state
     setError({

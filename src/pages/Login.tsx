@@ -42,13 +42,48 @@ const Login = () => {
     }
   }, []);
 
-  const getErrorMessage = (key: string, error: any) => {
-    const translated = t(key);
-    if (translated === key) {
-      return `Error: ${error?.message || 'Unknown error'}`;
+  function normalizeAuthError(t: any, error: any) {
+    let msg = t('error_generic');
+    const code = error.code || '';
+    switch (code) {
+      case 'user_not_found':
+        msg = t('error_user_not_found');
+        break;
+      case 'invalid_login_credentials':
+        msg = t('error_invalid_password');
+        break;
+      case 'email_address_invalid':
+      case 'invalid_email':
+        msg = t('error_invalid_email');
+        break;
+      case 'user_banned':
+        msg = t('error_user_banned');
+        break;
+      case 'email_not_confirmed':
+        msg = t('error_email_not_confirmed');
+        break;
+      case 'over_email_send_rate_limit':
+      case 'over_request_rate_limit':
+        msg = t('errorRateLimit');
+        break;
+      default:
+        const errMsg = error.message?.toLowerCase() || '';
+        if (errMsg.includes('invalid login credentials')) {
+          msg = t('error_invalid_password');
+        } else if (errMsg.includes('user not found')) {
+          msg = t('error_user_not_found');
+        } else if (errMsg.includes('email')) {
+          msg = t('error_invalid_email');
+        } else if (errMsg.includes('banned')) {
+          msg = t('error_user_banned');
+        } else if (errMsg.includes('not confirmed')) {
+          msg = t('error_email_not_confirmed');
+        } else if (errMsg.includes('rate limit')) {
+          msg = t('errorRateLimit');
+        }
     }
-    return translated;
-  };
+    return msg;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,46 +94,7 @@ const Login = () => {
       password: formData.password,
     });
     if (error) {
-      let msg = getErrorMessage('error_generic', error);
-      const code = error.code || '';
-      switch (code) {
-        case 'user_not_found':
-          msg = getErrorMessage('error_user_not_found', error);
-          break;
-        case 'invalid_login_credentials':
-          msg = getErrorMessage('error_invalid_password', error);
-          break;
-        case 'email_address_invalid':
-        case 'invalid_email':
-          msg = getErrorMessage('error_invalid_email', error);
-          break;
-        case 'user_banned':
-          msg = getErrorMessage('error_user_banned', error);
-          break;
-        case 'email_not_confirmed':
-          msg = getErrorMessage('error_email_not_confirmed', error);
-          break;
-        case 'over_email_send_rate_limit':
-        case 'over_request_rate_limit':
-          msg = getErrorMessage('errorRateLimit', error);
-          break;
-        default:
-          const errMsg = error.message?.toLowerCase() || '';
-          if (errMsg.includes('invalid login credentials')) {
-            msg = getErrorMessage('error_invalid_password', error);
-          } else if (errMsg.includes('user not found')) {
-            msg = getErrorMessage('error_user_not_found', error);
-          } else if (errMsg.includes('email')) {
-            msg = getErrorMessage('error_invalid_email', error);
-          } else if (errMsg.includes('banned')) {
-            msg = getErrorMessage('error_user_banned', error);
-          } else if (errMsg.includes('not confirmed')) {
-            msg = getErrorMessage('error_email_not_confirmed', error);
-          } else if (errMsg.includes('rate limit')) {
-            msg = getErrorMessage('errorRateLimit', error);
-          }
-      }
-      setError(msg);
+      setError(normalizeAuthError(t, error));
     } else {
       setShowSuccess(true);
       setTimeout(() => navigate('/dashboard'), 1200);
@@ -112,31 +108,7 @@ const Login = () => {
     setResetLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail || formData.email);
     if (error) {
-      let msg = getErrorMessage('reset_error_generic', error);
-      const code = error.code || '';
-      switch (code) {
-        case 'user_not_found':
-          msg = getErrorMessage('error_user_not_found', error);
-          break;
-        case 'email_address_invalid':
-        case 'invalid_email':
-          msg = getErrorMessage('error_invalid_email', error);
-          break;
-        case 'over_email_send_rate_limit':
-        case 'over_request_rate_limit':
-          msg = getErrorMessage('errorRateLimit', error);
-          break;
-        default:
-          const errMsg = error.message?.toLowerCase() || '';
-          if (errMsg.includes('user not found')) {
-            msg = getErrorMessage('error_user_not_found', error);
-          } else if (errMsg.includes('invalid email')) {
-            msg = getErrorMessage('error_invalid_email', error);
-          } else if (errMsg.includes('rate limit')) {
-            msg = getErrorMessage('errorRateLimit', error);
-          }
-      }
-      setResetMsg(msg);
+      setResetMsg(normalizeAuthError(t, error));
     } else {
       setResetMsg(t('reset_success'));
     }

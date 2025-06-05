@@ -22,6 +22,7 @@ export const nl = {
     morning: "Ochtend",
     afternoon: "Middag",
     evening: "Avond",
+    date: "Datum"
   },
   navigation: {
     home: "Home",
@@ -243,4 +244,27 @@ export const nl = {
   skip: "Overslaan",
   get_started: "Aan de slag! 🚀",
   next: "Volgende",
+  createMeetup: {
+    chooseCity: "Kies je stad",
+    chooseCityInfo: "Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.",
+    chooseCityLabel: "Welke stad wil je?",
+    chooseDaysInfo: "Kies zoveel dagen als je wilt! Hoe meer, hoe gezelliger ☀️",
+    chooseDates: "Kies je datums",
+    chooseTimes: "Kies je voorkeurstijden voor elke datum",
+    chooseCafe: "Kies je café!",
+    summary: "Samenvatting",
+    name: "Naam",
+    city: "Stad",
+    cafe: "Café",
+    selectedDates: "Geselecteerde datums",
+    errorNameShort: "Naam moet minstens 2 tekens zijn",
+    errorEmailInvalid: "Voer een geldig e-mailadres in",
+    errorEmailRequired: "E-mail is verplicht",
+    errorNameRequired: "Naam is verplicht",
+    errorCityRequired: "Stad is verplicht",
+    errorDatesRequired: "Selecteer minimaal één datum.",
+    errorTimesRequired: "Selecteer minimaal één tijd.",
+    errorCafeRequired: "Selecteer een café.",
+    suggestionName: "Gebruik een leuke bijnaam!"
+  },
 }; 

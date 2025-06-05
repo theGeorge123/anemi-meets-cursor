@@ -7,9 +7,10 @@ export interface ApiError {
 }
 
 export const handleApiError = (error: unknown): ApiError => {
-  if (error instanceof AxiosError) {
-    const status = error.response?.status;
-    const data = error.response?.data;
+  if (typeof error === 'object' && error !== null && (error as any).isAxiosError === true) {
+    const axiosError = error as any;
+    const status = axiosError.response?.status;
+    const data = axiosError.response?.data;
 
     // Handle specific HTTP status codes
     switch (status) {

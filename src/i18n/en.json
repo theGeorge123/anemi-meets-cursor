@@ -1,5 +1,17 @@
 {
   "createMeetup": {
+    "chooseCity": "Choose your city",
+    "chooseCityInfo": "Choose your city! That way we know where to find the best spots for you.",
+    "chooseCityLabel": "Which city do you want?",
+    "chooseDaysInfo": "Pick as many days as you like! The more, the merrier ☀️",
+    "chooseDates": "Pick your dates",
+    "chooseTimes": "Pick your preferred times for each date",
+    "chooseCafe": "Pick your café!",
+    "summary": "Summary",
+    "name": "Name",
+    "city": "City",
+    "cafe": "Café",
+    "selectedDates": "Selected dates",
     "errorNameShort": "Your name is too short",
     "errorEmailInvalid": "Please enter a valid email address",
     "errorEmailRequired": "Email is required",
@@ -10,5 +22,7 @@
     "errorCafeRequired": "Please choose a café",
     "suggestionName": "Try a fun or creative nickname"
   },
-  "name": "Name"
+  "common": {
+    "date": "Date"
+  }
 } 
