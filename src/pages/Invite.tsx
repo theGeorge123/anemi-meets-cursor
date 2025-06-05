@@ -33,35 +33,38 @@ const Invite = () => {
   useEffect(() => {
     if (token) {
       setInviteLink(`${window.location.origin}/respond?token=${token}`);
-      // Haal de uitnodiging op
       (async () => {
         setLoading(true);
         setError(null);
-        const { data: inviteData, error: inviteError } = await supabase
-          .from('invitations')
-          .select('selected_date, selected_time, cafe_id')
-          .eq('token', token)
-          .maybeSingle();
-        if (inviteError) {
-          setError(t('invite.errorNotFound'));
-        } else if (!inviteData) {
-          setError(t('invite.errorNotFound'));
-        } else {
-          // If a cafe is linked, fetch its details for display
-          if (inviteData.cafe_id) {
-            const { data: cafeData, error: cafeError } = await supabase
-              .from('cafes')
-              .select('name, address')
-              .eq('id', inviteData.cafe_id)
-              .maybeSingle();
-            if (!cafeError && cafeData) {
-              (inviteData as InvitationWithCafe).cafe_name = cafeData.name;
-              (inviteData as InvitationWithCafe).cafe_address = cafeData.address;
+        try {
+          const { data: inviteData, error: inviteError } = await supabase
+            .from('invitations')
+            .select('selected_date, selected_time, cafe_id')
+            .eq('token', token)
+            .maybeSingle();
+          if (inviteError) {
+            setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));
+          } else if (!inviteData) {
+            setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));
+          } else {
+            if (inviteData.cafe_id) {
+              const { data: cafeData, error: cafeError } = await supabase
+                .from('cafes')
+                .select('name, address')
+                .eq('id', inviteData.cafe_id)
+                .maybeSingle();
+              if (!cafeError && cafeData) {
+                (inviteData as InvitationWithCafe).cafe_name = cafeData.name;
+                (inviteData as InvitationWithCafe).cafe_address = cafeData.address;
+              }
             }
+            setInvitation(inviteData as InvitationWithCafe);
           }
-          setInvitation(inviteData as InvitationWithCafe);
+        } catch (err) {
+          setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       })();
     }
   }, [token, t]);
