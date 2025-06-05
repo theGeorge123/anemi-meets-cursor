@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../components/meetups/DateSelector';
 import { useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
@@ -173,14 +174,23 @@ const CreateMeetup = () => {
     return () => window.removeEventListener('online', flush);
   }, []);
 
-  // Helper for error translations with fallback
-  const getErrorMessage = (key: string, error: any) => {
-    const translated = t(key);
-    if (translated === key) {
-      return `Error: ${error?.message || 'Unknown error'}`;
-    }
-    return translated;
+  const handleDatePickerChange = (date: Date) => {
+    // Implement your logic here
   };
+
+  const dateLocale = undefined; // Set to your locale if needed
+
+  const CustomInput = undefined; // Replace with your custom input if needed
+
+  const handleRemoveDate = (dateStr: string) => {
+    // Implement your logic here
+  };
+
+  const handleTimeToggle = (dateStr: string, time: string) => {
+    // Implement your logic here
+  };
+
+  const isTimeSlotPast = (dateStr: string, time: string) => false; // Replace with real logic if needed
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -310,11 +320,11 @@ const CreateMeetup = () => {
     }
   };
 
-  const handleCityChange = (city: string) => {
+  const handleCityChange = async (city: string) => {
     console.log('City selected:', city);
     setFormData(prev => ({ ...prev, city }));
-    // Zoek cafés voor deze stad en selecteer er direct één (random)
-    supabase.from('cafes').select('*').eq('city', city).then(({ data, error }) => {
+    try {
+      const { data, error } = await supabase.from('cafes').select('*').eq('city', city);
       if (error) {
         console.error('Error fetching cafes on city change:', error);
         // Provide a default cafe if the query fails
@@ -340,7 +350,7 @@ const CreateMeetup = () => {
         setCafes(defaultCafes);
         setSelectedCafe(defaultCafes[0]);
       }
-    }).catch(err => {
+    } catch (err) {
       console.error('Exception fetching cafes on city change:', err);
       // Fallback to default cafe
       const defaultCafes = [{
@@ -351,7 +361,7 @@ const CreateMeetup = () => {
       }];
       setCafes(defaultCafes);
       setSelectedCafe(defaultCafes[0]);
-    });
+    }
   };
 
   const shuffleCafe = () => {
@@ -522,7 +532,6 @@ const CreateMeetup = () => {
                 locale={dateLocale}
                 inline
                 minDate={new Date()}
-                customInput={<CustomInput />}
               />
             </div>
             <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
