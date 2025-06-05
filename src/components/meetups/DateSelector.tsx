@@ -1,6 +1,8 @@
 import React from 'react';
-import DatePicker from 'react-datepicker';
+import DatePicker, { registerLocale } from 'react-datepicker';
 import { useTranslation } from 'react-i18next';
+import enGB from 'date-fns/locale/en-GB';
+import nl from 'date-fns/locale/nl';
 import { getHolidaysForDate } from '../../utils/holidays';
 
 /**
@@ -31,8 +33,11 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
   setDateTimeOptions,
   error,
 }) => {
-  const { t } = useTranslation('meetup');
-  const dateLocale = undefined; // locale logic if needed
+  const { t, i18n } = useTranslation('meetup');
+
+  registerLocale('en-GB', enGB);
+  registerLocale('nl', nl);
+  const dateLocale = i18n.language === 'nl' ? 'nl' : 'en-GB';
 
   // Helper: get local date string in YYYY-MM-DD
   const getLocalDateString = (date: Date) =>
@@ -76,6 +81,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
           selected={null}
           onChange={handleDatePickerChange}
           locale={dateLocale}
+          className="anemi-datepicker"
           inline
           minDate={new Date()}
         />
