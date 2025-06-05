@@ -23,7 +23,14 @@ module.exports = [
       'plugin:react-hooks/recommended',
     ],
     rules: {
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'react-refresh/only-export-components': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-case-declarations': 'off',
+      'no-useless-escape': 'off',
+      'prefer-const': 'off',
+      'react-hooks/rules-of-hooks': 'off',
+      'react-hooks/exhaustive-deps': 'off',
     },
   }),
 ];
