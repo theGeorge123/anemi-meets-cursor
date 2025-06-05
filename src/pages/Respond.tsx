@@ -17,7 +17,8 @@ interface Invitation {
 interface Cafe { name: string; address: string; image_url?: string; }
 
 const Respond = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const i18n = useTranslation().i18n;
   const location = useLocation();
   const [formData, setFormData] = useState({
     email: '',
