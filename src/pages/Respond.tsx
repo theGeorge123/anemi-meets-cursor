@@ -17,8 +17,7 @@ interface Invitation {
 interface Cafe { name: string; address: string; image_url?: string; }
 
 const Respond = () => {
-  const { t } = useTranslation();
-  const i18n = useTranslation().i18n;
+  const { t, i18n: _i18n } = useTranslation();
   const location = useLocation();
   const [formData, setFormData] = useState({
     email: '',
@@ -99,7 +98,7 @@ const Respond = () => {
         const token = params.get('token');
         if (!token) {
           if (!didCancel) {
-            setError(getRespondErrorMessage(t, i18n, 'respond.invalidInvitation', null));
+            setError(getRespondErrorMessage(t, _i18n, 'respond.invalidInvitation', null));
             setLoading(false);
           }
           return;
@@ -109,14 +108,14 @@ const Respond = () => {
         if (invitationError) {
           console.error('Supabase invitation error:', invitationError);
           if (!didCancel) {
-            setError(getRespondErrorMessage(t, i18n, 'respond.expiredOrMissing', invitationError));
+            setError(getRespondErrorMessage(t, _i18n, 'respond.expiredOrMissing', invitationError));
             setLoading(false);
           }
           return;
         }
         if (!invitation) {
           if (!didCancel) {
-            setError(getRespondErrorMessage(t, i18n, 'respond.expiredOrMissing', null));
+            setError(getRespondErrorMessage(t, _i18n, 'respond.expiredOrMissing', null));
             setLoading(false);
           }
           return;
@@ -184,22 +183,22 @@ const Respond = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const missing: string[] = [];
-    if (!formData.email) missing.push(i18n.language === 'nl' ? 'e-mailadres' : 'email address');
-    if (!formData.selectedTime) missing.push(i18n.language === 'nl' ? 'tijd' : 'time');
+    if (!formData.email) missing.push(_i18n.language === 'nl' ? 'e-mailadres' : 'email address');
+    if (!formData.selectedTime) missing.push(_i18n.language === 'nl' ? 'tijd' : 'time');
     // Extra validatie op formaat selectedTime
     const lastDash = formData.selectedTime.lastIndexOf('-');
     const datePart = formData.selectedTime.substring(0, lastDash);
     const timePart = formData.selectedTime.substring(lastDash + 1);
     // Check cafe_id presence
     const cafeId = invitation?.cafe_id;
-    if (!cafeId) missing.push(i18n.language === 'nl' ? 'café' : 'cafe');
+    if (!cafeId) missing.push(_i18n.language === 'nl' ? 'café' : 'cafe');
     if (!datePart || !timePart || !/^[\d]{4}-[\d]{2}-[\d]{2}$/.test(datePart) || !['morning','afternoon','evening'].includes(timePart)) {
-      setErrorMsg(getRespondErrorMessage(t, i18n, 'respond.invalidDateFormat', null));
+      setErrorMsg(getRespondErrorMessage(t, _i18n, 'respond.invalidDateFormat', null));
       return;
     }
     if (missing.length > 0) {
       setErrorMsg(
-        getRespondErrorMessage(t, i18n, 'common.errorMissingFields', { message: missing
+        getRespondErrorMessage(t, _i18n, 'common.errorMissingFields', { message: missing
             .map((field) =>
             field
             )
@@ -209,7 +208,7 @@ const Respond = () => {
     }
     setErrorMsg("");
     if (!invitation) {
-      setErrorMsg(getRespondErrorMessage(t, i18n, 'respond.errorNoInvite', null));
+      setErrorMsg(getRespondErrorMessage(t, _i18n, 'respond.errorNoInvite', null));
       return;
     }
     // Sla email op als updates gewenst
@@ -246,7 +245,7 @@ const Respond = () => {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setErrorMsg(mapRespondError(t, i18n, data));
+        setErrorMsg(mapRespondError(t, _i18n, data));
         console.error("Supabase error:", data.error || data);
       } else {
         setSubmitted(true);
@@ -264,7 +263,7 @@ const Respond = () => {
         }, 1200);
       }
     } catch (err) {
-      setErrorMsg(getRespondErrorMessage(t, i18n, 'respond.genericError', err));
+      setErrorMsg(getRespondErrorMessage(t, _i18n, 'respond.genericError', err));
       console.error("Netwerkfout:", err);
     }
   };
@@ -283,16 +282,16 @@ const Respond = () => {
           </p>
           {confirmationInfo && (
             <div className="bg-white rounded-lg shadow p-4 mb-4 w-full text-center">
-              <div className="font-semibold text-primary-700 mb-1">{i18n.language === 'nl' ? 'Café' : 'Cafe'}: {confirmationInfo.cafe_name}</div>
-              <div className="text-gray-600 mb-1">{i18n.language === 'nl' ? 'Adres' : 'Address'}: {confirmationInfo.cafe_address}</div>
-              <div className="text-gray-600 mb-1">{i18n.language === 'nl' ? 'Datum' : 'Date'}: {confirmationInfo.selected_date}</div>
-              <div className="text-gray-600">{i18n.language === 'nl' ? 'Tijd' : 'Time'}: {confirmationInfo.selected_time}</div>
+              <div className="font-semibold text-primary-700 mb-1">{_i18n.language === 'nl' ? 'Café' : 'Cafe'}: {confirmationInfo.cafe_name}</div>
+              <div className="text-gray-600 mb-1">{_i18n.language === 'nl' ? 'Adres' : 'Address'}: {confirmationInfo.cafe_address}</div>
+              <div className="text-gray-600 mb-1">{_i18n.language === 'nl' ? 'Datum' : 'Date'}: {confirmationInfo.selected_date}</div>
+              <div className="text-gray-600">{_i18n.language === 'nl' ? 'Tijd' : 'Time'}: {confirmationInfo.selected_time}</div>
             </div>
           )}
-          <button className="btn-primary w-full mb-3" onClick={() => window.location.href = "/"}>{i18n.language === 'nl' ? 'Terug naar home' : 'Back to home'}</button>
+          <button className="btn-primary w-full mb-3" onClick={() => window.location.href = "/"}>{_i18n.language === 'nl' ? 'Terug naar home' : 'Back to home'}</button>
           <div className="w-full flex flex-col items-center mt-2">
             <p className="mb-2">{t('respond.cta')}</p>
-            <a href="/signup" className="btn-secondary w-full">{i18n.language === 'nl' ? 'Account aanmaken' : 'Create account'}</a>
+            <a href="/signup" className="btn-secondary w-full">{_i18n.language === 'nl' ? 'Account aanmaken' : 'Create account'}</a>
           </div>
         </div>
       </div>
@@ -302,8 +301,8 @@ const Respond = () => {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
-        <LoadingIndicator label={i18n.language === 'nl' ? 'Laden...' : 'Loading...'} size="md" className="my-4" />
-        <SkeletonLoader count={2} height="h-12" className="my-2" ariaLabel={i18n.language === 'nl' ? 'Laden...' : 'Loading...'} />
+        <LoadingIndicator label={_i18n.language === 'nl' ? 'Laden...' : 'Loading...'} size="md" className="my-4" />
+        <SkeletonLoader count={2} height="h-12" className="my-2" ariaLabel={_i18n.language === 'nl' ? 'Laden...' : 'Loading...'} />
       </div>
     );
   }
@@ -314,7 +313,7 @@ const Respond = () => {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="card bg-primary-50 mb-6">
-        <h2 className="text-xl font-semibold text-primary-600">{i18n.language === 'nl' ? 'Café' : 'Cafe'}</h2>
+        <h2 className="text-xl font-semibold text-primary-600">{_i18n.language === 'nl' ? 'Café' : 'Cafe'}</h2>
         {cafe && cafe.image_url && (
           <img src={cafe.image_url} alt={cafe.name} className="w-full h-40 object-cover rounded-lg mb-2" />
         )}
@@ -351,7 +350,7 @@ const Respond = () => {
               const isSelected = formData.selectedTime === value;
               // Format date as 'Monday 3 June' or 'maandag 3 juni'
               const dateObj = new Date(time.date);
-              const formattedDate = dateObj.toLocaleDateString(i18n.language === 'nl' ? 'nl-NL' : 'en-US', {
+              const formattedDate = dateObj.toLocaleDateString(_i18n.language === 'nl' ? 'nl-NL' : 'en-US', {
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long',
@@ -375,7 +374,7 @@ const Respond = () => {
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            {i18n.language === 'nl' ? 'Jouw e-mailadres' : 'Your email address'}
+            {_i18n.language === 'nl' ? 'Jouw e-mailadres' : 'Your email address'}
           </label>
           <input
             type="email"
@@ -385,7 +384,7 @@ const Respond = () => {
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
             autoFocus
-            placeholder={i18n.language === 'nl' ? 'jij@voorbeeld.nl' : 'you@example.com'}
+            placeholder={_i18n.language === 'nl' ? 'jij@voorbeeld.nl' : 'you@example.com'}
             inputMode="email"
             autoComplete="email"
           />
@@ -400,14 +399,14 @@ const Respond = () => {
             className="h-4 w-4 text-primary-600 focus:ring-primary-500"
           />
           <label htmlFor="updates" className="ml-2 text-sm text-gray-700">
-            {i18n.language === 'nl' ? 'Houd me op de hoogte van Anemi Meets' : 'Keep me in the loop about Anemi Meets'}
+            {_i18n.language === 'nl' ? 'Houd me op de hoogte van Anemi Meets' : 'Keep me in the loop about Anemi Meets'}
           </label>
         </div>
 
         <button type="submit" className="btn-primary" disabled={loading}>
           {loading
-            ? (i18n.language === 'nl' ? 'Laden...' : 'Loading...')
-            : (i18n.language === 'nl' ? 'Bevestigen & mijn koffiemomentje claimen!' : 'Confirm & claim my coffee spot!')}
+            ? (_i18n.language === 'nl' ? 'Laden...' : 'Loading...')
+            : (_i18n.language === 'nl' ? 'Bevestigen & mijn koffiemomentje claimen!' : 'Confirm & claim my coffee spot!')}
         </button>
         <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') : errorMsg || undefined} />
       </form>
