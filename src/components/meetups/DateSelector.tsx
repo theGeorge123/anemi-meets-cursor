@@ -1,8 +1,8 @@
 import React from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { useTranslation } from 'react-i18next';
-import enGB from 'date-fns/locale/en-GB';
-import nl from 'date-fns/locale/nl';
+import { enGB } from 'date-fns/locale/en-GB';
+import { nl } from 'date-fns/locale/nl';
 import { getHolidaysForDate } from '../../utils/holidays';
 
 /**
