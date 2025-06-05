@@ -43,8 +43,6 @@ function useSentryTracking() {
 }
 
 function App() {
-  // const { i18n } = useTranslation(); // Verwijderd, niet gebruikt
-  // const [language, setLanguage] = useState('nl'); // Verwijderd, niet gebruikt
   const [profileEmoji, setProfileEmoji] = useState<string | undefined>(undefined);
 
   useEffect(() => {

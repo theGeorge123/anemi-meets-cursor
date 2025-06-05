@@ -55,84 +55,92 @@ const CreateMeetup = () => {
   const [step, setStep] = useState(1);
   const [user, setUser] = useState<any>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [isLoadingCities, setIsLoadingCities] = useState(true);
+  const [cityError, setCityError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [loadingCafes, setLoadingCafes] = useState(false);
-  const [cafesError, setCafesError] = useState<string | null>(null);
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [errorCities, setErrorCities] = useState<string | null>(null);
 
-  // Debug Supabase connection
-  useEffect(() => {
-    const testConnection = async () => {
-      try {
-        console.log('Testing Supabase connection...');
-        const { data, error } = await supabase.from('cities').select('count');
-        console.log('Supabase connection test:', { data, error });
-        
-        // Also log the current environment variables
-        console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-        console.log('Supabase Key (first 10 chars):', 
-          import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 10) + '...');
-      } catch (err) {
-        console.error('Supabase connection test failed:', err);
-      }
-    };
-    testConnection();
-  }, []);
-
-  // 2. Add step validation logic
-  const validateStep = async (currentStep: number) => {
-    try {
-      if (currentStep === 1) {
-        // No validation needed for the first step
-        setFormError(null);
-        return true;
-      } else if (currentStep === 2) {
-        // No validation needed for the second step
-        setFormError(null);
-        return true;
-      } else if (currentStep === 3) {
-        // No validation needed for the third step
-        setFormError(null);
-        return true;
-      } else if (currentStep === 4) {
-        // No validation needed for the fourth step
-        setFormError(null);
-        return true;
-      }
-      return false; // This should never be reached
-    } catch (err: any) {
-      setFormError(err.message);
-      return false;
-    }
-  };
-
-  // 3. Update navigation to trigger validation
-  const goToStep = async (nextStep: number) => {
-    const valid = await validateStep(step);
-    if (valid) setStep(nextStep);
-  };
-
-  // Fetch cities (only Rotterdam)
+  // Fetch cities (no longer restricted to just Rotterdam)
   useEffect(() => {
     const fetchCities = async () => {
-      setLoadingCities(true);
-      setErrorCities(null);
+      setIsLoadingCities(true);
+      setCityError(null);
       try {
+        // Fetch all cities instead of filtering to Rotterdam only
         const { data, error } = await supabase.from('cities').select('*');
-        if (error) throw error;
-        setCities(data || []);
-      } catch (err: any) {
-        setErrorCities(t('meetup.errorCitiesFetch', 'Could not load cities'));
-        setCities([]);
+        if (error) {
+          console.error('Error fetching cities:', error);
+          setCityError(t('common.errorLoadingCities'));
+          // Provide default cities if the query fails
+          setCities([
+            { id: 'default-rotterdam', name: 'Rotterdam' },
+            { id: 'default-amsterdam', name: 'Amsterdam' },
+            { id: 'default-utrecht', name: 'Utrecht' }
+          ]);
+        } else if (data && data.length > 0) {
+          setCities(data as City[]);
+        } else {
+          // If no cities found in the database, create default ones
+          setCities([
+            { id: 'default-rotterdam', name: 'Rotterdam' },
+            { id: 'default-amsterdam', name: 'Amsterdam' },
+            { id: 'default-utrecht', name: 'Utrecht' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Exception fetching cities:', err);
+        setCityError(t('common.errorLoadingCities'));
+        // Fallback to default cities
+        setCities([
+          { id: 'default-rotterdam', name: 'Rotterdam' },
+          { id: 'default-amsterdam', name: 'Amsterdam' },
+          { id: 'default-utrecht', name: 'Utrecht' }
+        ]);
       } finally {
-        setLoadingCities(false);
+        setIsLoadingCities(false);
       }
     };
     fetchCities();
   }, [t]);
+
+  // Fetch cafes for selected city
+  useEffect(() => {
+    const fetchCafes = async () => {
+      if (!formData.city) return setCafes([]);
+      try {
+        const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
+        if (error) {
+          console.error('Error fetching cafes:', error);
+          // If no cafes found, create a default one to ensure the flow can continue
+          setCafes([{
+            id: 'default-cafe',
+            name: 'Default Café',
+            address: 'City Center',
+            description: 'A cozy place to meet'
+          }]);
+        } else if (data && data.length > 0) {
+          setCafes(data as Cafe[]);
+        } else {
+          // If no cafes found, create a default one
+          setCafes([{
+            id: 'default-cafe',
+            name: 'Default Café',
+            address: 'City Center',
+            description: 'A cozy place to meet'
+          }]);
+        }
+      } catch (err) {
+        console.error('Exception fetching cafes:', err);
+        // Fallback to default cafe
+        setCafes([{
+          id: 'default-cafe',
+          name: 'Default Café',
+          address: 'City Center',
+          description: 'A cozy place to meet'
+        }]);
+      }
+    };
+    fetchCafes();
+  }, [formData.city]);
 
   useEffect(() => {
     // Scroll naar boven bij laden
@@ -252,25 +260,27 @@ const CreateMeetup = () => {
       console.log('Insert result:', { data: insertData, error: insertError });
 
         if (insertError) {
-        console.error('Insert error details:', {
-          code: insertError.code,
-          message: insertError.message,
-          details: insertError.details,
-          hint: insertError.hint
-        });
-
-        // Display a more detailed error message
-        let errorMessage = getErrorMessage('errorCreatingInvite', insertError);
-        if (insertError.details) {
-          errorMessage += ` (${insertError.details})`;
+          console.error('Insert error details:', insertError);
+          const code = insertError.code || '';
+          let msg = '';
+          switch (code) {
+            case 'error_network':
+              msg = t('common.errorNetwork');
+              break;
+            case 'validation_failed':
+              msg = t('common.errorValidationFailed');
+              break;
+            default:
+              const errMsg = insertError.message?.toLowerCase() || '';
+              if (errMsg.includes('network')) {
+                msg = t('common.errorNetwork');
+              } else if (errMsg.includes('valid')) {
+                msg = t('common.errorValidationFailed');
+              }
+          }
+          setFormError(msg);
+          return;
         }
-        if (insertError.hint) {
-          errorMessage += ` Hint: ${insertError.hint}`;
-        }
-
-        setFormError(errorMessage);
-        return;
-      }
 
       if (!insertData || insertData.length === 0) {
         console.error('No data returned from insert');
@@ -295,9 +305,53 @@ const CreateMeetup = () => {
         setFormError('Created invitation is missing token');
       }
     } catch (err) {
-      console.error('Unexpected error during submission:', err);
-      setFormError(`Unexpected error: ${err instanceof Error ? err.message : String(err)}`);
+      console.error('Exception during invitation creation:', err);
+      setFormError(t('common.errorNetwork'));
+    }
+  };
+
+  const handleCityChange = (city: string) => {
+    console.log('City selected:', city);
+    setFormData(prev => ({ ...prev, city }));
+    // Zoek cafés voor deze stad en selecteer er direct één (random)
+    supabase.from('cafes').select('*').eq('city', city).then(({ data, error }) => {
+      if (error) {
+        console.error('Error fetching cafes on city change:', error);
+        // Provide a default cafe if the query fails
+        const defaultCafes = [{
+          id: 'default-cafe',
+          name: 'Default Café',
+          address: 'City Center',
+          description: 'A cozy place to meet'
+        }];
+        setCafes(defaultCafes);
+        setSelectedCafe(defaultCafes[0]);
+      } else if (data && data.length > 0) {
+        setCafes(data as Cafe[]);
+        setSelectedCafe((data as Cafe[])[Math.floor(Math.random() * data.length)]);
+      } else {
+        // If no cafes found, create a default one
+        const defaultCafes = [{
+          id: 'default-cafe',
+          name: 'Default Café',
+          address: 'City Center',
+          description: 'A cozy place to meet'
+        }];
+        setCafes(defaultCafes);
+        setSelectedCafe(defaultCafes[0]);
       }
+    }).catch(err => {
+      console.error('Exception fetching cafes on city change:', err);
+      // Fallback to default cafe
+      const defaultCafes = [{
+        id: 'default-cafe',
+        name: 'Default Café',
+        address: 'City Center',
+        description: 'A cozy place to meet'
+      }];
+      setCafes(defaultCafes);
+      setSelectedCafe(defaultCafes[0]);
+    });
   };
 
   const shuffleCafe = () => {
@@ -337,22 +391,6 @@ const CreateMeetup = () => {
       }
     }
   }, []);
-
-  // Voeg deze useEffect toe na de cities useEffect
-  useEffect(() => {
-    if (!formData.city) return;
-    setLoadingCafes(true);
-    setCafesError(null);
-    supabase
-      .from('cafes')
-      .select('*')
-      .eq('city', formData.city)
-      .then(({ data, error }) => {
-        if (error) setCafesError(error.message);
-        setCafes(data || []);
-        setLoadingCafes(false);
-      });
-  }, [formData.city]);
 
   return (
     <div className="max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
@@ -437,23 +475,17 @@ const CreateMeetup = () => {
                 <input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500"
                   placeholder={t('meetup.emailLabel', 'Your email address')}
                   required
-            />
-                {emailError && <div className="text-red-500 text-sm mt-1" aria-live="polite">{emailError}</div>}
+                />
               </div>
             )}
           </div>
-          {formError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800" aria-live="polite">
-              {formError}
-            </div>
-          )}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          <button
+            <button
               onClick={() => {
                 setFormError(null);
                 if (!formData.name) {
@@ -461,24 +493,104 @@ const CreateMeetup = () => {
                   return;
                 }
                 if (!user) {
-                  if (!email) {
-                    setEmailError(t('meetup.errorEmailRequired', 'Email is required'));
+                  if (!formData.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+                    setFormError(t('common.error_invalid_email', 'Please enter a valid email address'));
                     return;
-                  }
-                  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-                    setEmailError(t('common.error_invalid_email', 'Please enter a valid email address'));
-                    return;
-                  } else {
-                    setEmailError('');
                   }
                 }
                 setStep(2);
               }}
-              disabled={!formData.name || (!user && !email)}
+              disabled={!formData.name || (!user && !formData.email)}
               className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
-          >
+            >
               {t('meetup.continue', 'Continue')}
-          </button>
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Stap 2: Datum/tijd kiezen */}
+      {step === 2 && (
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('common.date')}
+            </label>
+            <div className="relative">
+              <DatePicker
+                selected={null}
+                onChange={handleDatePickerChange}
+                locale={dateLocale}
+                inline
+                minDate={new Date()}
+                customInput={<CustomInput />}
+              />
+            </div>
+            <p className="text-sm text-gray-500 mt-2">{t('createMeetup.chooseDaysInfo')}</p>
+          </div>
+
+          {formData.dates.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-medium text-gray-700">{t('common.selectedDates')}</h3>
+              {formData.dates.map((date, idx) => {
+                const dateStr = getLocalDateString(date);
+                const dateOpt = dateTimeOptions.find(opt => opt.date === dateStr);
+                return (
+                  <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-medium">{date.toLocaleDateString()}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDate(dateStr)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        {t('common.remove')}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                      {['morning', 'afternoon', 'evening'].map(time => {
+                        const isSelected = dateOpt?.times.includes(time) || false;
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            onClick={() => handleTimeToggle(dateStr, time)}
+                            disabled={isTimeSlotPast(dateStr, time)}
+                            className={`w-full p-3 rounded-xl border-2 font-semibold text-base shadow-sm flex flex-col items-center justify-center transition-all duration-150
+                              ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}
+                              ${isTimeSlotPast(dateStr, time) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            aria-pressed={isSelected}
+                          >
+                            {t(`common.${time}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button
+              onClick={() => {
+                setFormError(null);
+                if (!formData.name) {
+                  setFormError(t('meetup.errorNameRequired', 'Name is required'));
+                  return;
+                }
+                if (!user) {
+                  if (!formData.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+                    setFormError(t('common.error_invalid_email', 'Please enter a valid email address'));
+                    return;
+                  }
+                }
+                setStep(2);
+              }}
+              disabled={!formData.name || (!user && !formData.email)}
+              className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              {t('meetup.continue', 'Continue')}
+            </button>
           </div>
         </div>
       )}
@@ -494,13 +606,13 @@ const CreateMeetup = () => {
           <label className="block text-gray-700 mb-2">
             {t('meetup.chooseCityLabel', 'Pick a city')}
           </label>
-          {loadingCities ? (
+          {isLoadingCities ? (
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
               {t('meetup.loadingCities', 'Loading cities...')}
             </div>
-          ) : errorCities ? (
+          ) : cityError ? (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">
-              {errorCities}
+              {cityError}
             </div>
           ) : cities.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
@@ -531,27 +643,13 @@ const CreateMeetup = () => {
               </button>
             </div>
           )}
-          {formError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800" aria-live="polite">
-              {formError}
-            </div>
-          )}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button
-              onClick={() => {
-                setFormError(null);
-                if (!formData.city) {
-                  setFormError(t('meetup.pleaseSelectCity', 'Please select a city'));
-                  return;
-                }
-                setStep(3);
-              }}
-              disabled={!formData.city}
-              className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
-            >
-              {t('meetup.continue', 'Continue')}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setStep(2)}
+            className="btn-secondary w-full"
+          >
+            {t('common.back')}
+          </button>
         </div>
       )}
       {/* Stap 3: Café kiezen */}
@@ -626,7 +724,7 @@ const CreateMeetup = () => {
             </button>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button type="button" onClick={() => goToStep(3)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">
+            <button type="button" onClick={() => setStep(3)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">
               {/* Back button */}
               {t('meetup.back', 'Back') === 'meetup.back' ? 'Back' : t('meetup.back', 'Back')}
             </button>
@@ -635,9 +733,7 @@ const CreateMeetup = () => {
               {t('meetup.continue', "Let's go!") === 'meetup.continue' ? "Let's go!" : t('meetup.continue', "Let's go!")}
             </button>
           </div>
-          {loadingCafes && <div className="text-sm text-gray-500 mb-2">{t('meetup.loadingCafes')}</div>}
-          {cafesError && <div className="text-red-500 text-sm mb-2" aria-live="polite">{t('meetup.errorCafesFetch')}</div>}
-          {!selectedCafe && <div className="text-red-500 text-sm mb-2" aria-live="polite">{t('meetup.errorCafeRequired')}</div>}
+          {formError && <div className="text-red-500 text-sm mb-2" aria-live="polite">{formError}</div>}
           <p className="text-sm text-gray-500 mb-4">{t('meetup.chooseCafeInfo', 'Pick your favorite spot or shuffle for a surprise!')}</p>
         </div>
       )}
@@ -666,7 +762,7 @@ const CreateMeetup = () => {
             )}
           </div>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button type="button" onClick={() => goToStep(4)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.back', 'Back')}</button>
+            <button type="button" onClick={() => setStep(4)} className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.back', 'Back')}</button>
             <button type="button" onClick={handleSubmit} className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.submit')}</button>
           </div>
         </div>
