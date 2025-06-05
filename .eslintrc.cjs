@@ -4,7 +4,7 @@ module.exports = {
     browser: true,
     es2020: true,
   },
-  ignorePatterns: ['dist'],
+  ignorePatterns: ['dist', '*.cjs'],
   parser: '@typescript-eslint/parser',
   plugins: [
     '@typescript-eslint',

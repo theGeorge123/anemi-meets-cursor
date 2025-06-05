@@ -22,7 +22,21 @@ export const en = {
     morning: "Morning",
     afternoon: "Afternoon",
     evening: "Evening",
-    date: "Date"
+    date: "Date",
+    cookiesFull: "Anemi Meets uses only functional cookies necessary for the site to work. By continuing you accept these cookies.",
+    privacyFull: "We only collect the details you enter to plan meetups. This information is never shared with third parties and is used solely to provide our service.",
+    termsFull: "By using Anemi Meets you agree to use the service responsibly. Accounts that abuse the platform may be suspended.",
+    rights: "All rights reserved.",
+    lastUpdate: "Last updated:",
+    contactName: "Your name",
+    contactEmail: "Your email",
+    contactMessage: "Your message",
+    contactSend: "Send",
+    contactSuccess: "Thanks for your message! We'll get back to you soon 😊",
+    contactError: "Oops! Something went wrong. Please try again.",
+    namePlaceholder: "Your name",
+    emailPlaceholder: "Enter your email address",
+    messagePlaceholder: "Type your message here..."
   },
   navigation: {
     home: "Home",

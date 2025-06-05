@@ -22,7 +22,21 @@ export const nl = {
     morning: "Ochtend",
     afternoon: "Middag",
     evening: "Avond",
-    date: "Datum"
+    date: "Datum",
+    cookiesFull: "Anemi Meets gebruikt alleen functionele cookies die nodig zijn om de site te laten werken. Door de site te gebruiken ga je akkoord met deze cookies.",
+    privacyFull: "We verzamelen alleen de gegevens die je invult om een meetup te plannen. Deze informatie wordt nooit met derden gedeeld en alleen gebruikt voor onze dienst.",
+    termsFull: "Door Anemi Meets te gebruiken ga je akkoord met een verantwoord gebruik van het platform. Accounts die misbruik maken kunnen worden geblokkeerd.",
+    rights: "Alle rechten voorbehouden.",
+    lastUpdate: "Laatst bijgewerkt:",
+    contactName: "Jouw naam",
+    contactEmail: "Jouw e-mailadres",
+    contactMessage: "Jouw bericht",
+    contactSend: "Versturen",
+    contactSuccess: "Bedankt voor je bericht! We sturen je snel een reactie 😊",
+    contactError: "Oeps! Er ging iets mis. Probeer het nog eens!",
+    namePlaceholder: "Jouw naam",
+    emailPlaceholder: "Voer je e-mailadres in",
+    messagePlaceholder: "Typ hier je bericht..."
   },
   navigation: {
     home: "Home",
