@@ -29,7 +29,7 @@ const AppRoutes = () => {
           <Route path="/account" element={<Account />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-meetup" element={<CreateMeetup />} />
-          <Route path="/invite/:id" element={<Invite />} />
+          <Route path="/invite/:token" element={<Invite />} />
           <Route path="/respond/:token" element={<Respond />} />
           <Route path="/confirmed" element={<Confirmed />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
