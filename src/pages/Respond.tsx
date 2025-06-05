@@ -35,7 +35,7 @@ const Respond = () => {
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
-  function getRespondErrorMessage(t: any, i18n: any, key: string, error: any) {
+  function getRespondErrorMessage(t: any, key: string, error: any) {
     const translated = t(key);
     if (translated === key) {
       return `Error: ${error?.message || 'Unknown error'}`;
@@ -43,45 +43,45 @@ const Respond = () => {
     return translated;
   }
 
-  function mapRespondError(t: any, i18n: any, data: any) {
-    let msg = getRespondErrorMessage(t, i18n, 'respond.genericError', data.error);
+  function mapRespondError(t: any, data: any, _i18n: any) {
+    let msg = getRespondErrorMessage(t, 'respond.genericError', data.error);
     if (data.error && typeof data.error === 'string') {
       const err = data.error.toLowerCase();
       if (err.includes('missing email')) {
-        msg = i18n.language === 'nl'
+        msg = _i18n.language === 'nl'
           ? 'Vul je e-mailadres in!'
           : 'Please enter your email address!';
       } else if (err.includes('missing cafe_id') || err.includes('missing cafe id')) {
-        msg = i18n.language === 'nl'
+        msg = _i18n.language === 'nl'
           ? 'Er ging iets mis met het café. Probeer het opnieuw of vraag je vriend(in) om een nieuwe uitnodiging!'
           : 'Something went wrong with the café info. Try again or ask your friend to send a new invite!';
       } else if (err.includes('multiple (or no) rows returned')) {
-        msg = i18n.language === 'nl'
+        msg = _i18n.language === 'nl'
           ? 'Deze uitnodiging is niet meer geldig. Vraag je vriend(in) om een nieuwe link!'
           : 'This invite link is no longer valid. Ask your friend for a new one!';
       } else if (err.includes('authorization')) {
-        msg = getRespondErrorMessage(t, i18n, 'respond.errorSendMail', data.error);
+        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error);
       } else if (err.includes('expired') || err.includes('not found')) {
-        msg = getRespondErrorMessage(t, i18n, 'respond.expiredOrMissing', data.error);
+        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error);
       }
     }
     const code = data.error_code || '';
     switch (code) {
       case 'missing_cafe_id':
-        msg = i18n.language === 'nl'
+        msg = _i18n.language === 'nl'
           ? 'Er ging iets mis met het café. Probeer het opnieuw of vraag je vriend(in) om een nieuwe uitnodiging!'
           : 'Something went wrong with the café info. Try again or ask your friend to send a new invite!';
         break;
       case 'missing_email':
-        msg = i18n.language === 'nl'
+        msg = _i18n.language === 'nl'
           ? 'Vul je e-mailadres in!'
           : 'Please enter your email address!';
         break;
       case 'authorization':
-        msg = getRespondErrorMessage(t, i18n, 'respond.errorSendMail', data.error);
+        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error);
         break;
       case 'expired_or_missing':
-        msg = getRespondErrorMessage(t, i18n, 'respond.expiredOrMissing', data.error);
+        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error);
         break;
       default:
         // already handled above
@@ -98,7 +98,7 @@ const Respond = () => {
         const token = params.get('token');
         if (!token) {
           if (!didCancel) {
-            setError(getRespondErrorMessage(t, _i18n, 'respond.invalidInvitation', null));
+            setError(getRespondErrorMessage(t, 'respond.invalidInvitation', null));
             setLoading(false);
           }
           return;
@@ -108,14 +108,14 @@ const Respond = () => {
         if (invitationError) {
           console.error('Supabase invitation error:', invitationError);
           if (!didCancel) {
-            setError(getRespondErrorMessage(t, _i18n, 'respond.expiredOrMissing', invitationError));
+            setError(getRespondErrorMessage(t, 'respond.expiredOrMissing', invitationError));
             setLoading(false);
           }
           return;
         }
         if (!invitation) {
           if (!didCancel) {
-            setError(getRespondErrorMessage(t, _i18n, 'respond.expiredOrMissing', null));
+            setError(getRespondErrorMessage(t, 'respond.expiredOrMissing', null));
             setLoading(false);
           }
           return;
@@ -193,12 +193,12 @@ const Respond = () => {
     const cafeId = invitation?.cafe_id;
     if (!cafeId) missing.push(_i18n.language === 'nl' ? 'café' : 'cafe');
     if (!datePart || !timePart || !/^[\d]{4}-[\d]{2}-[\d]{2}$/.test(datePart) || !['morning','afternoon','evening'].includes(timePart)) {
-      setErrorMsg(getRespondErrorMessage(t, _i18n, 'respond.invalidDateFormat', null));
+      setErrorMsg(getRespondErrorMessage(t, 'respond.invalidDateFormat', null));
       return;
     }
     if (missing.length > 0) {
       setErrorMsg(
-        getRespondErrorMessage(t, _i18n, 'common.errorMissingFields', { message: missing
+        getRespondErrorMessage(t, 'common.errorMissingFields', { message: missing
             .map((field) =>
             field
             )
@@ -208,7 +208,7 @@ const Respond = () => {
     }
     setErrorMsg("");
     if (!invitation) {
-      setErrorMsg(getRespondErrorMessage(t, _i18n, 'respond.errorNoInvite', null));
+      setErrorMsg(getRespondErrorMessage(t, 'respond.errorNoInvite', null));
       return;
     }
     // Sla email op als updates gewenst
@@ -245,7 +245,7 @@ const Respond = () => {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setErrorMsg(mapRespondError(t, _i18n, data));
+        setErrorMsg(mapRespondError(t, data, _i18n));
         console.error("Supabase error:", data.error || data);
       } else {
         setSubmitted(true);
@@ -263,7 +263,7 @@ const Respond = () => {
         }, 1200);
       }
     } catch (err) {
-      setErrorMsg(getRespondErrorMessage(t, _i18n, 'respond.genericError', err));
+      setErrorMsg(getRespondErrorMessage(t, 'respond.genericError', err));
       console.error("Netwerkfout:", err);
     }
   };
