@@ -275,6 +275,14 @@
   box-shadow: 0 2px 8px #ff914d44;
 }
 
+/* Highlight days already chosen when selecting multiple dates */
+.anemi-datepicker .date-selected {
+  background: #ff914d;
+  color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #ff914d44;
+}
+
 .anemi-datepicker .react-datepicker__day--today {
   border-radius: 50%;
   border: 2px solid #1573ff;
