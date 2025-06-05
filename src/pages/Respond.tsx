@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -18,7 +18,7 @@ interface Cafe { name: string; address: string; image_url?: string; }
 
 const Respond = () => {
   const { t, i18n: _i18n } = useTranslation();
-  const location = useLocation();
+  const { token } = useParams();
   const [formData, setFormData] = useState({
     email: '',
     selectedTime: '',
@@ -94,8 +94,6 @@ const Respond = () => {
     let didCancel = false;
     const fetchData = async () => {
       try {
-        const params = new URLSearchParams(location.search);
-        const token = params.get('token');
         if (!token) {
           if (!didCancel) {
             setError(getRespondErrorMessage(t, 'respond.invalidInvitation', null));
@@ -168,7 +166,7 @@ const Respond = () => {
       didCancel = true;
       clearTimeout(timeout);
     };
-  }, [location.search, t]);
+  }, [token, t]);
 
   useEffect(() => {
     const viewport = document.querySelector('meta[name=viewport]');
