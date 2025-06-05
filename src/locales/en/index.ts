@@ -18,6 +18,10 @@ export const en = {
       title: "Report an Issue"
     },
     testimonialsTitle: "What our users say",
+    testimonial1: "Anemi Meets saves me so much time! — Sophie, Rotterdam",
+    freeAccountInfo: "With a free account you can instantly plan Meetups and send invites!",
+    alreadyHaveAccount: "Already have an account? Login",
+    createAccount: "Create Account",
     error_invalid_email: "Please enter a valid email address",
     morning: "Morning",
     afternoon: "Afternoon",
@@ -179,7 +183,8 @@ export const en = {
     pastMeetups: "Past meetups",
   },
   toast: {
-    profileUpdated: "Profile updated!"
+    profileUpdated: "Profile updated!",
+    signupSuccess: "Account created! You're all set! ✨"
   },
   sessionExpiresSoon: "Your session will expire soon. Please log in again.",
 
@@ -205,6 +210,21 @@ export const en = {
     emailPlaceholder: "Your email address",
     passwordPlaceholder: "Your super secret password",
     loginButton: "Let me in!",
+  },
+  signup: {
+    title: "Sign up",
+    subtitle: "Create your free account to get started",
+    namePrompt: "We're glad you're here! What should we call you?",
+    namePlaceholder: "Your name",
+    emailPrompt: "Which email address can we use to connect you?",
+    emailPlaceholder: "Your email address",
+    passwordPrompt: "Which password do you want to use for this account?",
+    passwordPlaceholder: "Your password",
+    confirmPasswordPrompt: "Sorry, but we need to check if you typed your password correctly",
+    confirmPasswordPlaceholder: "Confirm your password",
+    overviewTitle: "Overview of your details",
+    submit: "Sign up",
+    steps: ["Name", "Email", "Password", "Overview"],
   },
   onboarding: {
     welcome: {
