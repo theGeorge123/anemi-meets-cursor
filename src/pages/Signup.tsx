@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
-import Toast from '../components/Toast';
 
 // TypeScript interface voor typeveiligheid
 interface SignupForm {
@@ -24,7 +23,6 @@ const Signup = () => {
     confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; confirmPassword?: string }>({});
 
   const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
@@ -124,7 +122,6 @@ const Signup = () => {
       }
     }
     setLoading(false);
-    setShowSuccess(true);
     setTimeout(() => navigate('/account'), 2000);
   };
 
