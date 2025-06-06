@@ -17,6 +17,7 @@ interface Profile {
   gender?: string;
   age?: number;
   wants_updates: boolean;
+  wants_reminders?: boolean;
   is_private: boolean;
 }
 
@@ -41,6 +42,7 @@ const Account = () => {
   const [email, setEmail] = useState('');
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
   const [wantsUpdates, setWantsUpdates] = useState(false);
+  const [wantsReminders, setWantsReminders] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
@@ -80,6 +82,7 @@ const Account = () => {
         if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
         if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
         setWantsUpdates(!!testProfiles.wants_updates);
+        setWantsReminders(testProfiles.wants_reminders !== false);
         setIsPrivate(!!testProfiles.is_private);
       } else {
         setUser(null);
@@ -143,7 +146,11 @@ const Account = () => {
   const handlePrefsSave = async () => {
     if (!user || !user.id) return;
     setPrefsSaving(true);
-    const { error } = await supabase.from('profiles').update({ wants_updates: wantsUpdates, is_private: isPrivate }).eq('id', user.id);
+    const { error } = await supabase.from('profiles').update({
+      wants_updates: wantsUpdates,
+      wants_reminders: wantsReminders,
+      is_private: isPrivate
+    }).eq('id', user.id);
     if (error) {
       console.error('Fout bij opslaan voorkeuren:', error);
     } else {
@@ -234,6 +241,19 @@ const Account = () => {
                       onChange={(e) => setWantsUpdates(e.target.checked)}
                     />
                     {t('account.wantsUpdatesCheckbox', 'Yeah, I want to receive updates!')}
+                  </label>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="w-full sm:w-32 font-semibold">{t('account.wantsReminders')}</label>
+                <div className="flex-1 flex flex-col gap-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={wantsReminders}
+                      onChange={(e) => setWantsReminders(e.target.checked)}
+                    />
+                    {t('account.wantsRemindersCheckbox', 'Yes, remind me before a meetup!')}
                   </label>
                 </div>
               </div>
