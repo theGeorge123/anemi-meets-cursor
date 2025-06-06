@@ -1,78 +1,91 @@
 // import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 
 const Home = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleStartMeetup = () => {
-      navigate('/create-meetup');
-  };
-
   return (
-    <div className="space-y-12">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-primary-600">{t('home.title')}</h1>
-        <div className="flex flex-col md:flex-row gap-4 justify-center mt-6 mb-8">
-          <button
-            type="button"
-            onClick={handleStartMeetup}
-            className="flex-1 card border-2 border-primary-100 bg-primary-100/80 flex flex-col items-center p-6 min-w-[180px] cursor-pointer transition transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-accent-500/40"
-            aria-label={t('home.fillIn')}
-          >
-            <span className="text-3xl mb-2" aria-hidden="true">📝</span>
-            <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('home.fillIn')}</h2>
-            <p className="text-gray-600 text-sm text-center">{t('home.fillInDesc')}</p>
-          </button>
-          <div className="flex-1 card bg-accent-500/80 flex flex-col items-center p-6 min-w-[180px]">
-            <span className="text-3xl mb-2" aria-hidden="true">📤</span>
-            <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('home.send')}</h2>
-            <p className="text-gray-600 text-sm text-center">{t('home.sendDesc')}</p>
-          </div>
-          <div className="flex-1 card bg-blue-100/80 flex flex-col items-center p-6 min-w-[180px]">
-            <span className="text-3xl mb-2" aria-hidden="true">✅</span>
-            <h2 className="text-lg font-semibold text-primary-700 mb-1">{t('home.accept')}</h2>
-            <p className="text-gray-600 text-sm text-center">{t('home.acceptDesc')}</p>
-          </div>
-        </div>
-        <div className="card bg-white/80 max-w-2xl mx-auto mt-4 mb-8">
-          <p className="text-lg text-gray-800 text-center">
-            {t('home.tired')}<br/>
-            {t('home.oneClick')}<br/>
-            {t('home.connectFaster')}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-white flex flex-col items-center">
+      {/* Main Hero */}
+      <section className="w-full flex flex-col-reverse md:flex-row items-center justify-between max-w-4xl mx-auto px-4 py-8 md:py-16">
+        {/* Left: Text */}
+        <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary-700 mb-4 font-nunito">
+            Discover cafés & meet friends
+          </h1>
+          <p className="text-lg sm:text-xl text-gray-700 mb-6 font-lato">
+            The easier way to get together in real life.
           </p>
+          <Link to="/create-meetup">
+            <button className="bg-orange-400 text-white font-bold rounded-full px-8 py-3 text-lg shadow-lg hover:bg-orange-500 transition mb-4">
+              Try it now
+            </button>
+          </Link>
         </div>
-        <div className="bg-primary-100/80 rounded-3xl shadow-xl p-8 flex flex-col items-center gap-2 max-w-xl mx-auto">
-          <h2 className="text-2xl font-bold text-primary-700 mb-2 flex items-center gap-2">
-            <span role="img" aria-label={t('home.connectAria', 'connect')}>🤝</span> {t('home.strengthen')}
-          </h2>
-          <p className="text-lg text-gray-700 text-center">
-            {t('home.firstStep')}<br/>
-            <span className="text-2xl" aria-hidden="true">☕️✨</span>
-          </p>
-          <button
-            onClick={handleStartMeetup}
-            className="text-lg px-8 py-3 mt-4 rounded-2xl font-semibold shadow-xl bg-accent-500 text-white hover:bg-accent-400 transition-colors duration-300"
-            aria-label={t('home.startNow')}
-          >
-            {t('home.startNow')}
-          </button>
+        {/* Right: Illustration */}
+        <div className="flex-1 flex justify-center mb-8 md:mb-0">
+          {/* Replace with your own SVG/illustration */}
+          <div className="relative w-64 h-48 md:w-80 md:h-64">
+            <svg viewBox="0 0 320 220" fill="none" className="w-full h-full">
+              <rect x="10" y="30" width="300" height="180" rx="24" fill="#e0f2f1"/>
+              <circle cx="80" cy="80" r="18" fill="#ff914d"/>
+              <circle cx="220" cy="120" r="14" fill="#26a69a"/>
+              <circle cx="160" cy="170" r="10" fill="#ff914d"/>
+              <rect x="70" y="70" width="20" height="20" rx="10" fill="#fff" />
+              <rect x="210" y="110" width="16" height="16" rx="8" fill="#fff" />
+              <rect x="150" y="160" width="12" height="12" rx="6" fill="#fff" />
+              {/* Coffee cup */}
+              <ellipse cx="270" cy="60" rx="18" ry="8" fill="#fff" />
+              <rect x="258" y="50" width="24" height="12" rx="6" fill="#ff914d" />
+              <ellipse cx="270" cy="50" rx="12" ry="5" fill="#fff" />
+            </svg>
+          </div>
         </div>
-      </div>
-      {/* Speelse gratis-tekst onder de drie vakjes */}
-      <div className="mt-8 text-center">
-        <span className="inline-block bg-[#fff7f3] text-primary-700 font-extrabold rounded-xl px-8 py-5 shadow text-3xl">
-          {t('home.freeText')}
-        </span>
-      </div>
-      {/* Testimonial sectie */}
-      <div className="max-w-xl mx-auto mt-8">
-        <h2 className="text-xl font-bold text-primary-700 mb-2 text-center">{t('common.testimonialsTitle')}</h2>
-        <div className="italic text-gray-700 bg-white/70 rounded-xl p-4 shadow text-center">
-          {t('home.testimonial')}
+      </section>
+
+      {/* Steps Section */}
+      <section className="w-full max-w-4xl mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Step 1 */}
+          <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center animate-fade-in">
+            <div className="bg-orange-100 rounded-full w-14 h-14 flex items-center justify-center mb-3">
+              <span className="text-2xl">📝</span>
+            </div>
+            <h3 className="font-bold text-lg text-primary-700 mb-2">Fill in your details</h3>
+            <p className="text-gray-600">Let us know who you are and when you're free.</p>
+          </div>
+          {/* Step 2 */}
+          <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <div className="bg-orange-100 rounded-full w-14 h-14 flex items-center justify-center mb-3">
+              <span className="text-2xl">📤</span>
+            </div>
+            <h3 className="font-bold text-lg text-primary-700 mb-2">Send invite</h3>
+            <p className="text-gray-600">Share the link with your friend in one click.</p>
+          </div>
+          {/* Step 3 */}
+          <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <div className="bg-orange-100 rounded-full w-14 h-14 flex items-center justify-center mb-3">
+              <span className="text-2xl">✅</span>
+            </div>
+            <h3 className="font-bold text-lg text-primary-700 mb-2">Accept</h3>
+            <p className="text-gray-600">Your friend picks a time and confirms. Done!</p>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Testimonial Section */}
+      <section className="w-full max-w-2xl mx-auto px-4 py-8">
+        <h2 className="text-xl font-bold text-primary-700 mb-4 text-center">What our users say</h2>
+        <div className="bg-white rounded-2xl shadow-md p-6 flex items-center gap-4 justify-center">
+          <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center">
+            <span className="text-2xl">😊</span>
+          </div>
+          <blockquote className="text-lg text-gray-700 font-medium italic">
+            “Meeting up is finally simple again!”
+          </blockquote>
+        </div>
+      </section>
     </div>
   );
 };
