@@ -4,6 +4,30 @@ function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
+async function wantsReminders(supabase: ReturnType<typeof createClient>, email: string): Promise<boolean> {
+  const { data: user, error: userError } = await supabase
+    .from('auth.users')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (userError || !user) {
+    return false;
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('wants_reminders')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    return false;
+  }
+
+  return !!profile?.wants_reminders;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -116,26 +140,32 @@ Deno.serve(async (req) => {
       <b>${isEnglish ? "Time" : "Tijd"}:</b> ${readableTime} on ${selected_date}</p>
       <p><a href="${gcalUrl}" target="_blank">➕ ${isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"}</a></p>`;
 
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: "noreply@anemimeets.com",
-        to: [email_a, email_b],
-        subject,
-        html,
-        attachments: [{
-          filename: "meeting.ics",
-          content: encodeBase64(ics),
-          type: "text/calendar"
-        }]
-      })
-    });
+    const recipients: string[] = [];
+    if (await wantsReminders(supabase, email_a)) recipients.push(email_a);
+    if (await wantsReminders(supabase, email_b)) recipients.push(email_b);
 
-    if (!emailRes.ok) throw new Error("Email not sent: " + (await emailRes.text()));
+    if (recipients.length > 0) {
+      const emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: "noreply@anemimeets.com",
+          to: recipients,
+          subject,
+          html,
+          attachments: [{
+            filename: "meeting.ics",
+            content: encodeBase64(ics),
+            type: "text/calendar"
+          }]
+        })
+      });
+
+      if (!emailRes.ok) throw new Error("Email not sent: " + (await emailRes.text()));
+    }
 
     return new Response(JSON.stringify({
       success: true,
