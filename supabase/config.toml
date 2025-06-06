@@ -285,6 +285,11 @@ inspector_port = 8083
 # The Deno major version to use.
 deno_version = 1
 
+# Cron triggers for Edge Functions
+# [functions.schedules]
+# send-meeting-reminders = "0 8 * * *"
+# See https://supabase.com/docs/guides/functions/schedule-functions
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 

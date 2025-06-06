@@ -54,6 +54,16 @@ src/
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 
+## Deploying Supabase Functions
+
+Deploy the reminder function with:
+
+```bash
+supabase functions deploy send-meeting-reminders --project-ref <your-project-id> --no-verify-jwt
+```
+
+Configure the schedule for this function in `supabase/config.toml`. See the [Supabase docs](https://supabase.com/docs/guides/functions/schedule-functions) for details.
+
 ## Contributing
 
 1. Fork the repository
