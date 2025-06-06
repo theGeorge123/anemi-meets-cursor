@@ -29,12 +29,20 @@ Deno.cron(
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    const nowDate = new Date();
+    const today = nowDate.toISOString().split("T")[0];
+    const tomorrow = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+
     const { data: invitations, error } = await supabase
       .from("invitations")
       .select(
         "id, token, email_a, email_b, selected_date, selected_time, cafe_id, reminded_24h, reminded_1h"
       )
-      .eq("status", "accepted");
+      .eq("status", "accepted")
+      .gte("selected_date", today)
+      .lte("selected_date", tomorrow);
 
     if (error) {
       console.error("Failed to fetch invitations", error.message);
