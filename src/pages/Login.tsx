@@ -115,6 +115,11 @@ const Login = () => {
     setResetLoading(false);
   };
 
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    if (error) setError(normalizeAuthError(t, error));
+  };
+
   return (
     <main className="max-w-md mx-auto px-2 sm:px-0 py-6">
       <h1 className="mobile-heading text-primary-600 mb-6 text-center">
@@ -201,12 +206,20 @@ const Login = () => {
         >
           {t('login.loginButton')}
         </button>
-      </form>
+        </form>
 
-      <div className="text-center mt-4">
         <button
-          className="text-primary-600 underline hover:text-primary-800 text-sm"
-          onClick={() => navigate('/signup')}
+          type="button"
+          onClick={handleGoogleLogin}
+          className="btn-secondary w-full mt-4 py-3 px-6 text-lg rounded-lg flex justify-center"
+        >
+          {t('login.googleButton')}
+        </button>
+
+        <div className="text-center mt-4">
+          <button
+            className="text-primary-600 underline hover:text-primary-800 text-sm"
+            onClick={() => navigate('/signup')}
         >
           {t('login.noAccountCta')}
         </button>
