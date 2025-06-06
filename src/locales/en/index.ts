@@ -15,7 +15,15 @@ export const en = {
     terms: "Terms & Conditions",
     contact: "Contact",
     reportIssue: {
-      title: "Report an Issue"
+      title: "Report an Issue",
+      descriptionLabel: "Describe the issue or idea",
+      descriptionPlaceholder: "Tell us what went wrong or share your idea...",
+      stepsLabel: "Steps to reproduce (optional)",
+      stepsPlaceholder: "List the steps so we can see the problem",
+      screenshotLabel: "Screenshot (optional)",
+      submit: "Submit report",
+      error: "Couldn't submit: {{error}}",
+      success: "Thanks! We've received your report."
     },
     testimonialsTitle: "What our users say",
     testimonial1: "Anemi Meets saves me so much time! — Sophie, Rotterdam",
