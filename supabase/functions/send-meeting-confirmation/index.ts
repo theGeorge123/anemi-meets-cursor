@@ -116,6 +116,24 @@ Deno.serve(async (req) => {
       <b>${isEnglish ? "Time" : "Tijd"}:</b> ${readableTime} on ${selected_date}</p>
       <p><a href="${gcalUrl}" target="_blank">➕ ${isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"}</a></p>`;
 
+    const recipients: string[] = [];
+    const { data: profileA } = await supabase
+      .from("profiles")
+      .select("wants_reminders")
+      .eq("email", email_a)
+      .maybeSingle();
+    if (!profileA || profileA.wants_reminders !== false) {
+      recipients.push(email_a);
+    }
+    const { data: profileB } = await supabase
+      .from("profiles")
+      .select("wants_reminders")
+      .eq("email", email_b)
+      .maybeSingle();
+    if (!profileB || profileB.wants_reminders !== false) {
+      recipients.push(email_b);
+    }
+
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -124,7 +142,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: "noreply@anemimeets.com",
-        to: [email_a, email_b],
+        to: recipients,
         subject,
         html,
         attachments: [{

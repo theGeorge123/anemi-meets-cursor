@@ -198,6 +198,8 @@ export const nl = {
     ageEditHint: "Hoe jong voel je je? Typ het in!",
     wantsUpdates: "Stuur me leuke updates!",
     wantsUpdatesCheckbox: "Ja, ik wil updates ontvangen!",
+    wantsReminders: "Stuur me herinneringen voor meetups",
+    wantsRemindersCheckbox: "Ja, herinner me per e-mail!",
     isPrivate: "Houd mijn profiel privé",
     isPrivateCheckbox: "Ja, ik wil mijn profiel privé houden!",
     dangerZone: "Gevaarzone",
