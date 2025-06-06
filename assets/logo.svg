@@ -1,5 +1,0 @@
-<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 8C20 3.58172 23.5817 0 28 0H92C96.4183 0 100 3.58172 100 8V32C100 36.4183 96.4183 40 92 40H28C23.5817 40 20 36.4183 20 32V8Z" fill="#5F7559"/>
-    <path d="M35 15H45M35 25H45" stroke="white" stroke-width="3" stroke-linecap="round"/>
-    <text x="55" y="25" fill="white" font-family="Inter, sans-serif" font-size="16" font-weight="600">anemi meets</text>
-</svg> 
