@@ -1,8 +1,4 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-
 export default function CookiePolicy() {
-  const { t } = useTranslation();
   return (
     <main className="max-w-2xl mx-auto px-4 py-8 pb-32">
       <h1 className="text-3xl font-bold text-primary-700 mb-6">Cookies Policy (English)</h1>
