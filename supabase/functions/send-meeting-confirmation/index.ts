@@ -121,6 +121,7 @@ Deno.serve(async (req) => {
     const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
     const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${dtStamp}\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
+    const icsBase64 = encodeBase64(ics);
 
     const cafeImageUrl = cafe.image_url || `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
     const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("Koffie Meetup via Anemi")}&dates=${datePart}${dtStart}/${datePart}${dtEnd}&location=${encodeURIComponent(`${cafe.name} ${cafe.address}`)}`;
@@ -157,7 +158,7 @@ Deno.serve(async (req) => {
           html,
           attachments: [{
             filename: "meeting.ics",
-            content: encodeBase64(ics),
+            content: icsBase64,
             type: "text/calendar"
           }]
         })
@@ -172,7 +173,8 @@ Deno.serve(async (req) => {
       cafe_address: cafe.address,
       invitation_token: token,
       selected_date,
-      selected_time
+      selected_time,
+      ics_base64: icsBase64
     }), {
       status: 200,
       headers: { "Access-Control-Allow-Origin": "*" }

@@ -26,6 +26,7 @@ interface Profile {
 
 const Dashboard = () => {
   const { t, i18n } = useTranslation();
+  const DASHBOARD_CACHE_KEY = 'dashboard_cache_v1';
   const [meetups, setMeetups] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +45,20 @@ const Dashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+      const cached = localStorage.getItem(DASHBOARD_CACHE_KEY);
+      if (!navigator.onLine && cached) {
+        try {
+          const cache = JSON.parse(cached);
+          setProfile(cache.profile || null);
+          setFriends(cache.friends || []);
+          setPendingFriends(cache.pendingFriends || []);
+          setMeetups(cache.meetups || []);
+          setLoading(false);
+          return;
+        } catch (err) {
+          console.error(err);
+        }
+      }
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         navigate('/login');
@@ -98,9 +113,31 @@ const Dashboard = () => {
         .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
         .or(`invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}",email_a.eq."${session.user.email}"`);
       if (error) {
+        if (cached) {
+          try {
+            const cache = JSON.parse(cached);
+            setProfile(cache.profile || null);
+            setFriends(cache.friends || []);
+            setPendingFriends(cache.pendingFriends || []);
+            setMeetups(cache.meetups || []);
+            setLoading(false);
+            return;
+          } catch (err) {
+            console.error(err);
+          }
+        }
         setError(t('dashboard.errorLoadingMeetups'));
       } else {
         setMeetups((data || []) as Invitation[]);
+        localStorage.setItem(
+          DASHBOARD_CACHE_KEY,
+          JSON.stringify({
+            profile: profileData,
+            friends: friendsList,
+            pendingFriends: pendingList,
+            meetups: data || []
+          })
+        );
       }
       setLoading(false);
     };

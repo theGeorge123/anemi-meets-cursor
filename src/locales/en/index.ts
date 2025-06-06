@@ -183,6 +183,8 @@ export const en = {
     wantsUpdatesCheckbox: "Yeah, I want to receive updates!",
     wantsReminders: "Send me meetup reminders",
     wantsRemindersCheckbox: "Yes, remind me before a meetup!",
+    wantsNotifications: "Browser notifications",
+    wantsNotificationsCheckbox: "Yes, allow browser notifications!",
     isPrivate: "Keep my profile private",
     isPrivateCheckbox: "Yeah, I want to keep my profile private!",
     dangerZone: "Danger Zone",
