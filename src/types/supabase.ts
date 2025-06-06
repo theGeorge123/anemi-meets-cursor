@@ -105,6 +105,30 @@ export interface Notification {
 }
 
 /**
+ * Friend invite information
+ */
+export interface FriendInvite {
+  id: string;
+  inviter_id: string;
+  invitee_email: string;
+  token: string;
+  created_at: string;
+  accepted: boolean;
+  accepted_at?: string;
+}
+
+/**
+ * Friendship information
+ */
+export interface Friendship {
+  id: string;
+  user_id: string;
+  friend_id: string;
+  created_at: string;
+  status: 'pending' | 'accepted' | 'rejected';
+}
+
+/**
  * Database schema type
  * This type represents the entire database schema
  */

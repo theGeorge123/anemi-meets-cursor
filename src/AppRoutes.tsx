@@ -16,6 +16,7 @@ import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Suspense } from 'react';
+import InviteFriend from './pages/InviteFriend';
 
 const AppRoutes = () => {
   const { t } = useTranslation();
@@ -36,6 +37,7 @@ const AppRoutes = () => {
           <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/invite-friend/:token" element={<InviteFriend />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

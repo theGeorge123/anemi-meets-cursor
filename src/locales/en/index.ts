@@ -159,6 +159,9 @@ export const en = {
     ctaProfile: "Edit profile",
     ctaLogout: "Log out",
     errorLoadingMeetups: "Oops, couldn't load your meetups. Try again!",
+    hasAccount: "Has account",
+    noAccount: "No account",
+    inviteToMeetup: "Invite to meetup",
   },
   account: {
     title: "Your Profile",
@@ -214,9 +217,9 @@ export const en = {
   sessionExpiresSoon: "Your session will expire soon. Please log in again.",
 
   login: {
-    title: "Hey, welcome back! 👋",
+    title: "Ready to log in? 👋",
     subtitle: "Ready for more coffee adventures? Log in below!",
-    welcomeBack: "Yay, you're back!",
+    welcomeBack: "You're in! ☕️",
     welcomeDesc: "Pop in your details and let's get you back to your meetups.",
     forgotPassword: "Forgot your password? Oops!",
     noAccountCta: "No account yet? Join the fun in seconds!",

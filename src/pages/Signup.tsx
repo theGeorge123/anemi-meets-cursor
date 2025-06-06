@@ -122,6 +122,8 @@ const Signup = () => {
       }
     }
     setLoading(false);
+    // Set onboarding flag for new accounts
+    localStorage.setItem('anemi-show-onboarding', '1');
     setTimeout(() => navigate('/account'), 2000);
   };
 

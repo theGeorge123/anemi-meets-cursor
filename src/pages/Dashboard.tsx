@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
 import OnboardingModal from '../components/OnboardingModal';
+import { Friendship, FriendInvite } from '../types/supabase';
 
 interface Invitation {
   id: string;
@@ -21,6 +22,7 @@ interface Profile {
   full_name: string;
   emoji?: string;
   last_seen?: string;
+  email?: string;
 }
 
 const Dashboard = () => {
@@ -30,6 +32,12 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [friends, setFriends] = useState<Profile[]>([]);
+  const [pendingFriends, setPendingFriends] = useState<Profile[]>([]);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [addFriendValue, setAddFriendValue] = useState('');
+  const [addFriendStatus, setAddFriendStatus] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,8 +54,8 @@ const Dashboard = () => {
         .from('profiles')
         .update({ last_seen: new Date().toISOString() })
         .eq('id', session.user.id);
-      // Onboarding check: only show for first-time users
-      if (!localStorage.getItem('anemi-onboarded')) {
+      // Onboarding check: only show for new signups
+      if (localStorage.getItem('anemi-show-onboarding')) {
         setShowOnboarding(true);
       }
       // Profiel ophalen (inclusief last_seen)
@@ -57,6 +65,33 @@ const Dashboard = () => {
         .eq('id', session.user.id)
         .maybeSingle();
       setProfile(profileData as Profile);
+      // Friends ophalen (accepted)
+      const { data: friendshipRows } = await supabase
+        .from('friendships')
+        .select('friend_id, status')
+        .eq('user_id', session.user.id);
+      let friendsList: Profile[] = [];
+      let pendingList: Profile[] = [];
+      if (friendshipRows && friendshipRows.length > 0) {
+        const acceptedIds = friendshipRows.filter((f: { friend_id: string, status: string }) => f.status === 'accepted').map((f: { friend_id: string }) => f.friend_id);
+        const pendingIds = friendshipRows.filter((f: { friend_id: string, status: string }) => f.status === 'pending').map((f: { friend_id: string }) => f.friend_id);
+        if (acceptedIds.length > 0) {
+          const { data: friendProfiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, emoji, email')
+            .in('id', acceptedIds);
+          friendsList = friendProfiles || [];
+        }
+        if (pendingIds.length > 0) {
+          const { data: pendingProfiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, emoji, email')
+            .in('id', pendingIds);
+          pendingList = pendingProfiles || [];
+        }
+      }
+      setFriends(friendsList);
+      setPendingFriends(pendingList);
       // Meetups ophalen
       const { data, error } = await supabase
         .from('invitations')
@@ -77,11 +112,124 @@ const Dashboard = () => {
   const upcoming = sortedMeetups.filter(m => new Date(m.selected_date) >= new Date());
   const lastActivity = sortedMeetups.length > 0 ? sortedMeetups[sortedMeetups.length - 1] : null;
 
+  // Remove friend handler
+  const handleRemoveFriend = async (friendId: string) => {
+    await supabase.from('friendships').delete().eq('user_id', profile?.id).eq('friend_id', friendId);
+    setFriends(friends.filter(f => f.id !== friendId));
+  };
+
+  // Generate invite code handler
+  const handleGenerateInvite = async () => {
+    setInviteLoading(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    // Generate a random token
+    const token = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    const { error } = await supabase.from('friend_invites').insert({
+      inviter_id: session.user.id,
+      invitee_email: '', // Will be filled when accepted
+      token
+    });
+    if (!error) {
+      setInviteCode(token);
+    }
+    setInviteLoading(false);
+  };
+
+  // Copy invite link handler
+  const handleCopyInvite = () => {
+    if (inviteCode) {
+      navigator.clipboard.writeText(`${window.location.origin}/invite-friend/${inviteCode}`);
+    }
+  };
+
+  // Add friend by code or email
+  const handleAddFriend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddFriendStatus(null);
+    const value = addFriendValue.trim();
+    if (!value) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setAddFriendStatus(t('inviteFriend.loginFirst', 'Please log in.'));
+      return;
+    }
+    // If value looks like a code (token)
+    if (/^[a-z0-9]+$/i.test(value) && value.length > 8) {
+      // Accept invite by code
+      const { data: invite, error: inviteError } = await supabase
+        .from('friend_invites')
+        .select('id, inviter_id, accepted')
+        .eq('token', value)
+        .maybeSingle();
+      if (inviteError || !invite) {
+        setAddFriendStatus(t('inviteFriend.invalid', 'Invalid or expired invite code.'));
+        return;
+      }
+      if (invite.accepted) {
+        setAddFriendStatus(t('inviteFriend.alreadyAccepted', 'This invite has already been used.'));
+        return;
+      }
+      // Create friendship (pending for inviter, accepted for invitee)
+      const { error: friendshipError } = await supabase.from('friendships').insert([
+        { user_id: invite.inviter_id, friend_id: session.user.id, status: 'pending' },
+        { user_id: session.user.id, friend_id: invite.inviter_id, status: 'accepted' }
+      ]);
+      if (friendshipError) {
+        setAddFriendStatus(t('inviteFriend.error', 'Could not add friend. Maybe you are already friends?'));
+        return;
+      }
+      await supabase.from('friend_invites').update({ accepted: true, accepted_at: new Date().toISOString(), invitee_email: session.user.email }).eq('token', value);
+      setAddFriendStatus(t('inviteFriend.success', 'You are now friends!'));
+      setAddFriendValue('');
+      return;
+    }
+    // Otherwise, treat as email
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) {
+      setAddFriendStatus(t('inviteFriend.invalidEmail', 'Please enter a valid email address or invite code.'));
+      return;
+    }
+    // Find user by email
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', value)
+      .maybeSingle();
+    if (!userProfile) {
+      setAddFriendStatus(t('inviteFriend.notFound', 'No user found with that email.'));
+      return;
+    }
+    // Check if already friends
+    const { data: existing } = await supabase
+      .from('friendships')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('friend_id', userProfile.id)
+      .maybeSingle();
+    if (existing) {
+      setAddFriendStatus(t('inviteFriend.alreadyFriends', 'You are already friends or have a pending request.'));
+      return;
+    }
+    // Create pending friendship
+    const { error: addError } = await supabase.from('friendships').insert({
+      user_id: session.user.id,
+      friend_id: userProfile.id,
+      status: 'pending'
+    });
+    if (addError) {
+      setAddFriendStatus(t('inviteFriend.error', 'Could not add friend.'));
+      return;
+    }
+    setAddFriendStatus(t('inviteFriend.requestSent', 'Friend request sent!'));
+    setAddFriendValue('');
+  };
+
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {showOnboarding && (
         <OnboardingModal onFinish={() => {
           setShowOnboarding(false);
+          localStorage.removeItem('anemi-show-onboarding');
           localStorage.setItem('anemi-onboarded', '1');
         }} />
       )}
@@ -109,6 +257,79 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Friends List */}
+      {friends.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-bold text-primary-700 mb-2">{t('dashboard.friends', 'Your friends')}</h2>
+          <ul className="flex flex-wrap gap-3">
+            {friends.map(friend => (
+              <li key={friend.id} className="flex items-center gap-2 bg-white/80 rounded-xl shadow px-4 py-2 border border-primary-100">
+                {friend.emoji && <span className="text-2xl" title={friend.full_name}>{friend.emoji}</span>}
+                <span className="font-semibold text-primary-700">{friend.full_name}</span>
+                {friend.email ? (
+                  <span className="ml-2 text-green-600 text-xs font-semibold">{t('dashboard.hasAccount', 'Has account')}</span>
+                ) : (
+                  <span className="ml-2 text-gray-400 text-xs">{t('dashboard.noAccount', 'No account')}</span>
+                )}
+                {friend.email && (
+                  <button
+                    className="ml-2 btn-secondary text-xs px-2 py-1"
+                    onClick={() => navigate(`/create-meetup?invite=${friend.id}`)}
+                  >
+                    {t('dashboard.inviteToMeetup', 'Invite to meetup')}
+                  </button>
+                )}
+                <button className="ml-2 text-red-500 hover:underline text-xs" onClick={() => handleRemoveFriend(friend.id)}>{t('dashboard.removeFriend', 'Remove')}</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Pending Friends List */}
+      {pendingFriends.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-bold text-primary-700 mb-2">{t('dashboard.pendingFriends', 'Pending friend requests')}</h2>
+          <ul className="flex flex-wrap gap-3">
+            {pendingFriends.map(friend => (
+              <li key={friend.id} className="flex items-center gap-2 bg-yellow-50 rounded-xl shadow px-4 py-2 border border-yellow-200">
+                {friend.emoji && <span className="text-2xl" title={friend.full_name}>{friend.emoji}</span>}
+                <span className="font-semibold text-yellow-700">{friend.full_name}</span>
+                <span className="ml-2 text-xs text-yellow-600">{t('dashboard.pending', 'Pending')}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Invite Friend Section */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold text-primary-700 mb-2">{t('dashboard.inviteFriend', 'Invite a friend')}</h2>
+        <button className="btn-primary" onClick={handleGenerateInvite} disabled={inviteLoading}>{inviteLoading ? t('loading') : t('dashboard.generateInvite', 'Generate invite link')}</button>
+        {inviteCode && (
+          <div className="mt-2 flex items-center gap-2">
+            <input type="text" value={`${window.location.origin}/invite-friend/${inviteCode}`} readOnly className="border rounded px-2 py-1 w-full max-w-xs" />
+            <button className="btn-secondary" onClick={handleCopyInvite}>{t('dashboard.copy', 'Copy')}</button>
+          </div>
+        )}
+      </div>
+
+      {/* Add Friend by Code or Email */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold text-primary-700 mb-2">{t('dashboard.addFriend', 'Add a friend by code or email')}</h2>
+        <form className="flex flex-col sm:flex-row gap-2 items-center" onSubmit={handleAddFriend}>
+          <input
+            type="text"
+            className="border rounded px-2 py-1 w-full max-w-xs"
+            placeholder={t('dashboard.addFriendPlaceholder', 'Enter invite code or email')}
+            value={addFriendValue}
+            onChange={e => setAddFriendValue(e.target.value)}
+          />
+          <button className="btn-primary" type="submit">{t('dashboard.addFriendBtn', 'Add friend')}</button>
+        </form>
+        {addFriendStatus && <div className="mt-2 text-sm text-primary-700">{addFriendStatus}</div>}
+      </div>
 
       {/* Samenvatting aankomende meetups */}
       <div className="mb-8">

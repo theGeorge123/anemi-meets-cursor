@@ -74,13 +74,39 @@ const Home = () => {
       {/* Testimonial Section */}
       <section className="w-full max-w-2xl mx-auto px-4 py-8">
         <h2 className="text-xl font-bold text-primary-700 mb-4 text-center">What our users say</h2>
-        <div className="bg-white rounded-2xl shadow-md p-6 flex items-center gap-4 justify-center">
-          <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center">
-            <span className="text-2xl">😊</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
+          <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center justify-center border-2 border-orange-200" style={{ width: 180, height: 180 }}>
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
+              <span className="text-2xl">😊</span>
+            </div>
+            <blockquote className="text-base text-gray-700 font-medium italic text-center mt-2">
+              “Meeting up is finally simple again!”
+            </blockquote>
           </div>
-          <blockquote className="text-lg text-gray-700 font-medium italic">
-            “Meeting up is finally simple again!”
-          </blockquote>
+          <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center justify-center border-2 border-orange-200" style={{ width: 180, height: 180 }}>
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
+              <span className="text-2xl">☕️</span>
+            </div>
+            <blockquote className="text-base text-gray-700 font-medium italic text-center mt-2">
+              “I love how easy it is to pick a café!”
+            </blockquote>
+          </div>
+          <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center justify-center border-2 border-orange-200" style={{ width: 180, height: 180 }}>
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
+              <span className="text-2xl">🎉</span>
+            </div>
+            <blockquote className="text-base text-gray-700 font-medium italic text-center mt-2">
+              “No more endless group chats. Just coffee!”
+            </blockquote>
+          </div>
+          <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center justify-center border-2 border-orange-200" style={{ width: 180, height: 180 }}>
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
+              <span className="text-2xl">💬</span>
+            </div>
+            <blockquote className="text-base text-gray-700 font-medium italic text-center mt-2">
+              “Finally found a way to actually meet up with friends!”
+            </blockquote>
+          </div>
         </div>
       </section>
     </div>

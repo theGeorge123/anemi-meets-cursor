@@ -4,6 +4,25 @@ function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
+async function wantsReminders(
+  supabase: ReturnType<typeof createClient>,
+  email: string
+): Promise<boolean> {
+  const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+  if (userError || !user) {
+    return false;
+  }
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('wants_reminders')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (profileError) {
+    return false;
+  }
+  return !!profile?.wants_reminders;
+}
+
 const slots: Record<string, [string, string]> = {
   morning: ["T090000", "T120000"],
   afternoon: ["T120000", "T170000"],
@@ -93,6 +112,11 @@ Deno.cron(
         <p>You'll meet at <b>${cafe.name}</b> (${cafe.address})</p>
         <p>Time: ${readableTime} on ${inv.selected_date}</p>`;
 
+      const recipients: string[] = [];
+      if (await wantsReminders(supabase, inv.email_a)) recipients.push(inv.email_a);
+      if (await wantsReminders(supabase, inv.email_b)) recipients.push(inv.email_b);
+      if (recipients.length === 0) continue;
+
       const emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -101,7 +125,7 @@ Deno.cron(
         },
         body: JSON.stringify({
           from: "noreply@anemimeets.com",
-          to: [inv.email_a, inv.email_b],
+          to: recipients,
           subject,
           html,
           attachments: [
