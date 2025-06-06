@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
 import OnboardingModal from '../components/OnboardingModal';
-import { Friendship, FriendInvite } from '../types/supabase';
 
 interface Invitation {
   id: string;
