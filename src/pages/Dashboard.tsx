@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +37,7 @@ const Dashboard = () => {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [addFriendValue, setAddFriendValue] = useState('');
   const [addFriendStatus, setAddFriendStatus] = useState<string | null>(null);
+  const [friendSearch, setFriendSearch] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -110,6 +111,13 @@ const Dashboard = () => {
   const sortedMeetups = [...meetups].sort((a, b) => a.selected_date.localeCompare(b.selected_date));
   const upcoming = sortedMeetups.filter(m => new Date(m.selected_date) >= new Date());
   const lastActivity = sortedMeetups.length > 0 ? sortedMeetups[sortedMeetups.length - 1] : null;
+
+  const filteredFriends = useMemo(() =>
+    friends.filter(f =>
+      f.full_name.toLowerCase().includes(friendSearch.toLowerCase()) ||
+      (f.email ? f.email.toLowerCase().includes(friendSearch.toLowerCase()) : false)
+    ),
+  [friends, friendSearch]);
 
   // Remove friend handler
   const handleRemoveFriend = async (friendId: string) => {
@@ -277,8 +285,15 @@ const Dashboard = () => {
       {friends.length > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-bold text-primary-700 mb-2">{t('dashboard.friends', 'Your friends')}</h2>
+          <input
+            type="text"
+            className="border rounded px-2 py-1 w-full mb-3"
+            placeholder={t('dashboard.searchFriends')}
+            value={friendSearch}
+            onChange={e => setFriendSearch(e.target.value)}
+          />
           <ul className="flex flex-wrap gap-3">
-            {friends.map(friend => (
+            {filteredFriends.map(friend => (
               <li key={friend.id} className="flex items-center gap-2 bg-white/80 rounded-xl shadow px-4 py-2 border border-primary-100">
                 {friend.emoji && <span className="text-2xl" title={friend.full_name}>{friend.emoji}</span>}
                 <span className="font-semibold text-primary-700">{friend.full_name}</span>

@@ -180,6 +180,7 @@ export const nl = {
     ctaProfile: "Profiel bewerken",
     ctaLogout: "Uitloggen",
     errorLoadingMeetups: "Oeps, je meetups laden lukt niet. Probeer het straks nog eens!",
+    searchFriends: "Vrienden zoeken",
   },
   account: {
     title: "Jouw Profiel",

@@ -162,6 +162,7 @@ export const en = {
     hasAccount: "Has account",
     noAccount: "No account",
     inviteToMeetup: "Invite to meetup",
+    searchFriends: "Search friends",
   },
   account: {
     title: "Your Profile",
