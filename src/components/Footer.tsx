@@ -10,12 +10,6 @@ const Footer = () => {
     <footer aria-label="Site footer" className="w-full border-t border-primary-100 py-8 px-4 flex flex-col sm:flex-row justify-center items-center gap-6 text-sm text-gray-600 font-medium bg-white/90 mt-auto">
       <div className="flex flex-col sm:flex-row items-center justify-center gap-y-3 gap-x-6 w-full sm:w-auto">
         <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
-          <Link to="/cookies" className="footer-link">Cookies</Link>
-          <span className="divider">|</span>
-          <Link to="/privacy" className="footer-link">Privacy</Link>
-          <span className="divider">|</span>
-          <Link to="/terms" className="footer-link">Terms</Link>
-          <span className="divider">|</span>
           <Link to="/contact" className="footer-link">Contact</Link>
         </div>
       </div>
