@@ -9,6 +9,11 @@ const slots: Record<string, [string, string]> = {
   afternoon: ["T120000", "T170000"],
   evening: ["T170000", "T210000"],
 };
+
+function toIsoTime(time: string) {
+  const t = time.startsWith("T") ? time.slice(1) : time;
+  return `${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}`;
+}
 const slotReadable: Record<string, string> = {
   morning: "09:00 – 12:00",
   afternoon: "12:00 – 17:00",
@@ -49,7 +54,7 @@ Deno.cron(
       if (!inv.email_a || !inv.email_b || !inv.selected_date || !inv.selected_time) continue;
       const slot = String(inv.selected_time).toLowerCase();
       const [dtStart] = slots[slot] || slots["morning"];
-      const startTime = new Date(`${inv.selected_date}${dtStart.replace("T", "T")}`);
+      const startTime = new Date(`${inv.selected_date}T${toIsoTime(dtStart)}`);
       const diffMs = startTime.getTime() - now.getTime();
       const diffHours = diffMs / 36e5;
 
@@ -71,7 +76,9 @@ Deno.cron(
 
       const datePart = inv.selected_date.replace(/-/g, "");
       const [_, dtEnd] = slots[slot] || slots["morning"];
-      const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
+      const uid = crypto.randomUUID();
+      const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+      const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${dtStamp}\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
       const cafeImageUrl =
         cafe.image_url ||
         `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
@@ -107,9 +114,9 @@ Deno.cron(
         continue;
       }
 
-      const updates: Record<string, string> = {};
-      if (needs24h) updates.reminded_24h = new Date().toISOString();
-      if (needs1h) updates.reminded_1h = new Date().toISOString();
+      const updates: Record<string, boolean> = {};
+      if (needs24h) updates.reminded_24h = true;
+      if (needs1h) updates.reminded_1h = true;
 
       await supabase.from("invitations").update(updates).eq("id", inv.id);
     }

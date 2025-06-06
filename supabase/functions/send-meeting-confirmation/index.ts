@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     const uid = crypto.randomUUID();
     const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${dtStamp}\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
 
     const cafeImageUrl = cafe.image_url || `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
     const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("Koffie Meetup via Anemi")}&dates=${datePart}${dtStart}/${datePart}${dtEnd}&location=${encodeURIComponent(`${cafe.name} ${cafe.address}`)}`;
