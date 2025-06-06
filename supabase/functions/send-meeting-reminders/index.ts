@@ -76,9 +76,11 @@ Deno.cron(
       if (!inv.email_a || !inv.email_b || !inv.selected_date || !inv.selected_time) continue;
       const slot = String(inv.selected_time).toLowerCase();
       const [dtStart] = slots[slot] || slots["morning"];
-      const startTime = new Date(`${inv.selected_date}${dtStart.replace("T", "T")}`);
+      const startTime = new Date(
+        `${inv.selected_date}T${dtStart.slice(1, 3)}:${dtStart.slice(3, 5)}:${dtStart.slice(5)}`,
+      );
       const diffMs = startTime.getTime() - now.getTime();
-      const diffHours = diffMs / 36e5;
+      const diffHours = diffMs / (1000 * 60 * 60);
 
       const needs24h = diffHours <= 24 && diffHours > 1 && !inv.reminded_24h;
       const needs1h = diffHours <= 1 && diffHours > 0 && !inv.reminded_1h;
