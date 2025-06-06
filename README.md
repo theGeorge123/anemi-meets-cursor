@@ -55,6 +55,9 @@ src/
 - `npm run preview` - Preview production build
 - `npm run test:e2e` - Run Playwright end-to-end tests
 
+After `npm install`, run `npx playwright install` once to download the browsers
+used by Playwright.
+
 ## Contributing
 
 1. Fork the repository

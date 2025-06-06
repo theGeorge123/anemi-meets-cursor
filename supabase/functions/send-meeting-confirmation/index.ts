@@ -4,12 +4,11 @@ function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
-async function wantsReminders(supabase: ReturnType<typeof createClient>, email: string): Promise<boolean> {
-  const { data: user, error: userError } = await supabase
-    .from('auth.users')
-    .select('id')
-    .eq('email', email)
-    .maybeSingle();
+async function wantsReminders(
+  supabase: ReturnType<typeof createClient>,
+  email: string
+): Promise<boolean> {
+  const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
 
   if (userError || !user) {
     return false;
@@ -121,7 +120,7 @@ Deno.serve(async (req) => {
     const uid = crypto.randomUUID();
     const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${dtStamp}\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
 
     const cafeImageUrl = cafe.image_url || `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
     const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("Koffie Meetup via Anemi")}&dates=${datePart}${dtStart}/${datePart}${dtEnd}&location=${encodeURIComponent(`${cafe.name} ${cafe.address}`)}`;
