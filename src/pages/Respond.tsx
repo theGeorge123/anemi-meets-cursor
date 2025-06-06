@@ -248,8 +248,10 @@ const Respond = () => {
         console.error("Supabase error:", data.error || data);
       } else {
         setSubmitted(true);
-        // Log en bewaar de response data
-        console.log('Meeting bevestigd:', data);
+        // Log en bewaar de response data (development only)
+        if (import.meta.env.DEV) {
+          console.log('Meeting bevestigd:', data);
+        }
         setConfirmationInfo({
           cafe_name: data.cafe_name,
           cafe_address: data.cafe_address,
