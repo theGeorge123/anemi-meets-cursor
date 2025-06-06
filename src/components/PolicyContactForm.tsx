@@ -43,10 +43,10 @@ const PolicyContactForm = () => {
 
   return (
     <div className="mt-10">
-      <h2 className="text-xl font-semibold text-primary-600 mb-4">{t('contact')}</h2>
+      <h2 className="text-xl font-semibold text-primary-600 mb-4">{t('contact', 'Contact')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
         <div>
-          <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700">{t('contactName')}</label>
+          <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700">{t('contactName', 'Your name or nickname')}</label>
           <input
             id="contact-name"
             type="text"
@@ -55,13 +55,13 @@ const PolicyContactForm = () => {
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             required
             autoFocus
-            placeholder={t('namePlaceholder')}
+            placeholder={t('namePlaceholder', 'e.g. CoffeeLover123')}
             inputMode="text"
             autoComplete="given-name"
           />
         </div>
         <div>
-          <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700">{t('contactEmail')}</label>
+          <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700">{t('contactEmail', 'Your email (so we can reply)')}</label>
           <input
             id="contact-email"
             type="email"
@@ -69,13 +69,13 @@ const PolicyContactForm = () => {
             value={form.email}
             onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
             required
-            placeholder={t('emailPlaceholder')}
+            placeholder={t('emailPlaceholder', 'you@example.com')}
             inputMode="email"
             autoComplete="email"
           />
         </div>
         <div>
-          <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700">{t('contactMessage')}</label>
+          <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700">{t('contactMessage', "What's up?")}</label>
           <textarea
             id="contact-message"
             className="input-field mt-1 min-h-[48px] text-base"
@@ -83,11 +83,11 @@ const PolicyContactForm = () => {
             value={form.message}
             onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
             required
-            placeholder={t('messagePlaceholder')}
+            placeholder={t('messagePlaceholder', "Tell us what's on your mind…")}
           />
         </div>
-        <button type="submit" className="btn-primary" disabled={loading}>{loading ? t('loading') : t('contactSend')}</button>
-        <FormStatus status={loading ? 'loading' : status} message={status === 'success' ? t('contactSuccess') : status === 'error' ? t('contactError') : undefined} />
+        <button type="submit" className="btn-primary" disabled={loading}>{loading ? t('loading', 'Sending...') : t('contactSend', "Send it! 🚀")}</button>
+        <FormStatus status={loading ? 'loading' : status} message={status === 'success' ? t('contactSuccess', "Thanks for reaching out! We'll get back to you soon ☕️") : status === 'error' ? t('contactError', 'Something went wrong. Please try again!') : undefined} />
       </form>
     </div>
   );
