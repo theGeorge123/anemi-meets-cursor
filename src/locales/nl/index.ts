@@ -15,7 +15,15 @@ export const nl = {
     terms: "Voorwaarden",
     contact: "Contact",
     reportIssue: {
-      title: "Probleem melden"
+      title: "Probleem melden",
+      descriptionLabel: "Beschrijf het probleem of idee",
+      descriptionPlaceholder: "Vertel wat er mis ging of wat beter kan...",
+      stepsLabel: "Stappen om te reproduceren (optioneel)",
+      stepsPlaceholder: "Noem de stappen zodat wij het kunnen nalopen",
+      screenshotLabel: "Screenshot (optioneel)",
+      submit: "Versturen",
+      error: "Oeps! Melding versturen mislukt: {{error}}",
+      success: "Bedankt! We hebben je melding ontvangen."
     },
     testimonialsTitle: "Wat anderen zeggen",
     testimonial1: "Anemi Meets bespaart me zoveel tijd! — Sophie, Rotterdam",
