@@ -4,6 +4,29 @@ function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
+async function wantsReminders(
+  supabase: ReturnType<typeof createClient>,
+  email: string
+): Promise<boolean> {
+  const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+
+  if (userError || !user) {
+    return false;
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('wants_reminders')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    return false;
+  }
+
+  return !!profile?.wants_reminders;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -117,43 +140,31 @@ Deno.serve(async (req) => {
       <p><a href="${gcalUrl}" target="_blank">➕ ${isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"}</a></p>`;
 
     const recipients: string[] = [];
-    const { data: profileA } = await supabase
-      .from("profiles")
-      .select("wants_reminders")
-      .eq("email", email_a)
-      .maybeSingle();
-    if (!profileA || profileA.wants_reminders !== false) {
-      recipients.push(email_a);
-    }
-    const { data: profileB } = await supabase
-      .from("profiles")
-      .select("wants_reminders")
-      .eq("email", email_b)
-      .maybeSingle();
-    if (!profileB || profileB.wants_reminders !== false) {
-      recipients.push(email_b);
-    }
+    if (await wantsReminders(supabase, email_a)) recipients.push(email_a);
+    if (await wantsReminders(supabase, email_b)) recipients.push(email_b);
 
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: "noreply@anemimeets.com",
-        to: recipients,
-        subject,
-        html,
-        attachments: [{
-          filename: "meeting.ics",
-          content: encodeBase64(ics),
-          type: "text/calendar"
-        }]
-      })
-    });
+    if (recipients.length > 0) {
+      const emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: "noreply@anemimeets.com",
+          to: recipients,
+          subject,
+          html,
+          attachments: [{
+            filename: "meeting.ics",
+            content: encodeBase64(ics),
+            type: "text/calendar"
+          }]
+        })
+      });
 
-    if (!emailRes.ok) throw new Error("Email not sent: " + (await emailRes.text()));
+      if (!emailRes.ok) throw new Error("Email not sent: " + (await emailRes.text()));
+    }
 
     return new Response(JSON.stringify({
       success: true,
