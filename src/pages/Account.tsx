@@ -167,6 +167,31 @@ const Account = () => {
     setPrefsSaving(false);
   };
 
+  const handleDeleteAccount = async () => {
+    const confirmMsg = t('account.deleteConfirm', 'Are you sure? This cannot be undone!');
+    if (!window.confirm(confirmMsg)) return;
+    const { data: sessionData, error } = await supabase.auth.getSession();
+    if (error || !sessionData.session?.access_token) {
+      console.error('Failed to get session for deletion', error);
+      return;
+    }
+    try {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` }
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.success) {
+        console.error('Delete account failed', body);
+        return;
+      }
+      await supabase.auth.signOut();
+      navigate('/login');
+    } catch (err) {
+      console.error('Unexpected delete error', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
@@ -378,6 +403,7 @@ const Account = () => {
           <div className="card border-2 border-red-500">
             <h2 className="text-2xl font-bold text-red-500 mb-6">{t('account.dangerZone')}</h2>
               <button
+                onClick={handleDeleteAccount}
                 className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
               >
               {t('account.deleteAccount')}
