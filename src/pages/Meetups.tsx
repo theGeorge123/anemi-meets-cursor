@@ -110,7 +110,7 @@ const Meetups: React.FC = () => {
         const { data, error } = await supabase
           .from('invitations')
           .select('*')
-          .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`)
+          .or(`invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}",email_a.eq."${session.user.email}"`)
           .order('selected_date', { ascending: true });
         if (error || !data) throw error || new Error('No data');
         setMeetups(data || []);
