@@ -122,13 +122,29 @@ const Dashboard = () => {
     setInviteLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
-    // Generate a random token
-    const token = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+
+    let token = crypto.randomUUID().replace(/-/g, '');
+    // Ensure the token is unique
+    let { data: existing } = await supabase
+      .from('friend_invites')
+      .select('id')
+      .eq('token', token)
+      .maybeSingle();
+    while (existing) {
+      token = crypto.randomUUID().replace(/-/g, '');
+      ({ data: existing } = await supabase
+        .from('friend_invites')
+        .select('id')
+        .eq('token', token)
+        .maybeSingle());
+    }
+
     const { error } = await supabase.from('friend_invites').insert({
       inviter_id: session.user.id,
       invitee_email: '', // Will be filled when accepted
       token
     });
+
     if (!error) {
       setInviteCode(token);
     }
