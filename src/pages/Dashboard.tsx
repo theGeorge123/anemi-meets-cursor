@@ -188,11 +188,11 @@ const Dashboard = () => {
       setAddFriendStatus(t('inviteFriend.invalidEmail', 'Please enter a valid email address or invite code.'));
       return;
     }
-    // Find user by email
+    // Find user by email (case-insensitive)
     const { data: userProfile } = await supabase
       .from('profiles')
-      .select('id')
-      .eq('email', value)
+      .select('*')
+      .ilike('email', value)
       .maybeSingle();
     if (!userProfile) {
       setAddFriendStatus(t('inviteFriend.notFound', 'No user found with that email.'));
