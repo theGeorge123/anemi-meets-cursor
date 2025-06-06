@@ -23,4 +23,4 @@ const CafeDetails: React.FC = () => {
   );
 };
 
-export default CafeDetails; 
+export default CafeDetails;

@@ -505,4 +505,4 @@ const AccountPageWithBoundary = () => (
   </ErrorBoundary>
 );
 
-export default AccountPageWithBoundary; 
+export default AccountPageWithBoundary;

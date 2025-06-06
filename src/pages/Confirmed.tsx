@@ -21,4 +21,4 @@ const Confirmed = () => {
   );
 };
 
-export default Confirmed; 
+export default Confirmed;

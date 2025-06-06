@@ -31,4 +31,3 @@ dotenv.sentry-build-plugin
 *.tgz
 confetti.json
 public/confetti.json
-

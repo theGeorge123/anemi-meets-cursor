@@ -120,7 +120,7 @@ const Invite = () => {
 
     const shareData = {
       title: t('invite.shareTitle'),
-      text: invitation?.cafe_name 
+      text: invitation?.cafe_name
         ? t('invite.shareTextWithCafe', { cafe: invitation.cafe_name })
         : t('invite.shareText'),
       url: inviteLink
@@ -162,7 +162,7 @@ const Invite = () => {
           )}
         </div>
       )}
-      
+
       {invitation && !loading && !error && (
         <>
           <div className="card bg-primary-50 mb-8 p-4 rounded-xl shadow-md">
@@ -214,4 +214,4 @@ const Invite = () => {
   );
 };
 
-export default Invite; 
+export default Invite;

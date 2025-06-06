@@ -29,4 +29,4 @@ Deno.serve(async (req: Request) => {
       receivedAt: new Date().toISOString(),
     }
   }), { status: 200 });
-}); 
+});

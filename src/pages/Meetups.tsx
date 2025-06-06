@@ -262,4 +262,4 @@ const Meetups: React.FC = () => {
   );
 };
 
-export default Meetups; 
+export default Meetups;

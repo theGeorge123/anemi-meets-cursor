@@ -90,4 +90,4 @@ export const handleApiError = (error: unknown): ApiError => {
     code: 'UNKNOWN_ERROR',
     details: error,
   };
-}; 
+};

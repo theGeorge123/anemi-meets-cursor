@@ -35,4 +35,4 @@ export function SentryRouteTracker() {
   }, []);
 
   return null;
-} 
+}

@@ -75,4 +75,4 @@ Configure the schedule for this function in `supabase/config.toml`. See the [Sup
 
 ## License
 
-MIT 
+MIT

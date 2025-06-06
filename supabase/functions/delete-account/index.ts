@@ -58,4 +58,4 @@ Deno.serve(async (req: Request) => {
   }
 
   return new Response(JSON.stringify({ success: true }), { status: 200 });
-}); 
+});

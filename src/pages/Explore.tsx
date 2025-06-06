@@ -44,4 +44,4 @@ const Explore: React.FC = () => {
   );
 };
 
-export default Explore; 
+export default Explore;

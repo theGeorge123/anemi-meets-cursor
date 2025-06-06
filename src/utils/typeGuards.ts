@@ -203,4 +203,4 @@ export function validateResponse<T extends TableName>(
   fallback: TableRow<T> | null
 ): TableRow<T> | null {
   return typeGuard(value) ? value : fallback;
-} 
+}

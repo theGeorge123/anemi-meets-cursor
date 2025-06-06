@@ -106,4 +106,4 @@ const InviteFriend = () => {
   );
 };
 
-export default InviteFriend; 
+export default InviteFriend;
