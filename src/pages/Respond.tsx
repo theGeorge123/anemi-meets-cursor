@@ -257,10 +257,6 @@ const Respond = () => {
           selected_date: data.selected_date,
           selected_time: data.selected_time
         });
-        // Redirect na succes
-        setTimeout(() => {
-          window.location.href = "/confirmed";
-        }, 1200);
       }
     } catch (err) {
       setErrorMsg(getRespondErrorMessage(t, 'respond.genericError', err));
@@ -274,11 +270,14 @@ const Respond = () => {
         <div className="card bg-[#fff7f3] shadow-2xl p-8 max-w-lg w-full flex flex-col items-center">
           <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>☕️</span>
           <h2 className="text-2xl font-bold text-primary-700 mb-2 flex items-center gap-2">
-            {t('respond.meetupConfirmed')}
+            {_i18n.language === 'nl'
+              ? 'Je koffiemomentje is bevestigd!'
+              : 'Your coffee meetup is confirmed!'}
           </h2>
-          <img src="/coffee-fun.gif" alt={t('respond.coffeeGifAlt')} style={{ maxWidth: 120, borderRadius: 16, margin: '1rem 0' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
           <p className="text-lg text-gray-700 mb-6 text-center">
-            {t('respond.emailSent')}
+            {_i18n.language === 'nl'
+              ? 'Je ontvangt een bevestiging per e-mail. Veel plezier!'
+              : 'You will receive a confirmation by email. Enjoy your meetup!'}
           </p>
           {confirmationInfo && (
             <div className="bg-white rounded-lg shadow p-4 mb-4 w-full text-center">
@@ -288,10 +287,18 @@ const Respond = () => {
               <div className="text-gray-600">{_i18n.language === 'nl' ? 'Tijd' : 'Time'}: {confirmationInfo.selected_time}</div>
             </div>
           )}
-          <button className="btn-primary w-full mb-3" onClick={() => window.location.href = "/"}>{_i18n.language === 'nl' ? 'Terug naar home' : 'Back to home'}</button>
           <div className="w-full flex flex-col items-center mt-2">
-            <p className="mb-2">{t('respond.cta')}</p>
-            <a href="/signup" className="btn-secondary w-full">{_i18n.language === 'nl' ? 'Account aanmaken' : 'Create account'}</a>
+            <p className="mb-4 text-base text-primary-700 font-medium text-center">
+              {_i18n.language === 'nl'
+                ? 'Wil je zelf ook makkelijk afspraken maken, iemand weer eens zien of lokale tentjes supporten? Maak dan nu een account aan en zie je eigen meetings terug!'
+                : 'Want to easily plan your own meetups, reconnect with friends, or support local cafés? Create an account now and see all your meetings in one place!'}
+            </p>
+            <a href="/signup" className="btn-secondary w-full mb-2">
+              {_i18n.language === 'nl' ? 'Account aanmaken' : 'Create account'}
+            </a>
+            <button className="btn-primary w-full" onClick={() => window.location.href = "/"}>
+              {_i18n.language === 'nl' ? 'Terug naar home' : 'Back to home'}
+            </button>
           </div>
         </div>
       </div>
