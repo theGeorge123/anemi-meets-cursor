@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /**
- * Reminder flags store the time a reminder email was sent.
+ * Reminder flags store the time a reminder email was sent as an ISO timestamp.
  * If `reminded_24h` or `reminded_1h` is null, that reminder hasn't been sent yet.
  */
 Deno.serve(async (_req) => {
@@ -69,10 +69,10 @@ Deno.serve(async (_req) => {
 
     // Update reminder timestamp to avoid duplicates
     const update: Record<string, string> = {};
-    if (inv.selected_date === date24 && !inv.reminded_24h) {
+    if (inv.selected_date === date24 && inv.reminded_24h == null) {
       update.reminded_24h = new Date().toISOString();
     }
-    if (inv.selected_date === date1 && !inv.reminded_1h) {
+    if (inv.selected_date === date1 && inv.reminded_1h == null) {
       update.reminded_1h = new Date().toISOString();
     }
 
