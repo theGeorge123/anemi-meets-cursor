@@ -91,6 +91,8 @@ const Respond = () => {
   }
 
   useEffect(() => {
+    // Scroll to top on mount
+    window.scrollTo(0, 0);
     let didCancel = false;
     const fetchData = async () => {
       try {
@@ -155,13 +157,13 @@ const Respond = () => {
     // Prefill email if saved
     const savedEmail = localStorage.getItem(UPDATES_EMAIL_KEY);
     if (savedEmail) setFormData((prev) => ({ ...prev, email: savedEmail }));
-    // Timeout fallback: after 10 seconds, show error if still loading
+    // Timeout fallback: after 15 minutes, show error if still loading
     const timeout = setTimeout(() => {
       if (!didCancel && loading) {
         setError('Loading is taking too long. Please check your invite link or try again later.');
         setLoading(false);
       }
-    }, 10000);
+    }, 900000); // 15 minutes
     return () => {
       didCancel = true;
       clearTimeout(timeout);
@@ -309,7 +311,10 @@ const Respond = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <main className="max-w-2xl mx-auto px-2 sm:px-0 py-6">
+      <div className="bg-primary-50 rounded-xl p-4 mb-4 text-center shadow text-primary-700 font-medium text-base">
+        {t('respond.linkValid15min', 'This link is valid for 15 minutes.')}
+      </div>
       <div className="card bg-primary-50 mb-6">
         <h2 className="text-xl font-semibold text-primary-600">{_i18n.language === 'nl' ? 'Café' : 'Cafe'}</h2>
         {cafe && cafe.image_url && (
@@ -408,7 +413,7 @@ const Respond = () => {
         </button>
         <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') : errorMsg || undefined} />
       </form>
-    </div>
+    </main>
   );
 };
 
