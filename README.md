@@ -53,6 +53,7 @@ src/
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
+- `npm run test:e2e` - Run Playwright end-to-end tests
 
 ## Deploying Supabase Functions
 
