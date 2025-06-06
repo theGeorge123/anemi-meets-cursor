@@ -316,4 +316,4 @@ export const nl = {
     errorCafeRequired: "Selecteer een café.",
     suggestionName: "Gebruik een leuke bijnaam!"
   },
-}; 
+};

@@ -254,4 +254,4 @@ const NavigationBarWithBoundary = (props: any) => (
   </ErrorBoundary>
 );
 
-export default NavigationBarWithBoundary; 
+export default NavigationBarWithBoundary;

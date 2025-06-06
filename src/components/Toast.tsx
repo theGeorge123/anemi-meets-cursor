@@ -52,4 +52,4 @@ const Toast: React.FC<ToastProps> = ({ message, icon, duration = 5000, onClose, 
   );
 };
 
-export default Toast; 
+export default Toast;

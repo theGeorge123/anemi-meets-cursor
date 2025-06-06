@@ -59,4 +59,4 @@ export const useOnboarding = () => {
     throw new Error('useOnboarding must be used within an OnboardingProvider');
   }
   return context;
-}; 
+};

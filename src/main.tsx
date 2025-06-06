@@ -38,4 +38,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       </Sentry.ErrorBoundary>
     </I18nextProvider>
   </React.StrictMode>,
-); 
+);

@@ -21,4 +21,4 @@ const FormStatus: React.FC<FormStatusProps> = ({ status, message }) => {
   return null;
 };
 
-export default FormStatus; 
+export default FormStatus;

@@ -244,4 +244,4 @@ const LoginPageWithBoundary = () => (
   </ErrorBoundary>
 );
 
-export default LoginPageWithBoundary; 
+export default LoginPageWithBoundary;

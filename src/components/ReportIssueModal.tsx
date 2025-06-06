@@ -110,4 +110,4 @@ const ReportIssueModal: React.FC<Props> = ({ open, onClose }) => {
   );
 };
 
-export default ReportIssueModal; 
+export default ReportIssueModal;

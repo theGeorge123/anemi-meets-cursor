@@ -92,4 +92,4 @@ export default function OnboardingModal({ onFinish }: { onFinish: () => void }) 
       </div>
     </div>
   );
-} 
+}

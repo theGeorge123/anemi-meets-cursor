@@ -249,4 +249,4 @@ export interface MessageFilters extends FilterOptions {
   isRead?: boolean;
   startDate?: string;
   endDate?: string;
-} 
+}

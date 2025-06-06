@@ -56,4 +56,4 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       {children}
     </NavigationContext.Provider>
   );
-}; 
+};

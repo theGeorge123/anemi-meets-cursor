@@ -72,4 +72,4 @@ export function getHolidaysForDate(date: Date): { country: string; name: string 
     }
   }
   return result;
-} 
+}

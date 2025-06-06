@@ -32,4 +32,4 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   </div>
 );
 
-export default LoadingIndicator; 
+export default LoadingIndicator;

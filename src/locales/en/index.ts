@@ -275,4 +275,4 @@ export const en = {
   skip: "Skip",
   get_started: "Let's go! 🚀",
   next: "Next",
-}; 
+};
