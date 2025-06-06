@@ -177,10 +177,12 @@ const CreateMeetup = () => {
     e.preventDefault();
     setFormError(null);
 
-    // Log the form data for debugging
-    console.log('Submitting form data:', formData);
-    console.log('Selected cafe:', selectedCafe);
-    console.log('Date/time options:', dateTimeOptions);
+    // Log the form data for debugging (development only)
+    if (import.meta.env.DEV) {
+      console.log('Submitting form data:', formData);
+      console.log('Selected cafe:', selectedCafe);
+      console.log('Date/time options:', dateTimeOptions);
+    }
 
     // Validation (keep existing validation)
     if (formData.dates.length === 0) {
@@ -214,7 +216,9 @@ const CreateMeetup = () => {
 
     // Prepare payload
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
-    console.log('Generated token:', token);
+    if (import.meta.env.DEV) {
+      console.log('Generated token:', token);
+    }
 
     const payload: any = {
       token,
@@ -233,7 +237,9 @@ const CreateMeetup = () => {
       payload.email_a = formData.email;
     }
 
-    console.log('Payload to insert:', payload);
+    if (import.meta.env.DEV) {
+      console.log('Payload to insert:', payload);
+    }
 
     try {
       // First, check if we can read from the table
@@ -241,16 +247,22 @@ const CreateMeetup = () => {
         .from('invitations')
         .select('count');
 
-      console.log('Table access check:', { data: checkData, error: checkError });
+      if (import.meta.env.DEV) {
+        console.log('Table access check:', { data: checkData, error: checkError });
+      }
 
       // Now try the insert
-      console.log('Attempting to insert invitation...');
+      if (import.meta.env.DEV) {
+        console.log('Attempting to insert invitation...');
+      }
       const { data: insertData, error: insertError } = await supabase
         .from('invitations')
         .insert(payload)
         .select();
 
-      console.log('Insert result:', { data: insertData, error: insertError });
+      if (import.meta.env.DEV) {
+        console.log('Insert result:', { data: insertData, error: insertError });
+      }
 
         if (insertError) {
           console.error('Insert error details:', insertError);
@@ -277,9 +289,13 @@ const CreateMeetup = () => {
 
       let responseToken = token;
       if (!insertData || insertData.length === 0) {
-        console.warn('No data returned from insert; using generated token');
+        if (import.meta.env.DEV) {
+          console.warn('No data returned from insert; using generated token');
+        }
       } else {
-        console.log('Created invitation:', insertData[0]);
+        if (import.meta.env.DEV) {
+          console.log('Created invitation:', insertData[0]);
+        }
         if (insertData[0].token) {
           responseToken = insertData[0].token as string;
         }
