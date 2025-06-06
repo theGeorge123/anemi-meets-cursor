@@ -36,6 +36,16 @@ const Invite = () => {
       (async () => {
         setLoading(true);
         setError(null);
+        const cached = localStorage.getItem(`friend_invite_${token}`);
+        if (!navigator.onLine && cached) {
+          try {
+            setInvitation(JSON.parse(cached));
+            setLoading(false);
+            return;
+          } catch (err) {
+            console.error(err);
+          }
+        }
         try {
           const { data: inviteData, error: inviteError } = await supabase
             .from('invitations')
@@ -59,6 +69,8 @@ const Invite = () => {
               }
             }
             setInvitation(inviteData as InvitationWithCafe);
+            localStorage.setItem(`friend_invite_${token}`,
+              JSON.stringify(inviteData));
           }
         } catch (err) {
           setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));

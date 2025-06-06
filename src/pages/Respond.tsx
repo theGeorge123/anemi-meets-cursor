@@ -15,6 +15,13 @@ interface Invitation {
   date_time_options?: { date: string; times: string[] }[];
 }
 interface Cafe { name: string; address: string; image_url?: string; }
+interface ConfirmationInfo {
+  cafe_name: string;
+  cafe_address: string;
+  selected_date: string;
+  selected_time: string;
+  ics_base64?: string;
+}
 
 const Respond = () => {
   const { t, i18n: _i18n } = useTranslation();
@@ -31,7 +38,7 @@ const Respond = () => {
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [confirmationInfo, setConfirmationInfo] = useState<any>(null);
+  const [confirmationInfo, setConfirmationInfo] = useState<ConfirmationInfo | null>(null);
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -247,7 +254,8 @@ const Respond = () => {
           cafe_name: data.cafe_name,
           cafe_address: data.cafe_address,
           selected_date: data.selected_date,
-          selected_time: data.selected_time
+          selected_time: data.selected_time,
+          ics_base64: data.ics_base64
         });
       }
     } catch (err) {
@@ -277,6 +285,15 @@ const Respond = () => {
               <div className="text-gray-600 mb-1">{_i18n.language === 'nl' ? 'Adres' : 'Address'}: {confirmationInfo.cafe_address}</div>
               <div className="text-gray-600 mb-1">{_i18n.language === 'nl' ? 'Datum' : 'Date'}: {confirmationInfo.selected_date}</div>
               <div className="text-gray-600">{_i18n.language === 'nl' ? 'Tijd' : 'Time'}: {confirmationInfo.selected_time}</div>
+              {confirmationInfo.ics_base64 && (
+                <a
+                  href={`data:text/calendar;base64,${confirmationInfo.ics_base64}`}
+                  download="meeting.ics"
+                  className="btn-secondary mt-4 inline-block"
+                >
+                  {_i18n.language === 'nl' ? 'Download agenda-item' : 'Download calendar file'}
+                </a>
+              )}
             </div>
           )}
           <div className="w-full flex flex-col items-center mt-2">

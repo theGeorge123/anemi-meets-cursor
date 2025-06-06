@@ -200,6 +200,8 @@ export const nl = {
     wantsUpdatesCheckbox: "Ja, ik wil updates ontvangen!",
     wantsReminders: "Stuur me herinneringen voor meetups",
     wantsRemindersCheckbox: "Ja, herinner me per e-mail!",
+    wantsNotifications: "Browser notificaties",
+    wantsNotificationsCheckbox: "Ja, stuur meldingen in mijn browser!",
     isPrivate: "Houd mijn profiel privé",
     isPrivateCheckbox: "Ja, ik wil mijn profiel privé houden!",
     dangerZone: "Gevaarzone",

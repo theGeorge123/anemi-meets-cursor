@@ -7,6 +7,7 @@ import React from 'react';
 import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -18,6 +19,7 @@ interface Profile {
   age?: number;
   wants_updates: boolean;
   wants_reminders?: boolean;
+  wants_notifications?: boolean;
   is_private: boolean;
 }
 
@@ -43,6 +45,7 @@ const Account = () => {
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [wantsReminders, setWantsReminders] = useState(true);
+  const [wantsNotifications, setWantsNotifications] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
@@ -83,6 +86,7 @@ const Account = () => {
         if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
         setWantsUpdates(!!testProfiles.wants_updates);
         setWantsReminders(testProfiles.wants_reminders !== false);
+        setWantsNotifications(!!testProfiles.wants_notifications);
         setIsPrivate(!!testProfiles.is_private);
       } else {
         setUser(null);
@@ -146,9 +150,13 @@ const Account = () => {
   const handlePrefsSave = async () => {
     if (!user || !user.id) return;
     setPrefsSaving(true);
+    if (wantsNotifications && Notification.permission !== 'granted') {
+      await requestBrowserNotificationPermission();
+    }
     const { error } = await supabase.from('profiles').update({
       wants_updates: wantsUpdates,
       wants_reminders: wantsReminders,
+      wants_notifications: wantsNotifications,
       is_private: isPrivate
     }).eq('id', user.id);
     if (error) {
@@ -254,6 +262,19 @@ const Account = () => {
                       onChange={(e) => setWantsReminders(e.target.checked)}
                     />
                     {t('account.wantsRemindersCheckbox', 'Yes, remind me before a meetup!')}
+                  </label>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="w-full sm:w-32 font-semibold">{t('account.wantsNotifications')}</label>
+                <div className="flex-1 flex flex-col gap-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={wantsNotifications}
+                      onChange={(e) => setWantsNotifications(e.target.checked)}
+                    />
+                    {t('account.wantsNotificationsCheckbox', 'Yes, allow browser notifications!')}
                   </label>
                 </div>
               </div>
