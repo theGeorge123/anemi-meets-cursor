@@ -245,6 +245,7 @@ export const nl = {
     emailPlaceholder: "Jouw e-mailadres",
     passwordPlaceholder: "Je geheime wachtwoord",
     loginButton: "Laat me binnen!",
+    googleButton: "Inloggen met Google",
   },
   signup: {
     title: "Registreren",

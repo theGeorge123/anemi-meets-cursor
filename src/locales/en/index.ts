@@ -224,6 +224,7 @@ export const en = {
     emailPlaceholder: "Your email address",
     passwordPlaceholder: "Your super secret password",
     loginButton: "Let me in!",
+    googleButton: "Continue with Google",
   },
   signup: {
     title: "Sign up",
