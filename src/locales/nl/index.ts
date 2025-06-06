@@ -32,6 +32,7 @@ export const nl = {
     termsFull: "Door Anemi Meets te gebruiken ga je akkoord met een verantwoord gebruik van het platform. Accounts die misbruik maken kunnen worden geblokkeerd.",
     rights: "Alle rechten voorbehouden.",
     lastUpdate: "Laatst bijgewerkt:",
+    contactIntro: "Stuur gerust een bericht via het onderstaande formulier.",
     contactName: "Jouw naam",
     contactEmail: "Jouw e-mailadres",
     contactMessage: "Jouw bericht",

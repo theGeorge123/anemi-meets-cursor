@@ -6,7 +6,7 @@ const Contact = () => {
   return (
     <div className="max-w-2xl mx-auto py-12">
       <h1 className="text-3xl font-bold text-primary-600 mb-6">{t('contact')}</h1>
-      <p className="mb-4">{t('contactMessage')}</p>
+      <p className="mb-4">{t('contactIntro')}</p>
       <PolicyContactForm />
     </div>
   );
