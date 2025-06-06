@@ -117,43 +117,64 @@ Deno.serve(async (req) => {
       <p><a href="${gcalUrl}" target="_blank">➕ ${isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"}</a></p>`;
 
     const recipients: string[] = [];
-    const { data: profileA } = await supabase
-      .from("profiles")
-      .select("wants_reminders")
-      .eq("email", email_a)
-      .maybeSingle();
-    if (!profileA || profileA.wants_reminders !== false) {
+
+    // Look up users via Auth to reliably get profile IDs
+    const { data: userA } = await supabase.auth.admin.getUserByEmail(email_a);
+    if (userA?.user) {
+      const { data: profileA } = await supabase
+        .from("profiles")
+        .select("wants_reminders")
+        .eq("id", userA.user.id)
+        .maybeSingle();
+      if (!profileA || profileA.wants_reminders !== false) {
+        recipients.push(email_a);
+      }
+    } else {
+      // No profile found, assume reminders allowed
       recipients.push(email_a);
     }
-    const { data: profileB } = await supabase
-      .from("profiles")
-      .select("wants_reminders")
-      .eq("email", email_b)
-      .maybeSingle();
-    if (!profileB || profileB.wants_reminders !== false) {
+
+    const { data: userB } = await supabase.auth.admin.getUserByEmail(email_b);
+    if (userB?.user) {
+      const { data: profileB } = await supabase
+        .from("profiles")
+        .select("wants_reminders")
+        .eq("id", userB.user.id)
+        .maybeSingle();
+      if (!profileB || profileB.wants_reminders !== false) {
+        recipients.push(email_b);
+      }
+    } else {
       recipients.push(email_b);
     }
 
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: "noreply@anemimeets.com",
-        to: recipients,
-        subject,
-        html,
-        attachments: [{
-          filename: "meeting.ics",
-          content: encodeBase64(ics),
-          type: "text/calendar"
-        }]
-      })
-    });
+    let emailRes: Response | null = null;
+    if (recipients.length > 0) {
+      emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: "noreply@anemimeets.com",
+          to: recipients,
+          subject,
+          html,
+          attachments: [
+            {
+              filename: "meeting.ics",
+              content: encodeBase64(ics),
+              type: "text/calendar"
+            }
+          ]
+        })
+      });
 
-    if (!emailRes.ok) throw new Error("Email not sent: " + (await emailRes.text()));
+      if (!emailRes.ok) {
+        throw new Error("Email not sent: " + (await emailRes.text()));
+      }
+    }
 
     return new Response(JSON.stringify({
       success: true,
