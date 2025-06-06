@@ -32,6 +32,7 @@ export const en = {
     termsFull: "By using Anemi Meets you agree to use the service responsibly. Accounts that abuse the platform may be suspended.",
     rights: "All rights reserved.",
     lastUpdate: "Last updated:",
+    contactIntro: "Feel free to reach out using the form below.",
     contactName: "Your name",
     contactEmail: "Your email",
     contactMessage: "Your message",

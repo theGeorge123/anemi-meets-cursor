@@ -13,7 +13,7 @@ const PolicyContactForm = () => {
     setLoading(true);
     setStatus('idle');
     try {
-      const res = await fetch('/api/contact', {
+      const res = await fetch('/functions/v1/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
