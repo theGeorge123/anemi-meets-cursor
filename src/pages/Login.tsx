@@ -102,8 +102,7 @@ const Login = () => {
     setLoading(false);
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePasswordReset = async () => {
     setResetMsg(null);
     setResetLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail || formData.email);
@@ -174,7 +173,7 @@ const Login = () => {
         </div>
 
         {showReset && (
-          <form onSubmit={handlePasswordReset} className="mt-2 space-y-2 bg-white/80 p-3 rounded-xl border border-primary-100">
+          <div className="mt-2 space-y-2 bg-white/80 p-3 rounded-xl border border-primary-100">
             <input
               type="email"
               className="input-field"
@@ -184,7 +183,8 @@ const Login = () => {
               required
             />
             <button
-              type="submit"
+              type="button"
+              onClick={handlePasswordReset}
               className="btn-secondary w-full flex items-center justify-center py-2 text-base rounded-xl font-medium"
               disabled={resetLoading}
             >
@@ -194,7 +194,7 @@ const Login = () => {
               {resetLoading ? (i18n.language === 'nl' ? 'Laden...' : 'Loading...') : t('login.forgotPassword')}
             </button>
             {resetMsg && <div className="text-xs mt-1 text-green-700">{resetMsg}</div>}
-          </form>
+          </div>
         )}
 
         <FormStatus status={loading ? 'loading' : error ? 'error' : 'idle'} message={error || undefined} />
