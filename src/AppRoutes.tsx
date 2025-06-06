@@ -9,6 +9,7 @@ import CreateMeetup from './pages/CreateMeetup';
 import Invite from './pages/Invite';
 import Respond from './pages/Respond';
 import Confirmed from './pages/Confirmed';
+import Success from './pages/Success';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
 import Terms from './pages/Terms';
@@ -33,6 +34,7 @@ const AppRoutes = () => {
           <Route path="/invite/:token" element={<Invite />} />
           <Route path="/respond/:token" element={<Respond />} />
           <Route path="/confirmed" element={<Confirmed />} />
+          <Route path="/success" element={<Success />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/terms" element={<Terms />} />

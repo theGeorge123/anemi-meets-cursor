@@ -34,11 +34,8 @@ Uitleg in code-comments zodat een beginner snapt wat er gebeurt.
 #endregion */ 
 
 import React, { useState } from 'react';
-import { Player } from '@lottiefiles/react-lottie-player';
 import { useSwipeable } from 'react-swipeable';
 import { useTranslation } from 'react-i18next';
-// Confetti animatie-bestand (bijv. public/confetti.json)
-// Download een confetti lottie van lottiefiles.com en plaats in public/confetti.json
 
 // --- Dummy cafés ---
 const cafes = [
@@ -217,34 +214,23 @@ export default function StepperForm({ locale = 'nl' }: { locale?: 'nl' | 'en' })
     }
   }
 
-  // --- Bevestigingsscherm met confetti ---
+  // --- Bevestigingsscherm ---
   if (success) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <div className="card max-w-md w-full text-center">
           <div className="mb-6">
-            <Player
-              autoplay
-              loop
-              src="/confetti.json"
-              style={{ width: '100%', height: '200px' }}
-            />
+            <img src="/coffee.svg" alt="Success" className="mx-auto w-24 h-24" />
           </div>
           <h2 className="mobile-heading text-primary-700 mb-4">{t('success.title')}</h2>
           <p className="mobile-text text-gray-600 mb-8">{t('success.message')}</p>
           <div className="space-y-4">
-            <button
-              onClick={() => window.location.href = '/'}
-              className="btn-primary w-full"
-            >
+            <button onClick={() => (window.location.href = '/')} className="btn-primary w-full">
               {t('success.button')}
             </button>
             <div className="pt-4 border-t border-gray-200">
               <p className="mobile-text text-gray-600 mb-4">{t('cta')}</p>
-              <button
-                onClick={() => window.location.href = '/register'}
-                className="btn-secondary w-full"
-              >
+              <button onClick={() => (window.location.href = '/register')} className="btn-secondary w-full">
                 {t('register')}
               </button>
             </div>
