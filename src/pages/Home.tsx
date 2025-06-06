@@ -1,9 +1,6 @@
-// import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
-import { useTranslation } from 'react-i18next';
 
 const Home = () => {
-  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-white flex flex-col items-center">
