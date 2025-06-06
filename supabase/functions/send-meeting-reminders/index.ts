@@ -1,15 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const slots: Record<string, [string, string]> = {
-  morning: ["T090000", "T120000"],
-  afternoon: ["T120000", "T170000"],
-  evening: ["T170000", "T210000"]
+  morning: ["09:00:00", "12:00:00"],
+  afternoon: ["12:00:00", "17:00:00"],
+  evening: ["17:00:00", "21:00:00"]
 };
-
-function toColonTime(dtStart: string): string {
-  const t = dtStart.slice(1); // remove leading 'T'
-  return `${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}`;
-}
 
 Deno.serve(async () => {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -21,6 +16,21 @@ Deno.serve(async () => {
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+  async function shouldSendReminder(email: string): Promise<boolean> {
+    const { data: user } = await supabase
+      .from('auth.users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    if (!user) return true;
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('wants_reminders')
+      .eq('id', user.id)
+      .maybeSingle();
+    return profile?.wants_reminders !== false;
+  }
 
   const { data: invitations, error } = await supabase
     .from("invitations")
@@ -38,29 +48,18 @@ Deno.serve(async () => {
     const [dtStart] = slots[slot] || [];
     if (!inv.selected_date || !dtStart) continue;
 
-    const timeStr = toColonTime(dtStart); // Convert `T090000` -> `09:00:00`
+    const timeStr = dtStart;
     const meetingTime = new Date(`${inv.selected_date}T${timeStr}`);
     const diffHours = (meetingTime.getTime() - now.getTime()) / 36e5;
 
     if (Math.abs(diffHours - 24) <= 0.5 || Math.abs(diffHours - 1) <= 0.5) {
       const recipients: string[] = [];
-      const { data: profileA } = await supabase
-        .from("profiles")
-        .select("wants_reminders")
-        .eq("email", inv.email_a)
-        .maybeSingle();
-      if (!profileA || profileA.wants_reminders !== false) {
-        recipients.push(inv.email_a);
-      }
-
-      const { data: profileB } = await supabase
-        .from("profiles")
-        .select("wants_reminders")
-        .eq("email", inv.email_b)
-        .maybeSingle();
-      if (!profileB || profileB.wants_reminders !== false) {
-        recipients.push(inv.email_b);
-      }
+      const [sendA, sendB] = await Promise.all([
+        shouldSendReminder(inv.email_a),
+        shouldSendReminder(inv.email_b)
+      ]);
+      if (sendA) recipients.push(inv.email_a);
+      if (sendB) recipients.push(inv.email_b);
 
       if (recipients.length === 0) continue;
 
