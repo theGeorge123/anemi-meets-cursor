@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { getProfile, getFriends, getPendingFriends, getIncomingFriendRequests, awardBadge, hasBadge, getFriendCount } from '../services/supabaseService';
+import { getProfile, getFriends, getPendingFriends, getIncomingFriendRequests } from '../services/supabaseService';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -28,17 +28,6 @@ interface Profile {
   email?: string;
 }
 
-function getUUID() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  // RFC4122 version 4 compliant fallback
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
 const Dashboard = () => {
   const { t, i18n } = useTranslation();
   const DASHBOARD_CACHE_KEY = 'dashboard_cache_v1';
@@ -49,8 +38,6 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [friends, setFriends] = useState<Profile[]>([]);
   const [pendingFriends, setPendingFriends] = useState<Profile[]>([]);
-  const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [addFriendValue, setAddFriendValue] = useState('');
   const [friendSearch, setFriendSearch] = useState('');
   const [incomingRequests, setIncomingRequests] = useState<Profile[]>([]);
   const navigate = useNavigate();

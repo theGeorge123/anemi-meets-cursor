@@ -439,7 +439,7 @@ const Respond = () => {
             ? (_i18n.language === 'nl' ? 'Laden...' : 'Loading...')
             : (_i18n.language === 'nl' ? 'Bevestigen & mijn koffiemomentje claimen!' : 'Confirm & claim my coffee spot!')}
         </button>
-        <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') : errorMsg || ''} />
+        <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') : (errorMsg || '')} />
       </form>
     </main>
   );
