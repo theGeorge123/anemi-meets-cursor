@@ -23,11 +23,12 @@ export const nl = {
       screenshotLabel: "Screenshot (optioneel)",
       submit: "Versturen",
       error: "Oeps! Melding versturen mislukt: {{error}}",
-      success: "Bedankt! We hebben je melding ontvangen."
+      success: "Bedankt! We hebben je melding ontvangen.",
     },
     testimonialsTitle: "Wat anderen zeggen",
     testimonial1: "Anemi Meets bespaart me zoveel tijd! — Sophie, Rotterdam",
-    freeAccountInfo: "Met een gratis account kun je direct Meetups plannen en uitnodigingen versturen.",
+    freeAccountInfo:
+      "Met een gratis account kun je direct Meetups plannen en uitnodigingen versturen.",
     alreadyHaveAccount: "Al een account? Inloggen",
     createAccount: "Account aanmaken",
     error_invalid_email: "Voer een geldig e-mailadres in",
@@ -35,9 +36,12 @@ export const nl = {
     afternoon: "Middag",
     evening: "Avond",
     date: "Datum",
-    cookiesFull: "Anemi Meets gebruikt alleen functionele cookies die nodig zijn om de site te laten werken. Door de site te gebruiken ga je akkoord met deze cookies.",
-    privacyFull: "We verzamelen alleen de gegevens die je invult om een meetup te plannen. Deze informatie wordt nooit met derden gedeeld en alleen gebruikt voor onze dienst.",
-    termsFull: "Door Anemi Meets te gebruiken ga je akkoord met een verantwoord gebruik van het platform. Accounts die misbruik maken kunnen worden geblokkeerd.",
+    cookiesFull:
+      "Anemi Meets gebruikt alleen functionele cookies die nodig zijn om de site te laten werken. Door de site te gebruiken ga je akkoord met deze cookies.",
+    privacyFull:
+      "We verzamelen alleen de gegevens die je invult om een meetup te plannen. Deze informatie wordt nooit met derden gedeeld en alleen gebruikt voor onze dienst.",
+    termsFull:
+      "Door Anemi Meets te gebruiken ga je akkoord met een verantwoord gebruik van het platform. Accounts die misbruik maken kunnen worden geblokkeerd.",
     rights: "Alle rechten voorbehouden.",
     lastUpdate: "Laatst bijgewerkt:",
     contactIntro: "Stuur gerust een bericht via het onderstaande formulier.",
@@ -49,7 +53,7 @@ export const nl = {
     contactError: "Oeps! Er ging iets mis. Probeer het nog eens!",
     namePlaceholder: "Jouw naam",
     emailPlaceholder: "Voer je e-mailadres in",
-    messagePlaceholder: "Typ hier je bericht..."
+    messagePlaceholder: "Typ hier je bericht...",
   },
   navigation: {
     home: "Home",
@@ -85,42 +89,46 @@ export const nl = {
     freeText: "Nu gratis! Geen account nodig!",
   },
   createMeeting: {
-    title: "Plan a meetup",
-    step1_title: "Your info",
-    step1_sub: "Let your friend know who's inviting them.",
-    step2_title: "City",
-    step2_sub: "Where would you like to meet?",
-    step3_title: "When",
-    step3_sub: "Pick your available dates & times.",
+    title: "Plan een meetup",
+    step1_title: "Jouw gegevens",
+    step1_sub: "Laat je vriend(in) weten wie uitnodigt.",
+    step2_title: "Stad",
+    step2_sub: "Waar wil je afspreken?",
+    step3_title: "Wanneer",
+    step3_sub: "Kies je beschikbare datums en tijden.",
     step4_title: "Café",
-    step4_sub: "We'll suggest a cosy spot.",
-    step5_title: "Confirm",
-    step5_sub: "Review and create your invite.",
-    btn_submit: "Create invite",
+    step4_sub: "We zoeken een gezellig plekje.",
+    step5_title: "Bevestigen",
+    step5_sub: "Controleer en verstuur je uitnodiging.",
+    btn_submit: "Uitnodiging maken",
   },
   invite: {
     titleStepCloser: "Je bent er bijna! 🎉",
     detailsHeading: "Hier zijn de details van je meetup!",
-    shareInstructions: "Deel deze link met je vriend(in) en laat het koffie-avontuur beginnen! ☕✨",
+    shareInstructions:
+      "Deel deze link met je vriend(in) en laat het koffie-avontuur beginnen! ☕✨",
     share: "Deel de magie! ✨",
     copyLink: "Kopieer & stuur! 📋",
     cafeInfoPending: "Café wordt snel onthuld! Stay tuned!",
     copySuccess: "Link gekopieerd! Tijd om koffiepret te verspreiden! ☕️🎉",
-    copyError: "Oeps, kopiëren mislukt! Probeer het nog eens of roep de link gewoon door de kamer!",
+    copyError:
+      "Oeps, kopiëren mislukt! Probeer het nog eens of roep de link gewoon door de kamer!",
     description: "Share this link so your friend can confirm.",
     copy: "Copy link",
   },
   respond: {
     title: "Je hebt een koffie-uitnodiging! ☕️🥳",
-    subtitle: "Kies een tijd, vul je e-mail in en maak je klaar voor een gezellige meetup bij een lokaal café!",
-    explanation: "Je vriend(in) wil samen koffie drinken bij een lokaal tentje. Kies een tijd die voor jou werkt, vul je e-mail in en wij regelen de rest. Zo steun je samen de leukste koffiezaken van de stad! ☕️❤️",
-    timeLabel: "Pick a time slot:",
-    emailLabel: "Your email",
-    emailPlaceholder: "you@example.com",
-    updatesOptIn: "Keep me updated about Anemi Meets",
-    btn_confirm: "Confirm meetup",
-    success_title: "Meetup confirmed!",
-    invalid_link: "This invitation link is invalid or expired.",
+    subtitle:
+      "Kies een tijd, vul je e-mail in en maak je klaar voor een gezellige meetup bij een lokaal café!",
+    explanation:
+      "Je vriend(in) wil samen koffie drinken bij een lokaal tentje. Kies een tijd die voor jou werkt, vul je e-mail in en wij regelen de rest. Zo steun je samen de leukste koffiezaken van de stad! ☕️❤️",
+    timeLabel: "Kies een tijdslot:",
+    emailLabel: "Jouw e-mailadres",
+    emailPlaceholder: "jij@voorbeeld.nl",
+    updatesOptIn: "Houd me op de hoogte van Anemi Meets",
+    btn_confirm: "Meetup bevestigen",
+    success_title: "Meetup bevestigd!",
+    invalid_link: "Deze uitnodigingslink is ongeldig of verlopen.",
   },
   meetup: {
     title: "Laten we een koffiedate plannen! ☕️",
@@ -131,7 +139,8 @@ export const nl = {
     step4: "Kies een café",
     step5: "Klaar! 🎉",
     chooseCity: "Kies je stad",
-    chooseCityInfo: "Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.",
+    chooseCityInfo:
+      "Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.",
     chooseDates: "Kies je datums",
     chooseTimes: "Kies je voorkeurstijden",
     chooseCafe: "Kies een café",
@@ -164,7 +173,8 @@ export const nl = {
     suggestionName: "Gebruik een leuke bijnaam!",
     errorNameShort: "Naam moet minstens 2 tekens zijn",
     name: "Naam",
-    noCitiesAvailable: "Geen steden beschikbaar. Neem contact op met support of probeer het later opnieuw.",
+    noCitiesAvailable:
+      "Geen steden beschikbaar. Neem contact op met support of probeer het later opnieuw.",
     chooseCityLabel: "Welke stad wil je?",
     chooseCafeInfo: "Shuffle voor een verrassingscafé!",
   },
@@ -179,7 +189,8 @@ export const nl = {
     ctaNewMeetup: "Plan iets nieuws!",
     ctaProfile: "Profiel bewerken",
     ctaLogout: "Uitloggen",
-    errorLoadingMeetups: "Oeps, je meetups laden lukt niet. Probeer het straks nog eens!",
+    errorLoadingMeetups:
+      "Oeps, je meetups laden lukt niet. Probeer het straks nog eens!",
     searchFriends: "Vrienden zoeken",
   },
   account: {
@@ -217,7 +228,7 @@ export const nl = {
       confirmed: "Bevestigd",
       pending: "In afwachting",
       cancelled: "Geannuleerd",
-      declined: "Geweigerd"
+      declined: "Geweigerd",
     },
     contactPerson: "Contactpersoon",
     unknownContact: "Onbekende contactpersoon",
@@ -228,17 +239,19 @@ export const nl = {
     confirmPassword: "Bevestig nieuw wachtwoord",
     passwordChangeSuccess: "Wachtwoord succesvol gewijzigd!",
     myMeetups: "Jouw meetups (lekker sociaal!)",
-    errorLoadingMeetupsDetails: "Oeps! Je meetups laden niet. Probeer het opnieuw of ververs de pagina.",
+    errorLoadingMeetupsDetails:
+      "Oeps! Je meetups laden niet. Probeer het opnieuw of ververs de pagina.",
     pastMeetups: "Afgelopen meetups",
     personalInvite: "Jouw persoonlijke uitnodigingslink",
     copyInvite: "Kopieer link",
-    inviteHint: "Deel deze link met vrienden zodat ze direct met je kunnen verbinden!",
+    inviteHint:
+      "Deel deze link met vrienden zodat ze direct met je kunnen verbinden!",
     yourBadges: "Jouw badges",
     locked: "Vergrendeld",
   },
   toast: {
     profileUpdated: "Profiel bijgewerkt!",
-    signupSuccess: "Account aangemaakt! Alles is geregeld! ✨"
+    signupSuccess: "Account aangemaakt! Alles is geregeld! ✨",
   },
   sessionExpiresSoon: "Je sessie verloopt bijna. Log opnieuw in.",
 
@@ -250,18 +263,24 @@ export const nl = {
     forgotPassword: "Wachtwoord vergeten? Oeps!",
     noAccountCta: "Nog geen account? Doe gezellig mee!",
     error_generic: "Hmm, dat ging niet goed. Probeer het nog eens?",
-    error_user_not_found: "We kunnen dat e-mailadres niet vinden. Klopt het wel?",
-    error_invalid_password: "Die combinatie klopt niet helemaal. Nog een keer proberen!",
+    error_user_not_found:
+      "We kunnen dat e-mailadres niet vinden. Klopt het wel?",
+    error_invalid_password:
+      "Die combinatie klopt niet helemaal. Nog een keer proberen!",
     error_invalid_email: "Dat e-mailadres lijkt niet te kloppen. Even checken?",
-    error_user_banned: "Dit account is geblokkeerd. Hulp nodig? Neem contact op!",
+    error_user_banned:
+      "Dit account is geblokkeerd. Hulp nodig? Neem contact op!",
     error_email_not_confirmed: "Check je inbox om je e-mail te bevestigen!",
-    errorRateLimit: "Wow, even rustig aan! Je hebt te vaak geprobeerd. Wacht een momentje.",
+    errorRateLimit:
+      "Wow, even rustig aan! Je hebt te vaak geprobeerd. Wacht een momentje.",
     reset_error_generic: "Kon de resetmail niet sturen. Probeer het nog eens?",
     reset_success: "Resetmail verstuurd! Check je inbox.",
     toast: {
-      loginSuccess: "Yes, je bent binnen! 🎉"
+      loginSuccess: "Yes, je bent binnen! 🎉",
     },
     emailPlaceholder: "Jouw e-mailadres",
+    emailLabel: "Jouw e-mailadres",
+    passwordLabel: "Jouw wachtwoord",
     passwordPlaceholder: "Je geheime wachtwoord",
     loginButton: "Laat me binnen!",
     googleButton: "Inloggen met Google",
@@ -275,7 +294,8 @@ export const nl = {
     emailPlaceholder: "Jouw e-mailadres",
     passwordPrompt: "Welk wachtwoord wil je gebruiken voor dit account?",
     passwordPlaceholder: "Jouw wachtwoord",
-    confirmPasswordPrompt: "Sorry, maar we moeten even checken of je je wachtwoord goed hebt getypt",
+    confirmPasswordPrompt:
+      "Sorry, maar we moeten even checken of je je wachtwoord goed hebt getypt",
     confirmPasswordPlaceholder: "Bevestig je wachtwoord",
     overviewTitle: "Overzicht van je gegevens",
     submit: "Registreren",
@@ -284,25 +304,29 @@ export const nl = {
   onboarding: {
     welcome: {
       title: "Welkom bij Anemi Meets!",
-      description: "Plan meetups met vrienden in een paar klikken. We laten je zien hoe het werkt!"
+      description:
+        "Plan meetups met vrienden in een paar klikken. We laten je zien hoe het werkt!",
     },
     features: {
       title: "Makkelijk plannen",
-      description: "Kies een stad, een datum en nodig je vrienden uit. Wij regelen de rest!"
+      description:
+        "Kies een stad, een datum en nodig je vrienden uit. Wij regelen de rest!",
     },
     getting_started: {
       title: "Aan de slag",
-      description: "Klaar om je eerste meetup te maken? Let's go!"
-    }
+      description: "Klaar om je eerste meetup te maken? Let's go!",
+    },
   },
   skip: "Overslaan",
   get_started: "Aan de slag! 🚀",
   next: "Volgende",
   createMeetup: {
     chooseCity: "Kies je stad",
-    chooseCityInfo: "Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.",
+    chooseCityInfo:
+      "Kies je stad! Zo weten we waar we de leukste plekjes voor je mogen zoeken.",
     chooseCityLabel: "Welke stad wil je?",
-    chooseDaysInfo: "Kies zoveel dagen als je wilt! Hoe meer, hoe gezelliger ☀️",
+    chooseDaysInfo:
+      "Kies zoveel dagen als je wilt! Hoe meer, hoe gezelliger ☀️",
     chooseDates: "Kies je datums",
     chooseTimes: "Kies je voorkeurstijden voor elke datum",
     chooseCafe: "Kies je café!",
@@ -319,6 +343,6 @@ export const nl = {
     errorDatesRequired: "Selecteer minimaal één datum.",
     errorTimesRequired: "Selecteer minimaal één tijd.",
     errorCafeRequired: "Selecteer een café.",
-    suggestionName: "Gebruik een leuke bijnaam!"
+    suggestionName: "Gebruik een leuke bijnaam!",
   },
 };
