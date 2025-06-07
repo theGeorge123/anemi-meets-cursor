@@ -10,6 +10,7 @@ A modern, calming web application for coordinating coffee meetups with friends. 
 - 🏙️ City-based cafe suggestions
 - 📱 Fully responsive design
 - 🔗 Simple invite sharing system
+- 🔔 Realtime invitation updates
 
 ## Tech Stack
 
@@ -62,6 +63,10 @@ src/
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 - `npm run test:e2e` - Run Playwright end-to-end tests
+
+## Realtime Experience
+
+Dashboard pages subscribe to invitation changes using Supabase Realtime. New invitations or status updates appear immediately without reloading, so you always see the latest meetups as soon as they happen.
 
 ## Deploying Supabase Functions
 
