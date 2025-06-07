@@ -370,7 +370,6 @@ const Respond = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {errorMsg && <FormStatus status="error" message={errorMsg || ''} />}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-4">
             {t('respond.availableTimes')}
@@ -439,7 +438,7 @@ const Respond = () => {
             ? (_i18n.language === 'nl' ? 'Laden...' : 'Loading...')
             : (_i18n.language === 'nl' ? 'Bevestigen & mijn koffiemomentje claimen!' : 'Confirm & claim my coffee spot!')}
         </button>
-        <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') : (errorMsg || '')} />
+        <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') || '' : errorMsg || ''} />
       </form>
     </main>
   );
