@@ -11,7 +11,7 @@ interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
 
 interface User {
-  email: string;
+  email?: string;
 }
 
 const getLastCity = () => {
