@@ -10,7 +10,6 @@ import type { User } from '@supabase/supabase-js';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
-
 const getLastCity = () => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('lastCity') || '';
