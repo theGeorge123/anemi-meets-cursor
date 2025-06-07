@@ -34,7 +34,7 @@ const Respond = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cafe, setCafe] = useState<Cafe | null>(null);
-  const [wantsUpdates, setWantsUpdates] = useState(false);
+  const [wants_updates, set_wants_updates] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -219,7 +219,7 @@ const Respond = () => {
       return;
     }
     // Sla email op als updates gewenst
-    if (wantsUpdates) {
+    if (wants_updates) {
       localStorage.setItem(UPDATES_EMAIL_KEY, formData.email);
     } else {
       localStorage.removeItem(UPDATES_EMAIL_KEY);
@@ -415,8 +415,8 @@ const Respond = () => {
           <input
             type="checkbox"
             id="updates"
-            checked={wantsUpdates}
-            onChange={(e) => setWantsUpdates(e.target.checked)}
+            checked={wants_updates}
+            onChange={(e) => set_wants_updates(e.target.checked)}
             className="h-4 w-4 text-primary-600 focus:ring-primary-500"
           />
           <label htmlFor="updates" className="ml-2 text-sm text-gray-700">

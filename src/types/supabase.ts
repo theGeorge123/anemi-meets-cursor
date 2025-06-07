@@ -238,7 +238,7 @@ export interface EventFilters extends FilterOptions {
  * Type for community filters
  */
 export interface CommunityFilters extends FilterOptions {
-  isPrivate?: boolean;
+  is_private?: boolean;
   role?: CommunityMember['role'];
 }
 

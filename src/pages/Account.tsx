@@ -43,10 +43,10 @@ const Account = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
-  const [wantsUpdates, setWantsUpdates] = useState(false);
-  const [wantsReminders, setWantsReminders] = useState(true);
-  const [wantsNotifications, setWantsNotifications] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [wants_updates, set_wants_updates] = useState(false);
+  const [wants_reminders, set_wants_reminders] = useState(true);
+  const [wants_notifications, set_wants_notifications] = useState(false);
+  const [is_private, set_is_private] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
   const [showProfileToast, setShowProfileToast] = useState(false);
@@ -84,10 +84,10 @@ const Account = () => {
         setUser(testProfiles as Profile);
         if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
         if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
-        setWantsUpdates(!!testProfiles.wants_updates);
-        setWantsReminders(testProfiles.wants_reminders !== false);
-        setWantsNotifications(!!testProfiles.wants_notifications);
-        setIsPrivate(!!testProfiles.is_private);
+        set_wants_updates(!!testProfiles.wants_updates);
+        set_wants_reminders(testProfiles.wants_reminders !== false);
+        set_wants_notifications(!!testProfiles.wants_notifications);
+        set_is_private(!!testProfiles.is_private);
       } else {
         setUser(null);
       }
@@ -150,14 +150,14 @@ const Account = () => {
   const handlePrefsSave = async () => {
     if (!user || !user.id) return;
     setPrefsSaving(true);
-    if (wantsNotifications && Notification.permission !== 'granted') {
+    if (wants_notifications && Notification.permission !== 'granted') {
       await requestBrowserNotificationPermission();
     }
     const { error } = await supabase.from('profiles').update({
-      wants_updates: wantsUpdates,
-      wants_reminders: wantsReminders,
-      wants_notifications: wantsNotifications,
-      is_private: isPrivate
+      wants_updates: wants_updates,
+      wants_reminders: wants_reminders,
+      wants_notifications: wants_notifications,
+      is_private: is_private
     }).eq('id', user.id);
     if (error) {
       console.error('Fout bij opslaan voorkeuren:', error);
@@ -270,8 +270,8 @@ const Account = () => {
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={wantsUpdates}
-                      onChange={(e) => setWantsUpdates(e.target.checked)}
+                      checked={wants_updates}
+                      onChange={(e) => set_wants_updates(e.target.checked)}
                     />
                     {t('account.wantsUpdatesCheckbox', 'Yeah, I want to receive updates!')}
                   </label>
@@ -283,8 +283,8 @@ const Account = () => {
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={wantsReminders}
-                      onChange={(e) => setWantsReminders(e.target.checked)}
+                      checked={wants_reminders}
+                      onChange={(e) => set_wants_reminders(e.target.checked)}
                     />
                     {t('account.wantsRemindersCheckbox', 'Yes, remind me before a meetup!')}
                   </label>
@@ -296,8 +296,8 @@ const Account = () => {
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={wantsNotifications}
-                      onChange={(e) => setWantsNotifications(e.target.checked)}
+                      checked={wants_notifications}
+                      onChange={(e) => set_wants_notifications(e.target.checked)}
                     />
                     {t('account.wantsNotificationsCheckbox', 'Yes, allow browser notifications!')}
                   </label>
@@ -309,8 +309,8 @@ const Account = () => {
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={isPrivate}
-                      onChange={(e) => setIsPrivate(e.target.checked)}
+                      checked={is_private}
+                      onChange={(e) => set_is_private(e.target.checked)}
                     />
                     {t('account.isPrivateCheckbox', 'Yeah, I want to keep my profile private!')}
                   </label>
