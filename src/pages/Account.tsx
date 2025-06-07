@@ -274,7 +274,7 @@ const Account = () => {
     setInviteError(null);
     try {
       const token = uuidv4();
-      const { error } = await supabase.from('friend_invites').insert({ inviter_id: user.id, token });
+      const { error } = await supabase.from('friend_invites').insert({ inviter_id: user.id, token, invitee_email: null as unknown as string });
       if (error) {
         setInviteError(t('account.inviteError', 'Kon uitnodigingslink niet genereren. Probeer het opnieuw.'));
       } else {
