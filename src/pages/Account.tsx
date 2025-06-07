@@ -11,6 +11,7 @@ import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
 import type { Badge, UserBadge } from '../types/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -70,6 +71,11 @@ const Account = () => {
     EMOJI_ROWS.push(EMOJI_OPTIONS.slice(i, i + 4));
   }
 
+  // State for generated friend invite link
+  const [friendInviteLink, setFriendInviteLink] = useState<string>('');
+  const [inviteGenerating, setInviteGenerating] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
   // Compute personal invite link (only if user is loaded)
   const personalInviteLink = user ? `${window.location.origin}/invite-friend/${user.id}` : '';
   // Find next upcoming meetup
@@ -83,6 +89,10 @@ const Account = () => {
 
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+
+  // 1. Add state for emoji update loading and error
+  const [emojiLoading, setEmojiLoading] = useState(false);
+  const [emojiError, setEmojiError] = useState<string | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -165,17 +175,22 @@ const Account = () => {
     navigate('/login');
   };
 
+  // 2. Update handleEmojiSelect to handle loading and error
   const handleEmojiSelect = async (emoji: string) => {
     if (!user || !user.id) {
       return;
     }
+    setEmojiLoading(true);
+    setEmojiError(null);
     const { error } = await supabase.from('profiles').update({ emoji }).eq('id', user.id);
     if (error) {
+      setEmojiError('Fout bij opslaan emoji. Probeer het opnieuw.');
       console.error('Fout bij opslaan emoji:', error);
     } else {
       setSelectedEmoji(emoji);
       window.dispatchEvent(new Event('profile-emoji-updated'));
     }
+    setEmojiLoading(false);
   };
 
   // Notificatie- en privacyvoorkeuren opslaan
@@ -268,29 +283,56 @@ const Account = () => {
   // BADGE DISPLAY
   const earnedKeys = new Set(userBadges.map(b => b.badge_key));
 
+  // Handler to generate a friend invite link
+  const handleGenerateFriendInvite = async () => {
+    if (!user || !user.id) return;
+    setInviteGenerating(true);
+    setInviteError(null);
+    try {
+      const token = uuidv4();
+      const { error } = await supabase.from('friend_invites').insert({ inviter_id: user.id, token });
+      if (error) {
+        setInviteError(t('account.inviteError', 'Kon uitnodigingslink niet genereren. Probeer het opnieuw.'));
+      } else {
+        setFriendInviteLink(`${window.location.origin}/invite-friend/${token}`);
+      }
+    } catch (err) {
+      setInviteError(t('account.inviteError', 'Kon uitnodigingslink niet genereren. Probeer het opnieuw.'));
+    }
+    setInviteGenerating(false);
+  };
+
+  // Hardcode badges for testing
+  useEffect(() => {
+    setBadges([
+      { id: 1, key: 'coffee', emoji: '☕️', label: 'Coffee Lover', description: 'Had your first meetup', created_at: '' },
+      { id: 2, key: 'unicorn', emoji: '🦄', label: 'Unicorn', description: 'Planned a unique meetup', created_at: '' },
+      { id: 3, key: 'party', emoji: '🎉', label: 'Party Starter', description: 'Invited 5 friends', created_at: '' },
+      { id: 4, key: 'trophy', emoji: '🏆', label: 'Champion', description: 'Reached 10 meetups', created_at: '' },
+      { id: 5, key: 'star', emoji: '🌟', label: 'Star', description: 'Received great feedback', created_at: '' },
+      { id: 6, key: 'idea', emoji: '💡', label: 'Innovator', description: 'Suggested a new feature', created_at: '' },
+      { id: 7, key: 'heart', emoji: '❤️', label: 'Heart', description: 'Supported a local café', created_at: '' },
+      { id: 8, key: 'cool', emoji: '😎', label: 'Cool Cat', description: 'Logged in 7 days in a row', created_at: '' },
+      { id: 9, key: 'rockstar', emoji: '🧑‍🎤', label: 'Rockstar', description: 'Hosted a big meetup', created_at: '' },
+      { id: 10, key: 'cat', emoji: '🐱', label: 'Cat Person', description: 'Met up with a cat lover', created_at: '' },
+      { id: 11, key: 'dog', emoji: '🐶', label: 'Dog Person', description: 'Met up with a dog lover', created_at: '' },
+      { id: 12, key: 'rainbow', emoji: '🌈', label: 'Rainbow', description: 'Joined a pride event', created_at: '' },
+    ]);
+  }, []);
+
+  useEffect(() => {
+    const fetchBadges = async () => {
+      const allBadges = await getAllBadges();
+      setBadges(allBadges);
+    };
+    fetchBadges();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-extrabold text-primary-700 mb-8">{t('account.title')}</h1>
-
-          {/* Badge Section */}
-          <div className="card mb-8">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">Your Badges</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {badges.map(badge => (
-                <div
-                  key={badge.key}
-                  className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 ${earnedKeys.has(badge.key) ? 'border-primary-400 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'}`}
-                >
-                  <span className="text-5xl mb-2">{badge.emoji}</span>
-                  <span className="text-lg font-bold mb-1">{badge.label}</span>
-                  <span className="text-sm text-gray-600 text-center">{badge.description}</span>
-                  {!earnedKeys.has(badge.key) && <span className="mt-2 text-xs text-gray-400">Locked</span>}
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Next Meetup Section (at the top) */}
           {nextMeetup && (
@@ -306,24 +348,34 @@ const Account = () => {
             </div>
           )}
 
-          {/* Personal Invite Link Section */}
+          {/* Personal Invite Link Section (always visible if user) */}
           {user && (
             <div className="card mb-6 flex flex-col items-center bg-white/80">
-              <div className="text-lg font-semibold text-primary-700 mb-2">{t('account.personalInvite', 'Your personal invite link')}</div>
-              <div className="flex flex-col sm:flex-row items-center gap-2 w-full justify-center">
-                <input
-                  type="text"
-                  value={personalInviteLink}
-                  readOnly
-                  className="border rounded px-2 py-1 w-full max-w-xs text-center bg-gray-50 font-mono"
-                  onFocus={e => e.target.select()}
-                />
-                <button
-                  className="btn-secondary text-xs px-2 py-1"
-                  onClick={() => {navigator.clipboard.writeText(personalInviteLink)}}
-                >{t('account.copyInvite', 'Copy link')}</button>
-              </div>
-              <div className="text-xs text-gray-500 mt-2 text-center">{t('account.inviteHint', 'Share this link with friends so they can instantly connect with you!')}</div>
+              <div className="text-lg font-semibold text-primary-700 mb-2">{t('account.personalInvite')}</div>
+              <button
+                className="btn-primary mb-2"
+                onClick={handleGenerateFriendInvite}
+                disabled={inviteGenerating}
+              >
+                {inviteGenerating ? t('account.generating', 'Bezig met genereren...') : t('account.generateInvite', 'Genereer uitnodigingslink')}
+              </button>
+              {friendInviteLink && (
+                <div className="flex flex-col sm:flex-row items-center gap-2 w-full justify-center">
+                  <input
+                    type="text"
+                    value={friendInviteLink}
+                    readOnly
+                    className="border rounded px-2 py-1 w-full max-w-xs text-center bg-gray-50 font-mono"
+                    onFocus={e => e.target.select()}
+                  />
+                  <button
+                    className="btn-secondary text-xs px-2 py-1"
+                    onClick={() => {navigator.clipboard.writeText(friendInviteLink)}}
+                  >{t('account.copyInvite')}</button>
+                </div>
+              )}
+              {inviteError && <div className="text-xs text-red-500 mt-2">{inviteError}</div>}
+              <div className="text-xs text-gray-500 mt-2 text-center">{t('account.inviteHint')}</div>
             </div>
           )}
 
@@ -338,6 +390,7 @@ const Account = () => {
                       key={emoji}
                       onClick={() => handleEmojiSelect(emoji)}
                       className="w-8 h-8 text-xl hover:scale-110 transition-transform p-0"
+                      disabled={emojiLoading}
                     >
                       {emoji}
                     </button>
@@ -345,13 +398,15 @@ const Account = () => {
                 </div>
               ))}
             </div>
+            {emojiLoading && <div className="text-xs text-primary-600 mt-2">{t('account.saving', 'Saving...')}</div>}
+            {emojiError && <div className="text-xs text-red-500 mt-2">{emojiError}</div>}
           </div>
 
           {/* Emoji Section Label */}
           <div className="w-full text-center text-lg font-semibold mb-2 text-primary-700">{t('account.emoji')}</div>
 
-          {/* Editable Name, Email, Age Section */}
-          <div className="card mb-8 px-4 py-3 flex flex-col gap-4">
+          {/* Editable Name, Email, Age Section (restyled) */}
+          <div className="card mb-8 px-4 py-3 flex flex-col gap-4 bg-white/80 rounded-xl shadow-md">
             <div className="flex flex-row items-center gap-2">
               <span className="text-xl" aria-hidden>📝</span>
               <span className="font-semibold">{t('account.name')}</span>
@@ -548,16 +603,22 @@ const Account = () => {
             )}
           </div>
 
-          {/* My Meetups Section */}
+          {/* Badges Section (now between password and danger zone) */}
           <div className="card mb-8">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.myMeetups')}</h2>
-            {meetupsLoading ? (
-              <SkeletonLoader />
-            ) : meetupsError ? (
-              <div className="text-red-500">{t('account.errorLoadingMeetupsDetails', { details: meetupsError })}</div>
-            ) : (
-              <MeetupsList meetups={myMeetups} t={t} i18n={i18n} />
-            )}
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.yourBadges')}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {badges.map(badge => (
+                <div
+                  key={badge.key}
+                  className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 ${earnedKeys.has(badge.key) ? 'border-primary-400 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'}`}
+                >
+                  <span className="text-5xl mb-2">{badge.emoji}</span>
+                  <span className="text-lg font-bold mb-1">{badge.label}</span>
+                  <span className="text-sm text-gray-600 text-center">{badge.description}</span>
+                  {!earnedKeys.has(badge.key) && <span className="mt-2 text-xs text-gray-400">{t('account.locked')}</span>}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Danger Zone */}

@@ -230,6 +230,11 @@ export const nl = {
     myMeetups: "Jouw meetups (lekker sociaal!)",
     errorLoadingMeetupsDetails: "Oeps! Je meetups laden niet. Probeer het opnieuw of ververs de pagina.",
     pastMeetups: "Afgelopen meetups",
+    personalInvite: "Jouw persoonlijke uitnodigingslink",
+    copyInvite: "Kopieer link",
+    inviteHint: "Deel deze link met vrienden zodat ze direct met je kunnen verbinden!",
+    yourBadges: "Jouw badges",
+    locked: "Vergrendeld",
   },
   toast: {
     profileUpdated: "Profiel bijgewerkt!",

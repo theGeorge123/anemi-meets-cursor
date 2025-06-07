@@ -212,6 +212,11 @@ export const en = {
     myMeetups: "Your meetups (let's get social!)",
     errorLoadingMeetupsDetails: "Oops! Couldn't load your meetups. Try again or refresh.",
     pastMeetups: "Past meetups",
+    personalInvite: "Your personal invite link",
+    copyInvite: "Copy link",
+    inviteHint: "Share this link with friends so they can instantly connect with you!",
+    yourBadges: "Your Badges",
+    locked: "Locked",
   },
   toast: {
     profileUpdated: "Profile updated!",
