@@ -137,7 +137,7 @@ const Signup = () => {
       // Show fun toast
       alert('🚀 Welcome Aboard! You just earned your first badge for joining Anemi Meets!');
     }
-    setTimeout(() => navigate('/account'), 2000);
+    setTimeout(() => navigate('/check-email'), 2000);
   };
 
   // Prevent iOS auto-zoom on input focus

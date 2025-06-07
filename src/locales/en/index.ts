@@ -251,7 +251,7 @@ export const en = {
     errorRateLimit:
       "Whoa, slow down! Too many tries. Wait a sec and try again.",
     reset_error_generic: "Couldn't send the reset email. Try again?",
-    reset_success: "Reset email sent! Go check your inbox.",
+    reset_success: "Reset email sent! Time for a new password and a fresh cup of coffee ☕️. Check your inbox!",
     toast: {
       loginSuccess: "Woohoo, you're in! 🎉",
     },

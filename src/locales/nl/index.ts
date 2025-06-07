@@ -274,7 +274,7 @@ export const nl = {
     errorRateLimit:
       "Wow, even rustig aan! Je hebt te vaak geprobeerd. Wacht een momentje.",
     reset_error_generic: "Kon de resetmail niet sturen. Probeer het nog eens?",
-    reset_success: "Resetmail verstuurd! Check je inbox.",
+    reset_success: "Resetmail verstuurd! Tijd voor een nieuw wachtwoord en verse koffie ☕️. Check je inbox!",
     toast: {
       loginSuccess: "Yes, je bent binnen! 🎉",
     },
