@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
-import OnboardingModal from '../components/OnboardingModal';
+import OnboardingModal from '../features/dashboard/components/OnboardingModal';
 
 interface Invitation {
   id: string;

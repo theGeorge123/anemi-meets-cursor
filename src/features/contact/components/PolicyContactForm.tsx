@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import FormStatus from './FormStatus';
+import FormStatus from '../../../components/FormStatus';
 
 const PolicyContactForm = () => {
   const { t } = useTranslation();

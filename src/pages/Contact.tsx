@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import PolicyContactForm from '../components/PolicyContactForm';
+import PolicyContactForm from '../features/contact/components/PolicyContactForm';
 
 const Contact = () => {
   const { t } = useTranslation();
