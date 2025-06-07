@@ -2,10 +2,10 @@ import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
+import { getCities, getCafes, createInvitation } from '../api';
 import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../components/meetups/DateSelector';
 import { useNavigate } from 'react-router-dom';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
@@ -23,18 +23,14 @@ const getLastCity = () => {
 
 const QUEUE_KEY = 'meetups_queue_v1';
 
-async function flushMeetupQueue(supabase: SupabaseClient, onSuccess: () => void) {
+async function flushMeetupQueue(onSuccess: () => void) {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
   if (!queue.length) return;
   const newQueue = [];
   for (const payload of queue) {
     try {
-      const { error } = await supabase.from('invitations').insert(payload);
-      if (error) {
-        newQueue.push(payload); // niet gelukt, blijft in queue
-      } else {
-        onSuccess();
-      }
+      await createInvitation(payload);
+      onSuccess();
     } catch {
       newQueue.push(payload);
     }
@@ -70,10 +66,10 @@ const CreateMeetup = () => {
       setIsLoadingCities(true);
       setCityError(null);
       try {
-        // Fetch all cities instead of filtering to Rotterdam only
-        const { data, error } = await supabase.from('cities').select('*');
-        if (error) {
-          console.error('Error fetching cities:', error);
+        // Fetch cities via server
+        const data = await getCities();
+        if (!data) {
+          console.error('Error fetching cities');
           setCityError(t('common.errorLoadingCities'));
           // Provide default cities if the query fails
           setCities([
@@ -112,36 +108,30 @@ const CreateMeetup = () => {
     const fetchCafes = async () => {
       if (!formData.city) return setCafes([]);
       try {
-        const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
-        if (error) {
-          console.error('Error fetching cafes:', error);
-          // If no cafes found, create a default one to ensure the flow can continue
-          setCafes([{
-            id: 'default-cafe',
-            name: 'Default Café',
-            address: 'City Center',
-            description: 'A cozy place to meet'
-          }]);
-        } else if (data && data.length > 0) {
+        const data = await getCafes(formData.city);
+        if (data && data.length > 0) {
           setCafes(data as Cafe[]);
         } else {
-          // If no cafes found, create a default one
-          setCafes([{
-            id: 'default-cafe',
-            name: 'Default Café',
-            address: 'City Center',
-            description: 'A cozy place to meet'
-          }]);
+          console.error('Error fetching cafes');
+          setCafes([
+            {
+              id: 'default-cafe',
+              name: 'Default Café',
+              address: 'City Center',
+              description: 'A cozy place to meet'
+            }
+          ]);
         }
       } catch (err) {
         console.error('Exception fetching cafes:', err);
-        // Fallback to default cafe
-        setCafes([{
-          id: 'default-cafe',
-          name: 'Default Café',
-          address: 'City Center',
-          description: 'A cozy place to meet'
-        }]);
+        setCafes([
+          {
+            id: 'default-cafe',
+            name: 'Default Café',
+            address: 'City Center',
+            description: 'A cozy place to meet'
+          }
+        ]);
       }
     };
     fetchCafes();
@@ -154,10 +144,11 @@ const CreateMeetup = () => {
 
   // Check if user is logged in
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-    };
+      const checkSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const email = session?.user?.email;
+        setUser(email ? { email } : null);
+      };
     checkSession();
   }, []);
 
@@ -171,7 +162,7 @@ const CreateMeetup = () => {
 
   // Flush queue bij online komen
   useEffect(() => {
-    const flush = () => flushMeetupQueue(supabase, () => {});
+    const flush = () => flushMeetupQueue(() => {});
     window.addEventListener('online', flush);
     // Initieel ook proberen flushen
     flush();
@@ -258,66 +249,11 @@ const CreateMeetup = () => {
     }
 
     try {
-      // First, check if we can read from the table
-      const { data: checkData, error: checkError } = await supabase
-        .from('invitations')
-        .select('count');
-
-      if (import.meta.env.DEV) {
-        console.log('Table access check:', { data: checkData, error: checkError });
-      }
-
-      // Now try the insert
-      if (import.meta.env.DEV) {
-        console.log('Attempting to insert invitation...');
-      }
-      const { data: insertData, error: insertError } = await supabase
-        .from('invitations')
-        .insert(payload)
-        .select();
-
-      if (import.meta.env.DEV) {
-        console.log('Insert result:', { data: insertData, error: insertError });
-      }
-
-        if (insertError) {
-          console.error('Insert error details:', insertError);
-          const code = insertError.code || '';
-          let msg = '';
-          switch (code) {
-            case 'error_network':
-              msg = t('common.errorNetwork');
-              break;
-            case 'validation_failed':
-              msg = t('common.errorValidationFailed');
-              break;
-            default:
-              const errMsg = insertError.message?.toLowerCase() || '';
-              if (errMsg.includes('network')) {
-                msg = t('common.errorNetwork');
-              } else if (errMsg.includes('valid')) {
-                msg = t('common.errorValidationFailed');
-              }
-          }
-          setFormError(msg);
-          return;
-        }
-
+      const insertData = await createInvitation(payload);
       let responseToken = token;
-      if (!insertData || insertData.length === 0) {
-        if (import.meta.env.DEV) {
-          console.warn('No data returned from insert; using generated token');
-        }
-      } else {
-        if (import.meta.env.DEV) {
-          console.log('Created invitation:', insertData[0]);
-        }
-        if (insertData[0].token) {
-          responseToken = insertData[0].token as string;
-        }
+      if (Array.isArray(insertData) && insertData.length > 0 && insertData[0].token) {
+        responseToken = insertData[0].token as string;
       }
-
-      // Navigate to the invite page regardless of the returned data
       setTimeout(() => {
         if (typeof navigate === 'function') {
           navigate(`/invite/${responseToken}`);
