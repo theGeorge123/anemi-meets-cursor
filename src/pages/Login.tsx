@@ -10,7 +10,7 @@ import ErrorBoundary from "../components/ErrorBoundary";
 const UPDATES_EMAIL_KEY = "anemi-updates-email";
 
 const Login = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",

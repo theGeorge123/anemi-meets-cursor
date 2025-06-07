@@ -15,7 +15,7 @@ type InvitationWithCafe = {
 };
 
 const Invite = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [inviteLink, setInviteLink] = useState("");
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
     "idle",

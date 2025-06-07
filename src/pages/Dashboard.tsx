@@ -34,7 +34,7 @@ interface Profile {
 }
 
 const Dashboard = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const DASHBOARD_CACHE_KEY = "dashboard_cache_v1";
   const [meetups, setMeetups] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
