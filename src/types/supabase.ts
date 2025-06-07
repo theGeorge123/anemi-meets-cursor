@@ -118,6 +118,27 @@ export interface FriendInvite {
 }
 
 /**
+ * Invitation information
+ */
+export interface Invitation {
+  id: string;
+  token: string;
+  invitee_name: string;
+  status: string;
+  selected_date: string;
+  selected_time: string;
+  cafe_id: string;
+  email_a?: string;
+  email_b?: string;
+  cafe_name?: string | null;
+  date_time_options?: { date: string; times: string[] }[] | null;
+  reminded_24h?: boolean;
+  reminded_1h?: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+/**
  * Friendship information
  */
 export interface Friendship {
@@ -169,6 +190,11 @@ export interface Database {
         Row: Notification;
         Insert: Omit<Notification, 'id' | 'created_at'>;
         Update: Partial<Omit<Notification, 'id'>>;
+      };
+      invitations: {
+        Row: Invitation;
+        Insert: Omit<Invitation, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Invitation, 'id'>>;
       };
     };
     Views: {

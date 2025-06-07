@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { getProfile } from '../services/supabaseService';
 import { useTranslation } from 'react-i18next';
 import type { TFunction, i18n as I18n } from 'i18next';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -77,18 +78,18 @@ const Account = () => {
         return;
       }
       // Haal profiel op
-      const { data: testProfiles, error: testProfilesError } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
-      if (testProfilesError) {
-        console.error('Fout bij ophalen profiel:', testProfilesError);
+      const { data: profileData, error: profileError } = await getProfile(session.user.id);
+      if (profileError) {
+        console.error('Fout bij ophalen profiel:', profileError);
       }
-      if (testProfiles) {
-        setUser(testProfiles as Profile);
-        if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
-        if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
-        setWantsUpdates(!!testProfiles.wantsUpdates);
-        setWantsReminders(testProfiles.wantsReminders !== false);
-        setWantsNotifications(!!testProfiles.wantsNotifications);
-        setIsPrivate(!!testProfiles.isPrivate);
+      if (profileData) {
+        setUser(profileData as Profile);
+        if (profileData.emoji) setSelectedEmoji(profileData.emoji);
+        if (profileData.age !== undefined && profileData.age !== null) setAge(profileData.age);
+        setWantsUpdates(!!profileData.wantsUpdates);
+        setWantsReminders(profileData.wantsReminders !== false);
+        setWantsNotifications(!!profileData.wantsNotifications);
+        setIsPrivate(!!profileData.isPrivate);
       } else {
         setUser(null);
       }

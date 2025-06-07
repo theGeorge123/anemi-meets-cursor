@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { getProfile } from '../services/supabaseService';
 import { useTranslation } from 'react-i18next';
 
 const InviteFriend = () => {
@@ -38,11 +39,7 @@ const InviteFriend = () => {
         return;
       }
       // Get inviter profile
-      const { data: inviterProfile } = await supabase
-        .from('profiles')
-        .select('fullName, emoji')
-        .eq('id', invite.inviter_id)
-        .maybeSingle();
+      const { data: inviterProfile } = await getProfile(invite.inviter_id);
       setInviter(inviterProfile);
       setLoading(false);
     };
