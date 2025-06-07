@@ -24,24 +24,25 @@ A modern, calming web application for coordinating coffee meetups with friends. 
 ## Getting Started
 
 1. Clone the repository
-2. Install dependencies:
+2. Ensure you have Node.js 22 installed
+3. Install dependencies:
    ```bash
    npm install
    ```
-3. Install the Supabase CLI:
+4. Install the Supabase CLI:
    ```bash
    npm install -g supabase
    ```
-4. Start the local Supabase stack (applies migrations and seeds `supabase/seed.sql`):
+5. Start the local Supabase stack (applies migrations and seeds `supabase/seed.sql`):
    ```bash
    supabase start
    ```
-5. Copy `.env.example` to `.env` and set your environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, etc.)
-6. Start the development server:
+6. Copy `.env.example` to `.env` and set your environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, etc.)
+7. Start the development server:
    ```bash
    npm run dev
    ```
-7. Open [http://localhost:5173](http://localhost:5173) in your browser
+8. Open [http://localhost:5173](http://localhost:5173) in your browser
 
 ## Project Structure
 
@@ -66,7 +67,8 @@ src/
 ## Linting
 
 After running `npm install` to install the development dependencies (including
-`@eslint/eslintrc`), you can check the codebase for lint errors with:
+`@eslint/eslintrc`) and ensuring Node.js 22 is available, you can check the
+codebase for lint errors with:
 
 ```bash
 npm run lint
