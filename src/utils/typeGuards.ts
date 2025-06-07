@@ -175,7 +175,7 @@ export function isPaginatedResponse<T extends TableName>(
 /**
  * Type guard for filter options
  */
-export function isFilterOptions(value: unknown): value is Record<string, any> {
+export function isFilterOptions(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 

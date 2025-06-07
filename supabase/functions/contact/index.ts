@@ -7,7 +7,8 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  let body: any;
+  interface ContactBody { name: string; email: string; message: string }
+  let body: ContactBody;
   try {
     body = await req.json();
   } catch {

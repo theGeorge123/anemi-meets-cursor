@@ -1,8 +1,9 @@
 import React from 'react';
 import { withTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 
 interface ErrorBoundaryProps {
-  t: any;
+  t: TFunction;
   fallback?: React.ReactNode;
   children: React.ReactNode;
 }

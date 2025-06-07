@@ -59,7 +59,8 @@ const Signup = () => {
     setErrors(errs => ({ ...errs, [field]: undefined }));
   };
 
-  const getErrorMessage = (key: string, error: any) => {
+  interface SignupError { message?: string }
+  const getErrorMessage = (key: string, error: SignupError | null) => {
     const translated = t(key);
     if (translated === key) {
       return `Error: ${error?.message || 'Unknown error'}`;

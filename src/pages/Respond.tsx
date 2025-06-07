@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
 import FormStatus from '../components/FormStatus';
+import type { TFunction, i18n as I18n } from 'i18next';
 
 // TypeScript interfaces voor typeveiligheid
 interface Invitation {
@@ -42,7 +43,8 @@ const Respond = () => {
 
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
-  function getRespondErrorMessage(t: any, key: string, error: any) {
+  interface GenericError { message?: string }
+  function getRespondErrorMessage(t: TFunction, key: string, error: GenericError | null) {
     const translated = t(key);
     if (translated === key) {
       return `Error: ${error?.message || 'Unknown error'}`;
@@ -50,7 +52,7 @@ const Respond = () => {
     return translated;
   }
 
-  function mapRespondError(t: any, data: any, _i18n: any) {
+  function mapRespondError(t: TFunction, data: { error?: string; error_code?: string }, _i18n: I18n) {
     let msg = getRespondErrorMessage(t, 'respond.genericError', data.error);
     if (data.error && typeof data.error === 'string') {
       const err = data.error.toLowerCase();
@@ -225,7 +227,16 @@ const Respond = () => {
       localStorage.removeItem(UPDATES_EMAIL_KEY);
     }
     try {
-      const body: any = {
+      interface ConfirmRequestBody {
+        token: string;
+        email: string;
+        email_b: string;
+        selected_date: string;
+        selected_time: string;
+        cafe_id: string;
+      }
+
+      const body: ConfirmRequestBody = {
         token: invitation.token,
         email: formData.email,
         email_b: formData.email,

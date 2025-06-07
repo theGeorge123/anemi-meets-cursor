@@ -15,11 +15,24 @@ interface Meetup {
   status?: string;
   email_b?: string;
   invitee_id?: string;
+  token?: string;
 }
 
 const LOCAL_CACHE_KEY = 'meetups_cache_v1';
 
-const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin, t, i18n, joining, joinLoadingId }: { meetup: Meetup, onView: (id: string) => void, onJoin: (id: string) => void, t: any, i18n: any, joining: boolean, joinLoadingId: string | null }) {
+import type { TFunction, i18n as I18n } from 'i18next';
+
+interface MeetupListItemProps {
+  meetup: Meetup;
+  onView: (id: string) => void;
+  onJoin: (id: string) => void;
+  t: TFunction;
+  i18n: I18n;
+  joining: boolean;
+  joinLoadingId: string | null;
+}
+
+const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJoin, t, i18n, joining, joinLoadingId }: MeetupListItemProps) {
   return (
     <div
       className="card hover:shadow-lg transition-shadow duration-300"
@@ -127,7 +140,8 @@ const Meetups: React.FC = () => {
         } else {
           setMeetups([]);
         }
-        setError(t('meetups:errorLoading', { details: typeof err === 'object' && err && 'message' in err ? (err as any).message : String(err) }));
+        const details = err instanceof Error ? err.message : String(err);
+        setError(t('meetups:errorLoading', { details }));
         setLoading(false);
       }
     };
@@ -158,7 +172,7 @@ const Meetups: React.FC = () => {
       if (!meetup) throw new Error('Meetup not found');
 
       const body = {
-        token: (meetup as any).token,
+        token: meetup.token,
         email_b: sessionData.session.user.email,
         selected_date: meetup.selected_date,
         selected_time: meetup.selected_time,

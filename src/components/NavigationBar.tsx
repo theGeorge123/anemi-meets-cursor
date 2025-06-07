@@ -5,7 +5,10 @@ import { NavigationContext } from '../context/NavigationContext';
 import ErrorBoundary from './ErrorBoundary';
 import { Transition } from '@headlessui/react';
 
-const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
+export interface NavigationBarProps {
+  profileEmoji?: string;
+}
+const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
   const { t, i18n } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { activePath, isAuthenticated } = useContext(NavigationContext);
@@ -248,7 +251,7 @@ const NavigationBar = ({ profileEmoji }: { profileEmoji?: string }) => {
   );
 };
 
-const NavigationBarWithBoundary = (props: any) => (
+const NavigationBarWithBoundary: React.FC<NavigationBarProps> = (props) => (
   <ErrorBoundary>
     <NavigationBar {...props} />
   </ErrorBoundary>

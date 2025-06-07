@@ -5,7 +5,13 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }
 
-  let body: any;
+  interface ReportBody {
+    description: string;
+    steps?: string;
+    screenshot?: string | null;
+    context?: unknown;
+  }
+  let body: ReportBody;
   try {
     body = await req.json();
   } catch (e) {
