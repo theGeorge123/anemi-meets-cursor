@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { getProfile, getAllBadges, getUserBadges } from '../services/supabaseService';
 import { useTranslation } from 'react-i18next';
-import React from 'react';
 import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
