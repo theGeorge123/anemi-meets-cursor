@@ -196,7 +196,7 @@ const Login = () => {
           </div>
         )}
 
-        <FormStatus status={loading ? 'loading' : error ? 'error' : 'idle'} message={error || undefined} />
+        <FormStatus status={loading ? 'loading' : error ? 'error' : 'idle'} message={error || ''} />
 
         <button
           type="submit"

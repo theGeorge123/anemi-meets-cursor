@@ -87,7 +87,14 @@ const PolicyContactForm = () => {
           />
         </div>
         <button type="submit" className="btn-primary" disabled={loading}>{loading ? t('loading', 'Sending...') : t('contactSend', "Send it! 🚀")}</button>
-        <FormStatus status={loading ? 'loading' : status} message={status === 'success' ? t('contactSuccess', "Thanks for reaching out! We'll get back to you soon ☕️") : status === 'error' ? t('contactError', 'Something went wrong. Please try again!') : undefined} />
+        <FormStatus
+          status={loading ? 'loading' : status}
+          message={status === 'success'
+            ? t('contactSuccess', "Thanks for reaching out! We'll get back to you soon ☕️") ?? ''
+            : status === 'error'
+              ? t('contactError', 'Something went wrong. Please try again!') ?? ''
+              : ''}
+        />
       </form>
     </div>
   );

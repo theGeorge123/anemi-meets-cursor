@@ -36,7 +36,7 @@ const Respond = () => {
   const [error, setError] = useState<string | null>(null);
   const [cafe, setCafe] = useState<Cafe | null>(null);
   const [wantsUpdates, setWantsUpdates] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>('');
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [confirmationInfo, setConfirmationInfo] = useState<ConfirmationInfo | null>(null);
@@ -276,8 +276,13 @@ const Respond = () => {
     }
   };
 
-  // Before the return statement in the component
-  const formStatusMessage: string = confirmationInfo ? String(t('respond.success') ?? '') : String(errorMsg ?? '');
+  const safeErrorMsg: string = errorMsg ?? '';
+  const safeSuccessMsg: string = t('respond.success') ?? '';
+
+  // Helper to guarantee a string for FormStatus
+  function safeString(val: string | undefined | null): string {
+    return typeof val === 'string' ? val : '';
+  }
 
   if (submitted) {
     return (
@@ -443,7 +448,7 @@ const Respond = () => {
         </button>
         <FormStatus
           status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'}
-          message={String(confirmationInfo ? t('respond.success') : errorMsg)}
+          message={confirmationInfo ? ((t('respond.success') as string) || '') : (errorMsg || '')}
         />
       </form>
     </main>
