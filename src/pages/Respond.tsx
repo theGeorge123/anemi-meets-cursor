@@ -276,14 +276,6 @@ const Respond = () => {
     }
   };
 
-  const safeErrorMsg: string = errorMsg ?? '';
-  const safeSuccessMsg: string = t('respond.success') ?? '';
-
-  // Helper to guarantee a string for FormStatus
-  function safeString(val: string | undefined | null): string {
-    return typeof val === 'string' ? val : '';
-  }
-
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
