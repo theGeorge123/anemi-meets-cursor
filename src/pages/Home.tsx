@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Home = () => {
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-white flex flex-col items-center">
@@ -9,14 +11,14 @@ const Home = () => {
         {/* Left: Text */}
         <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary-700 mb-4 font-nunito">
-            Discover cafés & meet friends
+            {t('home.title')}
           </h1>
           <p className="text-lg sm:text-xl text-gray-700 mb-6 font-lato">
-            The easier way to get together in real life.
+            {t('home.subtitle')}
           </p>
           <Link to="/create-meetup">
             <button className="bg-orange-400 text-white font-bold rounded-full px-8 py-3 text-lg shadow-lg hover:bg-orange-500 transition mb-4">
-              Try it now
+              {t('home.ctaPlan')}
             </button>
           </Link>
         </div>
@@ -49,38 +51,38 @@ const Home = () => {
             <div className="bg-orange-100 rounded-full w-14 h-14 flex items-center justify-center mb-3">
               <span className="text-2xl">📝</span>
             </div>
-            <h3 className="font-bold text-lg text-primary-700 mb-2">Fill in your details</h3>
-            <p className="text-gray-600">Let us know who you are and when you're free.</p>
+            <h3 className="font-bold text-lg text-primary-700 mb-2">{t('home.fillIn')}</h3>
+            <p className="text-gray-600">{t('home.fillInDesc')}</p>
           </div>
           {/* Step 2 */}
           <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="bg-orange-100 rounded-full w-14 h-14 flex items-center justify-center mb-3">
               <span className="text-2xl">📤</span>
             </div>
-            <h3 className="font-bold text-lg text-primary-700 mb-2">Send invite</h3>
-            <p className="text-gray-600">Share the link with your friend in one click.</p>
+            <h3 className="font-bold text-lg text-primary-700 mb-2">{t('home.send')}</h3>
+            <p className="text-gray-600">{t('home.sendDesc')}</p>
           </div>
           {/* Step 3 */}
           <div className="flex-1 bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="bg-orange-100 rounded-full w-14 h-14 flex items-center justify-center mb-3">
               <span className="text-2xl">✅</span>
             </div>
-            <h3 className="font-bold text-lg text-primary-700 mb-2">Accept</h3>
-            <p className="text-gray-600">Your friend picks a time and confirms. Done!</p>
+            <h3 className="font-bold text-lg text-primary-700 mb-2">{t('home.accept')}</h3>
+            <p className="text-gray-600">{t('home.acceptDesc')}</p>
           </div>
         </div>
       </section>
 
       {/* Testimonial Section */}
       <section className="w-full max-w-2xl mx-auto px-4 py-8">
-        <h2 className="text-xl font-bold text-primary-700 mb-4 text-center">What our users say</h2>
+        <h2 className="text-xl font-bold text-primary-700 mb-4 text-center">{t('common.testimonialsTitle')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
           <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center justify-center border-2 border-orange-200" style={{ width: 180, height: 180 }}>
             <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
               <span className="text-2xl">😊</span>
             </div>
             <blockquote className="text-base text-gray-700 font-medium italic text-center mt-2">
-              “Meeting up is finally simple again!”
+              {t('home.testimonial')}
             </blockquote>
           </div>
           <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center justify-center border-2 border-orange-200" style={{ width: 180, height: 180 }}>
