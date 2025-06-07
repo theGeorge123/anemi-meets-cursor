@@ -6,14 +6,10 @@ import { createInvitation } from '../services/supabaseService';
 import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../features/meetups/components/DateSelector';
 import { useNavigate } from 'react-router-dom';
+import type { User } from '@supabase/supabase-js';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
-
-interface User {
-  email?: string;
-}
-
 const getLastCity = () => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('lastCity') || '';
