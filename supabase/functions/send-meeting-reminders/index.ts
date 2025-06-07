@@ -1,27 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-function encodeBase64(str: string) {
-  return btoa(unescape(encodeURIComponent(str)));
-}
-
-async function wantsReminders(
-  supabase: ReturnType<typeof createClient>,
-  email: string
-): Promise<boolean> {
-  const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
-  if (userError || !user) {
-    return false;
-  }
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('wantsReminders')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (profileError) {
-    return false;
-  }
-  return !!profile?.wantsReminders;
-}
+import { encodeBase64, wantsReminders } from "../shared.ts";
 
 const slots: Record<string, [string, string]> = {
   morning: ["T090000", "T120000"],
