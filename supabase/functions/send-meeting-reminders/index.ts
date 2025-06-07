@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { log, logError, retry } from "../_utils/logger.ts";
 
 function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
@@ -42,7 +43,7 @@ Deno.cron(
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !RESEND_API_KEY) {
-      console.error("Missing environment variables for reminders");
+      logError("Missing environment variables for reminders");
       return;
     }
 
@@ -54,17 +55,19 @@ Deno.cron(
       .toISOString()
       .split("T")[0];
 
-    const { data: invitations, error } = await supabase
-      .from("invitations")
-      .select(
-        "id, token, email_a, email_b, selected_date, selected_time, cafe_id, reminded_24h, reminded_1h"
-      )
-      .eq("status", "accepted")
-      .gte("selected_date", today)
-      .lte("selected_date", tomorrow);
+    const { data: invitations, error } = await retry(() =>
+      supabase
+        .from("invitations")
+        .select(
+          "id, token, email_a, email_b, selected_date, selected_time, cafe_id, reminded_24h, reminded_1h"
+        )
+        .eq("status", "accepted")
+        .gte("selected_date", today)
+        .lte("selected_date", tomorrow)
+    );
 
     if (error) {
-      console.error("Failed to fetch invitations", error.message);
+      logError("Failed to fetch invitations", { message: error.message });
       return;
     }
 
@@ -87,14 +90,16 @@ Deno.cron(
 
       if (!needs24h && !needs1h) continue;
 
-      const { data: cafe, error: cafeErr } = await supabase
-        .from("cafes")
-        .select("name, address, image_url")
-        .eq("id", inv.cafe_id)
-        .single();
+      const { data: cafe, error: cafeErr } = await retry(() =>
+        supabase
+          .from("cafes")
+          .select("name, address, image_url")
+          .eq("id", inv.cafe_id)
+          .single()
+      );
 
       if (cafeErr || !cafe) {
-        console.error("Cafe fetch error", cafeErr?.message);
+        logError("Cafe fetch error", { message: cafeErr?.message });
         continue;
       }
 
@@ -119,7 +124,7 @@ Deno.cron(
       if (await wantsReminders(supabase, inv.email_b)) recipients.push(inv.email_b);
       if (recipients.length === 0) continue;
 
-      const emailRes = await fetch("https://api.resend.com/emails", {
+      const emailRes = await retry(() => fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${RESEND_API_KEY}`,
@@ -134,10 +139,10 @@ Deno.cron(
             { filename: "meeting.ics", content: encodeBase64(ics), type: "text/calendar" },
           ],
         }),
-      });
+      }));
 
       if (!emailRes.ok) {
-        console.error("Failed to send reminder", await emailRes.text());
+        logError("Failed to send reminder", { details: await emailRes.text() });
         continue;
       }
 
@@ -145,7 +150,7 @@ Deno.cron(
       if (needs24h) updates.reminded_24h = new Date().toISOString();
       if (needs1h) updates.reminded_1h = new Date().toISOString();
 
-      await supabase.from("invitations").update(updates).eq("id", inv.id);
+      await retry(() => supabase.from("invitations").update(updates).eq("id", inv.id));
     }
   }
 );

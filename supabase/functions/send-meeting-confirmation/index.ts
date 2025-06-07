@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { log, logError, retry } from "../_utils/logger.ts";
 
 function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
@@ -64,11 +65,13 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Check invitation first to validate email and status
-    const { data: existing, error: fetchError } = await supabase
-      .from("invitations")
-      .select("email_b, status, email_a, cafe_id")
-      .eq("token", token)
-      .single();
+    const { data: existing, error: fetchError } = await retry(() =>
+      supabase
+        .from("invitations")
+        .select("email_b, status, email_a, cafe_id")
+        .eq("token", token)
+        .single()
+    );
 
     if (fetchError || !existing) {
       throw new Error(fetchError?.message || "Invitation not found.");
@@ -82,23 +85,27 @@ Deno.serve(async (req) => {
       throw new Error("Email does not match invitation.");
     }
 
-    const { data: invitation, error } = await supabase
-      .from("invitations")
-      .update({ email_b, selected_date, selected_time, status: "accepted" })
-      .eq("token", token)
-      .select()
-      .single();
+    const { data: invitation, error } = await retry(() =>
+      supabase
+        .from("invitations")
+        .update({ email_b, selected_date, selected_time, status: "accepted" })
+        .eq("token", token)
+        .select()
+        .single()
+    );
 
     if (error || !invitation) throw new Error(error?.message || "Could not update invitation.");
 
     const { email_a, cafe_id } = invitation;
     if (!email_a || !cafe_id) throw new Error("Missing email_a or cafe_id.");
 
-    const { data: cafe, error: cafeError } = await supabase
-      .from("cafes")
-      .select("name, address, image_url")
-      .eq("id", cafe_id)
-      .single();
+    const { data: cafe, error: cafeError } = await retry(() =>
+      supabase
+        .from("cafes")
+        .select("name, address, image_url")
+        .eq("id", cafe_id)
+        .single()
+    );
 
     if (cafeError || !cafe) throw new Error("Cafe not found.");
 
@@ -145,7 +152,7 @@ Deno.serve(async (req) => {
     if (await wantsReminders(supabase, email_b)) recipients.push(email_b);
 
     if (recipients.length > 0) {
-      const emailRes = await fetch("https://api.resend.com/emails", {
+      const emailRes = await retry(() => fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${RESEND_API_KEY}`,
@@ -162,10 +169,12 @@ Deno.serve(async (req) => {
             type: "text/calendar"
           }]
         })
-      });
+      }));
 
       if (!emailRes.ok) throw new Error("Email not sent: " + (await emailRes.text()));
     }
+
+    log('Meeting confirmation sent', { token });
 
     return new Response(JSON.stringify({
       success: true,
@@ -181,7 +190,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (e) {
-    console.error("Function error:", e.message);
+    logError(e);
     return new Response(JSON.stringify({ error: e.message }), {
       status: 400,
       headers: { "Access-Control-Allow-Origin": "*" }
