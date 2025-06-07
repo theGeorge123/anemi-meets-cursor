@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { getInvitation, getCafe } from '../services/supabase';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
 import FormStatus from '../components/FormStatus';
@@ -111,8 +112,10 @@ const Respond = () => {
           return;
         }
         // Haal invitation op
-        const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).maybeSingle();
-        if (invitationError) {
+        let invitation;
+        try {
+          invitation = await getInvitation(token);
+        } catch (invitationError: any) {
           console.error('Supabase invitation error:', invitationError);
           if (!didCancel) {
             setError(getRespondErrorMessage(t, 'respond.expiredOrMissing', invitationError));
@@ -130,11 +133,15 @@ const Respond = () => {
         setInvitation(invitation as Invitation);
         // Haal cafe details op via cafe_id
         if (invitation.cafe_id) {
-          const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address, image_url').eq('id', invitation.cafe_id).maybeSingle();
-          if (!cafeError && cafeData) {
-            setCafe({ name: cafeData.name, address: cafeData.address, image_url: cafeData.image_url } as Cafe);
-          } else {
-            if (cafeError) console.error('Supabase cafe error:', cafeError);
+          try {
+            const cafeData = await getCafe(invitation.cafe_id);
+            if (cafeData) {
+              setCafe({ name: cafeData.name, address: cafeData.address, image_url: (cafeData as any).image_url } as Cafe);
+            } else {
+              setCafe(null);
+            }
+          } catch (cafeError) {
+            console.error('Supabase cafe error:', cafeError);
             setCafe(null);
           }
         } else {

@@ -1,6 +1,16 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import {
+  deleteFriendship,
+  insertFriendInvite,
+  checkFriendInviteToken,
+  insertFriendships,
+  insertFriendship,
+  updateFriendInviteAccept,
+  getProfileByEmail,
+  checkExistingFriendship
+} from '../services/supabase';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -158,7 +168,8 @@ const Dashboard = () => {
 
   // Remove friend handler
   const handleRemoveFriend = async (friendId: string) => {
-    await supabase.from('friendships').delete().eq('user_id', profile?.id).eq('friend_id', friendId);
+    if (!profile?.id) return;
+    await deleteFriendship(profile.id, friendId);
     setFriends(friends.filter(f => f.id !== friendId));
   };
 
@@ -170,29 +181,14 @@ const Dashboard = () => {
 
     let token = crypto.randomUUID().replace(/-/g, '');
     // Ensure the token is unique
-    let { data: existing } = await supabase
-      .from('friend_invites')
-      .select('id')
-      .eq('token', token)
-      .maybeSingle();
+    let existing = await checkFriendInviteToken(token);
     while (existing) {
       token = crypto.randomUUID().replace(/-/g, '');
-      ({ data: existing } = await supabase
-        .from('friend_invites')
-        .select('id')
-        .eq('token', token)
-        .maybeSingle());
+      existing = await checkFriendInviteToken(token);
     }
 
-    const { error } = await supabase.from('friend_invites').insert({
-      inviter_id: session.user.id,
-      invitee_email: '', // Will be filled when accepted
-      token
-    });
-
-    if (!error) {
-      setInviteCode(token);
-    }
+    await insertFriendInvite(session.user.id, token);
+    setInviteCode(token);
     setInviteLoading(false);
   };
 
@@ -217,12 +213,8 @@ const Dashboard = () => {
     // If value looks like a code (token)
     if (/^[a-z0-9]+$/i.test(value) && value.length > 8) {
       // Accept invite by code
-      const { data: invite, error: inviteError } = await supabase
-        .from('friend_invites')
-        .select('id, inviter_id, accepted')
-        .eq('token', value)
-        .maybeSingle();
-      if (inviteError || !invite) {
+      const invite = await getFriendInvite(value);
+      if (!invite) {
         setAddFriendStatus(t('inviteFriend.invalid', 'Invalid or expired invite code.'));
         return;
       }
@@ -231,15 +223,16 @@ const Dashboard = () => {
         return;
       }
       // Create friendship (pending for inviter, accepted for invitee)
-      const { error: friendshipError } = await supabase.from('friendships').insert([
-        { user_id: invite.inviter_id, friend_id: session.user.id, status: 'pending' },
-        { user_id: session.user.id, friend_id: invite.inviter_id, status: 'accepted' }
-      ]);
-      if (friendshipError) {
+      try {
+        await insertFriendships([
+          { user_id: invite.inviter_id, friend_id: session.user.id, status: 'pending' },
+          { user_id: session.user.id, friend_id: invite.inviter_id, status: 'accepted' }
+        ]);
+      } catch {
         setAddFriendStatus(t('inviteFriend.error', 'Could not add friend. Maybe you are already friends?'));
         return;
       }
-      await supabase.from('friend_invites').update({ accepted: true, accepted_at: new Date().toISOString(), invitee_email: session.user.email }).eq('token', value);
+      await updateFriendInviteAccept(value, session.user.email);
       setAddFriendStatus(t('inviteFriend.success', 'You are now friends!'));
       setAddFriendValue('');
       return;
@@ -250,33 +243,25 @@ const Dashboard = () => {
       return;
     }
     // Find user by email (case-insensitive)
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .ilike('email', value)
-      .maybeSingle();
+    const userProfile = await getProfileByEmail(value);
     if (!userProfile) {
       setAddFriendStatus(t('inviteFriend.notFound', 'No user found with that email.'));
       return;
     }
     // Check if already friends
-    const { data: existing } = await supabase
-      .from('friendships')
-      .select('id')
-      .eq('user_id', session.user.id)
-      .eq('friend_id', userProfile.id)
-      .maybeSingle();
+    const existing = await checkExistingFriendship(session.user.id, userProfile.id);
     if (existing) {
       setAddFriendStatus(t('inviteFriend.alreadyFriends', 'You are already friends or have a pending request.'));
       return;
     }
     // Create pending friendship
-    const { error: addError } = await supabase.from('friendships').insert({
-      user_id: session.user.id,
-      friend_id: userProfile.id,
-      status: 'pending'
-    });
-    if (addError) {
+    try {
+      await insertFriendship({
+        user_id: session.user.id,
+        friend_id: userProfile.id,
+        status: 'pending'
+      });
+    } catch {
       setAddFriendStatus(t('inviteFriend.error', 'Could not add friend.'));
       return;
     }

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
+import { getInvitation, getCafe } from '../services/supabase';
 import Confetti from 'react-confetti';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -47,30 +48,23 @@ const Invite = () => {
           }
         }
         try {
-          const { data: inviteData, error: inviteError } = await supabase
-            .from('invitations')
-            .select('selected_date, selected_time, cafe_id')
-            .eq('token', token)
-            .maybeSingle();
-          if (inviteError) {
-            setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));
-          } else if (!inviteData) {
+          const inviteData = await getInvitation(token);
+          if (!inviteData) {
             setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));
           } else {
             if (inviteData.cafe_id) {
-              const { data: cafeData, error: cafeError } = await supabase
-                .from('cafes')
-                .select('name, address')
-                .eq('id', inviteData.cafe_id)
-                .maybeSingle();
-              if (!cafeError && cafeData) {
-                (inviteData as InvitationWithCafe).cafe_name = cafeData.name;
-                (inviteData as InvitationWithCafe).cafe_address = cafeData.address;
+              try {
+                const cafeData = await getCafe(inviteData.cafe_id);
+                if (cafeData) {
+                  (inviteData as InvitationWithCafe).cafe_name = cafeData.name;
+                  (inviteData as InvitationWithCafe).cafe_address = cafeData.address;
+                }
+              } catch (e) {
+                console.error('Error fetching cafe', e);
               }
             }
             setInvitation(inviteData as InvitationWithCafe);
-            localStorage.setItem(`friend_invite_${token}`,
-              JSON.stringify(inviteData));
+            localStorage.setItem(`friend_invite_${token}`, JSON.stringify(inviteData));
           }
         } catch (err) {
           setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));

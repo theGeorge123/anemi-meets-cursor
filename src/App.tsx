@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import AppRoutes from './AppRoutes';
 import NavigationBar from './components/NavigationBar';
 import { supabase } from './supabaseClient';
+import { getProfile } from './services/supabase';
 import { NavigationProvider } from './context/NavigationContext';
 import * as Sentry from '@sentry/react';
 
@@ -49,9 +50,16 @@ function App() {
     const fetchEmoji = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data: profile } = await supabase.from('profiles').select('emoji').eq('id', session.user.id).maybeSingle();
-        if (profile && profile.emoji) setProfileEmoji(profile.emoji);
-        else setProfileEmoji(undefined);
+        try {
+          const profile = await getProfile(session.user.id);
+          if (profile && (profile as any).emoji) {
+            setProfileEmoji((profile as any).emoji);
+          } else {
+            setProfileEmoji(undefined);
+          }
+        } catch {
+          setProfileEmoji(undefined);
+        }
       } else {
         setProfileEmoji(undefined);
       }

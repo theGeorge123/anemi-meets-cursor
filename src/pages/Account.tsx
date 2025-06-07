@@ -1,6 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import {
+  getProfile,
+  getUserMeetups,
+  updateProfileEmoji,
+  updateProfilePrefs
+} from '../services/supabase';
 import { useTranslation } from 'react-i18next';
 import SkeletonLoader from '../components/SkeletonLoader';
 import React from 'react';
@@ -76,19 +82,21 @@ const Account = () => {
         return;
       }
       // Haal profiel op
-      const { data: testProfiles, error: testProfilesError } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
-      if (testProfilesError) {
-        console.error('Fout bij ophalen profiel:', testProfilesError);
-      }
-      if (testProfiles) {
-        setUser(testProfiles as Profile);
-        if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
-        if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
-        setWantsUpdates(!!testProfiles.wants_updates);
-        setWantsReminders(testProfiles.wants_reminders !== false);
-        setWantsNotifications(!!testProfiles.wants_notifications);
-        setIsPrivate(!!testProfiles.is_private);
-      } else {
+      try {
+        const testProfiles = await getProfile(session.user.id);
+        if (testProfiles) {
+          setUser(testProfiles as Profile);
+          if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
+          if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
+          setWantsUpdates(!!testProfiles.wants_updates);
+          setWantsReminders(testProfiles.wants_reminders !== false);
+          setWantsNotifications(!!testProfiles.wants_notifications);
+          setIsPrivate(!!testProfiles.is_private);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.error('Fout bij ophalen profiel:', err);
         setUser(null);
       }
       setEmail(session.user.email || '');
@@ -97,17 +105,8 @@ const Account = () => {
       setMeetupsLoading(true);
       setMeetupsError(null);
       try {
-        const { data: meetups, error: meetupsError } = await supabase
-          .from('invitations')
-          .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
-          .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
-        if (meetupsError) {
-          console.error('Fout bij ophalen meetups:', meetupsError.message);
-          setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: meetupsError.message }));
-          setMyMeetups([]);
-        } else {
-          setMyMeetups((meetups || []) as Invitation[]);
-        }
+        const meetups = await getUserMeetups(session.user.id, session.user.email);
+        setMyMeetups((meetups || []) as Invitation[]);
       } catch (err: any) {
         console.error('Onverwachte fout bij ophalen meetups:', err);
         setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: err.message || err.toString() }));
@@ -137,12 +136,12 @@ const Account = () => {
     if (!user || !user.id) {
       return;
     }
-    const { error } = await supabase.from('profiles').update({ emoji }).eq('id', user.id);
-    if (error) {
-      console.error('Fout bij opslaan emoji:', error);
-    } else {
+    try {
+      await updateProfileEmoji(user.id, emoji);
       setSelectedEmoji(emoji);
       window.dispatchEvent(new Event('profile-emoji-updated'));
+    } catch (error) {
+      console.error('Fout bij opslaan emoji:', error);
     }
   };
 
@@ -153,16 +152,16 @@ const Account = () => {
     if (wantsNotifications && Notification.permission !== 'granted') {
       await requestBrowserNotificationPermission();
     }
-    const { error } = await supabase.from('profiles').update({
-      wants_updates: wantsUpdates,
-      wants_reminders: wantsReminders,
-      wants_notifications: wantsNotifications,
-      is_private: isPrivate
-    }).eq('id', user.id);
-    if (error) {
-      console.error('Fout bij opslaan voorkeuren:', error);
-    } else {
+    try {
+      await updateProfilePrefs(user.id, {
+        wants_updates: wantsUpdates,
+        wants_reminders: wantsReminders,
+        wants_notifications: wantsNotifications,
+        is_private: isPrivate
+      });
       setShowProfileToast(true);
+    } catch (error) {
+      console.error('Fout bij opslaan voorkeuren:', error);
     }
     setPrefsSaving(false);
   };

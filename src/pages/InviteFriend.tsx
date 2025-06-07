@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { getFriendInvite, getProfile, insertFriendships, updateFriendInviteAccept } from '../services/supabase';
 import { useTranslation } from 'react-i18next';
 
 const InviteFriend = () => {
@@ -22,12 +23,13 @@ const InviteFriend = () => {
         return;
       }
       // Get invite
-      const { data: invite, error: inviteError } = await supabase
-        .from('friend_invites')
-        .select('id, inviter_id, accepted')
-        .eq('token', token)
-        .maybeSingle();
-      if (inviteError || !invite) {
+      let invite;
+      try {
+        invite = await getFriendInvite(token);
+      } catch {
+        invite = null;
+      }
+      if (!invite) {
         setError(t('inviteFriend.invalid', 'Invalid or expired invite link.'));
         setLoading(false);
         return;
@@ -38,12 +40,8 @@ const InviteFriend = () => {
         return;
       }
       // Get inviter profile
-      const { data: inviterProfile } = await supabase
-        .from('profiles')
-        .select('full_name, emoji')
-        .eq('id', invite.inviter_id)
-        .maybeSingle();
-      setInviter(inviterProfile);
+      const inviterProfile = await getProfile(invite.inviter_id);
+      setInviter(inviterProfile as any);
       setLoading(false);
     };
     checkInvite();
@@ -60,28 +58,25 @@ const InviteFriend = () => {
       return;
     }
     // Get invite
-    const { data: invite } = await supabase
-      .from('friend_invites')
-      .select('id, inviter_id, accepted')
-      .eq('token', token)
-      .maybeSingle();
+    const invite = await getFriendInvite(token || '');
     if (!invite || invite.accepted) {
       setError(t('inviteFriend.invalid', 'Invalid or expired invite link.'));
       setLoading(false);
       return;
     }
     // Create friendship (pending for inviter, accepted for invitee)
-    const { error: friendshipError } = await supabase.from('friendships').insert([
-      { user_id: invite.inviter_id, friend_id: session.user.id, status: 'pending' },
-      { user_id: session.user.id, friend_id: invite.inviter_id, status: 'accepted' }
-    ]);
-    if (friendshipError) {
+    try {
+      await insertFriendships([
+        { user_id: invite.inviter_id, friend_id: session.user.id, status: 'pending' },
+        { user_id: session.user.id, friend_id: invite.inviter_id, status: 'accepted' }
+      ]);
+    } catch {
       setError(t('inviteFriend.error', 'Could not add friend. Maybe you are already friends?'));
       setLoading(false);
       return;
     }
     // Mark invite as accepted
-    await supabase.from('friend_invites').update({ accepted: true, accepted_at: new Date().toISOString(), invitee_email: session.user.email }).eq('token', token);
+    await updateFriendInviteAccept(token || '', session.user.email);
     setSuccess(true);
     setLoading(false);
     setTimeout(() => navigate('/dashboard'), 2000);
