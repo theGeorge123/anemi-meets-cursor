@@ -28,12 +28,20 @@ A modern, calming web application for coordinating coffee meetups with friends. 
    ```bash
    npm install
    ```
-3. Copy `.env.example` to `.env` and set your variables
-4. Start the development server:
+3. Install the Supabase CLI:
+   ```bash
+   npm install -g supabase
+   ```
+4. Start the local Supabase stack (applies migrations and seeds `supabase/seed.sql`):
+   ```bash
+   supabase start
+   ```
+5. Copy `.env.example` to `.env` and set your environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, etc.)
+6. Start the development server:
    ```bash
    npm run dev
    ```
-5. Open [http://localhost:5173](http://localhost:5173) in your browser
+7. Open [http://localhost:5173](http://localhost:5173) in your browser
 
 ## Project Structure
 
