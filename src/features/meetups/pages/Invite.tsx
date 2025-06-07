@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchInvitationByToken, fetchCafeById } from '../../../services/meetupService';
 import Confetti from 'react-confetti';
-import LoadingIndicator from '../components/LoadingIndicator';
-import SkeletonLoader from '../components/SkeletonLoader';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import SkeletonLoader from '../../../components/SkeletonLoader';
 
 type InvitationWithCafe = {
   selected_date: string;

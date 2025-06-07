@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getSession } from '../../../services/authService';
 import { fetchMeetupsForUser } from '../../../services/meetupService';
 import { useTranslation } from 'react-i18next';
-import Toast from '../components/Toast';
+import Toast from '../../../components/Toast';
 
 interface Meetup {
   id: string;
@@ -108,7 +108,10 @@ const Meetups: React.FC = () => {
         return;
       }
       try {
-        const { data, error } = await fetchMeetupsForUser(session.user.id, session.user.email);
+        const { data, error } = await fetchMeetupsForUser(
+          session.user.id,
+          session.user.email || ''
+        );
         if (error || !data) throw error || new Error('No data');
         setMeetups(data || []);
         setLoading(false);
@@ -156,7 +159,7 @@ const Meetups: React.FC = () => {
 
       const body = {
         token: (meetup as any).token,
-        email_b: sessionData.session.user.email,
+        email_b: sessionData.session.user.email || '',
         selected_date: meetup.selected_date,
         selected_time: meetup.selected_time,
         cafe_id: meetup.cafe_id,

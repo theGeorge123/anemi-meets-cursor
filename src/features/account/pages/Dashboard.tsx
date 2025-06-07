@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getSession, signOut } from '../../../services/authService';
 import { fetchProfile, updateLastSeen, fetchProfiles, fetchProfileByEmail } from '../../../services/profileService';
 import { fetchMeetupsForUser } from '../../../services/meetupService';
-import { fetchFriendships, removeFriendship, createInvite, findInviteByToken, createFriendships, markInviteAccepted } from '../../../services/friendService';
+import { fetchFriendships, removeFriendship, createInvite, findInviteByToken, createFriendships, markInviteAccepted, fetchFriendInvites } from '../../../services/friendService';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import SkeletonLoader from '../../../components/SkeletonLoader';
@@ -95,7 +95,10 @@ const Dashboard = () => {
       setFriends(friendsList);
       setPendingFriends(pendingList);
       // Meetups ophalen
-      const { data, error } = await fetchMeetupsForUser(session.user.id, session.user.email);
+      const { data, error } = await fetchMeetupsForUser(
+        session.user.id,
+        session.user.email || ''
+      );
       if (error) {
         if (cached) {
           try {
@@ -204,7 +207,7 @@ const Dashboard = () => {
         setAddFriendStatus(t('inviteFriend.error', 'Could not add friend. Maybe you are already friends?'));
         return;
       }
-      await markInviteAccepted(value, session.user.email);
+      await markInviteAccepted(value, session.user.email || '');
       setAddFriendStatus(t('inviteFriend.success', 'You are now friends!'));
       setAddFriendValue('');
       return;

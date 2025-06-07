@@ -24,7 +24,7 @@ const InviteFriend = () => {
         return;
       }
       // Get invite
-      const { data: invite, error: inviteError } = await fetchFriendInvites(token);
+      const { data: invite, error: inviteError } = await fetchFriendInvites(token!);
       if (inviteError || !invite) {
         setError(t('inviteFriend.invalid', 'Invalid or expired invite link.'));
         setLoading(false);
@@ -54,6 +54,11 @@ const InviteFriend = () => {
       return;
     }
     // Get invite
+    if (!token) {
+      setError(t('inviteFriend.invalid', 'Invalid invite link.'));
+      setLoading(false);
+      return;
+    }
     const { data: invite } = await fetchFriendInvites(token);
     if (!invite || invite.accepted) {
       setError(t('inviteFriend.invalid', 'Invalid or expired invite link.'));
@@ -68,7 +73,7 @@ const InviteFriend = () => {
       return;
     }
     // Mark invite as accepted
-    await markInviteAccepted(token, session.user.email);
+    await markInviteAccepted(token!, session.user.email || '');
     setSuccess(true);
     setLoading(false);
     setTimeout(() => navigate('/dashboard'), 2000);

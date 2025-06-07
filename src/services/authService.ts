@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { AuthResponse, Provider } from '@supabase/supabase-js';
+import { Provider } from '@supabase/supabase-js';
 
 export const getSession = () => supabase.auth.getSession();
 export const getUser = () => supabase.auth.getUser();

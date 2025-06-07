@@ -62,7 +62,7 @@ const CreateMeetup = () => {
 
   // Fetch cities (no longer restricted to just Rotterdam)
   useEffect(() => {
-    const fetchCities = async () => {
+    const loadCities = async () => {
       setIsLoadingCities(true);
       setCityError(null);
       try {
@@ -100,7 +100,7 @@ const CreateMeetup = () => {
         setIsLoadingCities(false);
       }
     };
-    fetchCities();
+    loadCities();
   }, [t]);
 
   // Fetch cafes for selected city

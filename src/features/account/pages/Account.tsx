@@ -99,7 +99,10 @@ const Account = () => {
       setMeetupsLoading(true);
       setMeetupsError(null);
       try {
-        const { data: meetups, error: meetupsError } = await fetchMeetupsForUser(session.user.id, session.user.email);
+        const { data: meetups, error: meetupsError } = await fetchMeetupsForUser(
+          session.user.id,
+          session.user.email || ''
+        );
         if (meetupsError) {
           console.error('Fout bij ophalen meetups:', meetupsError.message);
           setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: meetupsError.message }));
