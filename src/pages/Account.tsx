@@ -50,7 +50,7 @@ const Account = () => {
   const [showProfileToast, setShowProfileToast] = useState(false);
   const [showPasswordToast, setShowPasswordToast] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Edit state for name/email/age
   const [editingProfile, setEditingProfile] = useState(false);
@@ -273,12 +273,20 @@ const Account = () => {
     setInviteGenerating(true);
     setInviteError(null);
     try {
-      const token = uuidv4();
-      const { error } = await supabase.from('friend_invites').insert({ inviter_id: user.id, token, invitee_email: null as unknown as string });
-      if (error) {
+      // Call Supabase Edge Function to generate invite and get the link
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-friend-invite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ inviter_id: user.id, invitee_email: null, lang: (i18n?.language || 'nl') }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.token) {
         setInviteError(t('account.inviteError', 'Kon uitnodigingslink niet genereren. Probeer het opnieuw.'));
       } else {
-        setFriendInviteLink(`${window.location.origin}/invite-friend/${token}`);
+        setFriendInviteLink(`${window.location.origin}/invite-friend/${data.token}`);
       }
     } catch (err) {
       setInviteError(t('account.inviteError', 'Kon uitnodigingslink niet genereren. Probeer het opnieuw.'));
