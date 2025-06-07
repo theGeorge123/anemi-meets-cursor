@@ -14,13 +14,13 @@ async function wantsReminders(
   }
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('wants_reminders')
+    .select('wantsReminders')
     .eq('id', user.id)
     .maybeSingle();
   if (profileError) {
     return false;
   }
-  return !!profile?.wants_reminders;
+  return !!profile?.wantsReminders;
 }
 
 const slots: Record<string, [string, string]> = {

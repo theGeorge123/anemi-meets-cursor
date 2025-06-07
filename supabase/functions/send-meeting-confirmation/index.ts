@@ -16,7 +16,7 @@ async function wantsReminders(
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('wants_reminders')
+    .select('wantsReminders')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -24,7 +24,7 @@ async function wantsReminders(
     return false;
   }
 
-  return !!profile?.wants_reminders;
+  return !!profile?.wantsReminders;
 }
 
 Deno.serve(async (req) => {

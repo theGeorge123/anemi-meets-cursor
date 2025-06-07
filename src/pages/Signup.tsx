@@ -76,7 +76,7 @@ const Signup = () => {
       email: form.email,
       password: form.password,
       options: {
-        data: { full_name: form.name }
+        data: { fullName: form.name }
       }
     });
     if (signUpError) {

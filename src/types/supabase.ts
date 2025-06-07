@@ -9,7 +9,7 @@
 export interface Profile {
   id: string;
   email: string;
-  full_name: string;
+  fullName: string;
   avatar_url?: string;
   created_at: string;
   updated_at: string;
@@ -59,7 +59,7 @@ export interface Community {
   created_by: string;
   created_at: string;
   updated_at: string;
-  is_private: boolean;
+  isPrivate: boolean;
   avatar_url?: string;
   banner_url?: string;
 }
