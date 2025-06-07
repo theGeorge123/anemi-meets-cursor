@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../services/supabaseClient';
 
 interface NavigationContextType {
   activePath: string;

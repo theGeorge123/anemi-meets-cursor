@@ -1,14 +1,14 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../services/supabaseClient';
 import { useTranslation } from 'react-i18next';
 import type { TFunction, i18n as I18n } from 'i18next';
-import SkeletonLoader from '../components/SkeletonLoader';
+import SkeletonLoader from '../../../components/SkeletonLoader';
 import React from 'react';
-import FormStatus from '../components/FormStatus';
-import Toast from '../components/Toast';
-import ErrorBoundary from '../components/ErrorBoundary';
-import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
+import FormStatus from '../../../components/FormStatus';
+import Toast from '../../../components/Toast';
+import ErrorBoundary from '../../../components/ErrorBoundary';
+import { requestBrowserNotificationPermission } from '../../../utils/browserNotifications';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {

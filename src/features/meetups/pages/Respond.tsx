@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import LoadingIndicator from '../components/LoadingIndicator';
-import SkeletonLoader from '../components/SkeletonLoader';
-import FormStatus from '../components/FormStatus';
+import { supabase } from '../../../services/supabaseClient';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import SkeletonLoader from '../../../components/SkeletonLoader';
+import FormStatus from '../../../components/FormStatus';
 import type { TFunction, i18n as I18n } from 'i18next';
 
 // TypeScript interfaces voor typeveiligheid

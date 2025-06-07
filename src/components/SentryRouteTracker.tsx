@@ -23,7 +23,7 @@ export function SentryRouteTracker() {
   }, []);
 
   useEffect(() => {
-    import('../supabaseClient').then(({ supabase }) => {
+    import('../services/supabaseClient').then(({ supabase }) => {
       supabase.auth.getUser().then(({ data }) => {
         if (data?.user) {
           Sentry.setUser({ id: data.user.id });

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../services/supabaseClient';
 import { useTranslation } from 'react-i18next';
 
 // TypeScript interface voor typeveiligheid

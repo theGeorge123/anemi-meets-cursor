@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../services/supabaseClient';
 import Confetti from 'react-confetti';
-import LoadingIndicator from '../components/LoadingIndicator';
-import SkeletonLoader from '../components/SkeletonLoader';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import SkeletonLoader from '../../../components/SkeletonLoader';
 
 type InvitationWithCafe = {
   selected_date: string;

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import LoadingIndicator from '../components/LoadingIndicator';
-import FormStatus from '../components/FormStatus';
-import Toast from '../components/Toast';
-import ErrorBoundary from '../components/ErrorBoundary';
+import { supabase } from '../../../services/supabaseClient';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import FormStatus from '../../../components/FormStatus';
+import Toast from '../../../components/Toast';
+import ErrorBoundary from '../../../components/ErrorBoundary';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 

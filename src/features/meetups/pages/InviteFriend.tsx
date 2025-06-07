@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../services/supabaseClient';
 import { useTranslation } from 'react-i18next';
 
 const InviteFriend = () => {

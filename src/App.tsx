@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Footer from './components/Footer';
 import AppRoutes from './AppRoutes';
 import NavigationBar from './components/NavigationBar';
-import { supabase } from './supabaseClient';
+import { supabase } from './services/supabaseClient';
 import { NavigationProvider } from './context/NavigationContext';
 import * as Sentry from '@sentry/react';
 
@@ -30,7 +30,7 @@ function useSentryTracking() {
 
   useEffect(() => {
     // Set user context (id only)
-    import('./supabaseClient').then(({ supabase }) => {
+    import('./services/supabaseClient').then(({ supabase }) => {
       supabase.auth.getUser().then(({ data }) => {
         if (data?.user) {
           Sentry.setUser({ id: data.user.id });

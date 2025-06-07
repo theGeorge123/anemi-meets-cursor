@@ -1,19 +1,19 @@
 import { Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Account from './pages/Account';
-import Dashboard from './pages/Dashboard';
-import CreateMeetup from './pages/CreateMeetup';
-import Invite from './pages/Invite';
-import Respond from './pages/Respond';
-import Confirmed from './pages/Confirmed';
+import Login from './features/account/pages/Login';
+import Signup from './features/account/pages/Signup';
+import Account from './features/account/pages/Account';
+import Dashboard from './features/meetups/pages/Dashboard';
+import CreateMeetup from './features/meetups/pages/CreateMeetup';
+import Invite from './features/meetups/pages/Invite';
+import Respond from './features/meetups/pages/Respond';
+import Confirmed from './features/meetups/pages/Confirmed';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Suspense } from 'react';
-import InviteFriend from './pages/InviteFriend';
+import InviteFriend from './features/meetups/pages/InviteFriend';
 
 const AppRoutes = () => {
   const { t } = useTranslation();

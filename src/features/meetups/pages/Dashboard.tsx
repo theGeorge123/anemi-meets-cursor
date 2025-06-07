@@ -1,10 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../services/supabaseClient';
 import { useTranslation } from 'react-i18next';
-import LoadingIndicator from '../components/LoadingIndicator';
-import SkeletonLoader from '../components/SkeletonLoader';
-import OnboardingModal from '../components/OnboardingModal';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import SkeletonLoader from '../../../components/SkeletonLoader';
+import OnboardingModal from '../../../components/OnboardingModal';
 
 interface Invitation {
   id: string;

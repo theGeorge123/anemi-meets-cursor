@@ -1,9 +1,9 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../services/supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
-import DateSelector from '../components/meetups/DateSelector';
+import DateSelector from '../components/DateSelector';
 import { useNavigate } from 'react-router-dom';
 import type { SupabaseClient } from '@supabase/supabase-js';
 

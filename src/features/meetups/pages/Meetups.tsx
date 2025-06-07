@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../services/supabaseClient';
 import { useTranslation } from 'react-i18next';
-import Toast from '../components/Toast';
+import Toast from '../../../components/Toast';
 
 interface Meetup {
   id: string;
