@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { getProfile } from '../services/supabaseService';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -78,11 +79,7 @@ const Dashboard = () => {
         setShowOnboarding(true);
       }
       // Profiel ophalen (inclusief lastSeen)
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('id, fullName, emoji, lastSeen')
-        .eq('id', session.user.id)
-        .maybeSingle();
+      const { data: profileData } = await getProfile(session.user.id);
       setProfile(profileData as Profile);
       // Friends ophalen (accepted)
       const { data: friendshipRows } = await supabase

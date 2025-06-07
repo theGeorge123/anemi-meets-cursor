@@ -2,10 +2,10 @@ import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
+import { createInvitation } from '../services/supabaseService';
 import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../features/meetups/components/DateSelector';
 import { useNavigate } from 'react-router-dom';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
@@ -23,13 +23,13 @@ const getLastCity = () => {
 
 const QUEUE_KEY = 'meetups_queue_v1';
 
-async function flushMeetupQueue(supabase: SupabaseClient, onSuccess: () => void) {
+async function flushMeetupQueue(onSuccess: () => void) {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
   if (!queue.length) return;
   const newQueue = [];
   for (const payload of queue) {
     try {
-      const { error } = await supabase.from('invitations').insert(payload);
+      const { error } = await createInvitation(payload);
       if (error) {
         newQueue.push(payload); // niet gelukt, blijft in queue
       } else {
@@ -171,7 +171,7 @@ const CreateMeetup = () => {
 
   // Flush queue bij online komen
   useEffect(() => {
-    const flush = () => flushMeetupQueue(supabase, () => {});
+    const flush = () => flushMeetupQueue(() => {});
     window.addEventListener('online', flush);
     // Initieel ook proberen flushen
     flush();
@@ -271,10 +271,7 @@ const CreateMeetup = () => {
       if (import.meta.env.DEV) {
         console.log('Attempting to insert invitation...');
       }
-      const { data: insertData, error: insertError } = await supabase
-        .from('invitations')
-        .insert(payload)
-        .select();
+      const { data: insertData, error: insertError } = await createInvitation(payload);
 
       if (import.meta.env.DEV) {
         console.log('Insert result:', { data: insertData, error: insertError });
