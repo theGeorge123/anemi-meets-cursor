@@ -11,6 +11,8 @@ const Footer = () => {
       <div className="flex flex-col sm:flex-row items-center justify-center gap-y-3 gap-x-6 w-full sm:w-auto">
         <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
           <Link to="/contact" className="footer-link">Contact</Link>
+          <Link to="/cookies" className="footer-link">Cookies</Link>
+          <Link to="/privacy" className="footer-link">Privacybeleid</Link>
         </div>
       </div>
       <button onClick={() => setShowReportModal(true)} className="btn-secondary px-4 py-2 rounded-2xl w-full sm:w-auto text-center mt-2 sm:mt-0">Report a bug or idea</button>
