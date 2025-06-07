@@ -64,8 +64,9 @@ const ReportIssueModal: React.FC<Props> = ({ open, onClose }) => {
       setDescription('');
       setSteps('');
       setScreenshot(null);
-    } catch (err: any) {
-      setError(err.message || 'Onbekende fout');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Onbekende fout';
+      setError(message);
     } finally {
       setSubmitting(false);
     }

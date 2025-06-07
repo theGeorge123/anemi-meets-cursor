@@ -221,7 +221,7 @@ export interface FilterOptions {
   sortOrder?: 'asc' | 'desc';
   page?: number;
   pageSize?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

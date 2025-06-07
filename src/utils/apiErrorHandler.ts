@@ -5,8 +5,8 @@ export interface ApiError {
 }
 
 export const handleApiError = (error: unknown): ApiError => {
-  if (typeof error === 'object' && error !== null && (error as any).isAxiosError === true) {
-    const axiosError = error as any;
+  if (typeof error === 'object' && error !== null && (error as AxiosError).isAxiosError === true) {
+    const axiosError = error as AxiosError;
     const status = axiosError.response?.status;
     const data = axiosError.response?.data;
 
@@ -91,3 +91,4 @@ export const handleApiError = (error: unknown): ApiError => {
     details: error,
   };
 };
+import type { AxiosError } from 'axios';

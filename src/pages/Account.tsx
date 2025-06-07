@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
+import type { TFunction, i18n as I18n } from 'i18next';
 import SkeletonLoader from '../components/SkeletonLoader';
 import React from 'react';
 import FormStatus from '../components/FormStatus';
@@ -108,9 +109,10 @@ const Account = () => {
         } else {
           setMyMeetups((meetups || []) as Invitation[]);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Onverwachte fout bij ophalen meetups:', err);
-        setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: err.message || err.toString() }));
+        const details = err instanceof Error ? err.message : String(err);
+        setMeetupsError(t('account.errorLoadingMeetupsDetails', { details }));
         setMyMeetups([]);
       }
       setMeetupsLoading(false);
@@ -440,7 +442,14 @@ const Account = () => {
   );
 };
 
-const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels, i18n }: { m: Invitation, t: any, statusLabels: Record<string, string>, i18n: any }) {
+interface MeetupListItemProps {
+  m: Invitation;
+  t: TFunction;
+  statusLabels: Record<string, string>;
+  i18n: I18n;
+}
+
+const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels, i18n }: MeetupListItemProps) {
   return (
     <li key={m.id} className="bg-white rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100 mb-2 transition hover:shadow-md">
       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
@@ -457,7 +466,13 @@ const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels, 
   );
 });
 
-const MeetupsList = ({ meetups, t, i18n }: { meetups: Invitation[], t: any, i18n: any }) => {
+interface MeetupsListProps {
+  meetups: Invitation[];
+  t: TFunction;
+  i18n: I18n;
+}
+
+const MeetupsList = ({ meetups, t, i18n }: MeetupsListProps) => {
   const statusLabels: Record<string, string> = {
     confirmed: t('account.status.confirmed', 'Confirmed'),
     pending: t('account.status.pending', 'Pending'),

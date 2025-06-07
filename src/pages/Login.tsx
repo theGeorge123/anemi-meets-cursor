@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
@@ -42,7 +43,8 @@ const Login = () => {
     }
   }, []);
 
-  function normalizeAuthError(t: any, error: any) {
+  interface AuthError { code?: string; message?: string }
+  function normalizeAuthError(t: TFunction, error: AuthError) {
     let msg = t('error_generic');
     const code = error.code || '';
     switch (code) {

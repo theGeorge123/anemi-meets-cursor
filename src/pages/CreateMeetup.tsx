@@ -5,9 +5,14 @@ import { supabase } from '../supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../components/meetups/DateSelector';
 import { useNavigate } from 'react-router-dom';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
+
+interface User {
+  email: string;
+}
 
 const getLastCity = () => {
   if (typeof window !== 'undefined') {
@@ -18,7 +23,7 @@ const getLastCity = () => {
 
 const QUEUE_KEY = 'meetups_queue_v1';
 
-async function flushMeetupQueue(supabase: any, onSuccess: () => void) {
+async function flushMeetupQueue(supabase: SupabaseClient, onSuccess: () => void) {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
   if (!queue.length) return;
   const newQueue = [];
@@ -53,7 +58,7 @@ const CreateMeetup = () => {
   const [shuffleCooldown, setShuffleCooldown] = useState(false);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [step, setStep] = useState(1);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoadingCities, setIsLoadingCities] = useState(true);
   const [cityError, setCityError] = useState<string | null>(null);
@@ -220,7 +225,18 @@ const CreateMeetup = () => {
       console.log('Generated token:', token);
     }
 
-    const payload: any = {
+    interface InvitePayload {
+      token: string;
+      invitee_name: string;
+      status: string;
+      selected_date: string;
+      selected_time: string;
+      cafe_id: string;
+      date_time_options: { date: string; times: string[] }[];
+      email_a?: string;
+    }
+
+    const payload: InvitePayload = {
       token,
       invitee_name: formData.name,
       status: "pending",
