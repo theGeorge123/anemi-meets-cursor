@@ -72,6 +72,10 @@ supabase functions deploy send-meeting-reminders --project-ref <your-project-id>
 ```
 
 Configure the schedule for this function in `supabase/config.toml`. See the [Supabase docs](https://supabase.com/docs/guides/functions/schedule-functions) for details.
+## Invitation Security
+
+Row level security is enabled on the `invitations` table. A signed-in user can read or modify a row when their user ID matches `invitee_id` or their email matches `email_a` or `email_b`. Inserts require `email_a` to equal the authenticated user's email.
+
 
 ## Database Migrations
 
