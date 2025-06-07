@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
 import FormStatus from '../components/FormStatus';
-import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
@@ -23,7 +22,6 @@ const Login = () => {
   const [resetMsg, setResetMsg] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     // Prefill email if saved
@@ -225,10 +223,6 @@ const Login = () => {
           {t('login.noAccountCta')}
         </button>
       </div>
-
-      {showSuccess && (
-        <></>
-      )}
 
       {error && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{error}</div>}
     </main>

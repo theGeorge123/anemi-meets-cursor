@@ -44,7 +44,7 @@ const Respond = () => {
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
   interface GenericError { message?: string }
-  function getRespondErrorMessage(t: TFunction, key: string, error: GenericError | null) {
+  function getRespondErrorMessage(t: TFunction, key: string, error: GenericError | null): string {
     const translated = t(key);
     if (translated === key) {
       return `Error: ${error?.message || 'Unknown error'}`;
@@ -53,7 +53,7 @@ const Respond = () => {
   }
 
   function mapRespondError(t: TFunction, data: { error?: string; error_code?: string }, _i18n: I18n) {
-    let msg = getRespondErrorMessage(t, 'respond.genericError', data.error);
+    let msg = getRespondErrorMessage(t, 'respond.genericError', typeof data.error === 'string' ? { message: data.error } : null);
     if (data.error && typeof data.error === 'string') {
       const err = data.error.toLowerCase();
       if (err.includes('missing email')) {
@@ -69,9 +69,9 @@ const Respond = () => {
           ? 'Deze uitnodiging is niet meer geldig. Vraag je vriend(in) om een nieuwe link!'
           : 'This invite link is no longer valid. Ask your friend for a new one!';
       } else if (err.includes('authorization')) {
-        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error);
+        msg = getRespondErrorMessage(t, 'respond.errorSendMail', typeof data.error === 'string' ? { message: data.error } : null);
       } else if (err.includes('expired') || err.includes('not found')) {
-        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error);
+        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', typeof data.error === 'string' ? { message: data.error } : null);
       }
     }
     const code = data.error_code || '';
@@ -87,10 +87,10 @@ const Respond = () => {
           : 'Please enter your email address!';
         break;
       case 'authorization':
-        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error);
+        msg = getRespondErrorMessage(t, 'respond.errorSendMail', typeof data.error === 'string' ? { message: data.error } : null);
         break;
       case 'expired_or_missing':
-        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error);
+        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', typeof data.error === 'string' ? { message: data.error } : null);
         break;
       default:
         // already handled above
@@ -117,7 +117,7 @@ const Respond = () => {
         if (invitationError) {
           console.error('Supabase invitation error:', invitationError);
           if (!didCancel) {
-            setError(getRespondErrorMessage(t, 'respond.expiredOrMissing', invitationError));
+            setError(getRespondErrorMessage(t, 'respond.expiredOrMissing', invitationError ?? null));
             setLoading(false);
           }
           return;
@@ -157,7 +157,7 @@ const Respond = () => {
       } catch (err) {
         console.error('Unexpected error in fetchData:', err);
         if (!didCancel) {
-          setError('Something went wrong loading the invite. Please try again later.');
+          setError(getRespondErrorMessage(t, 'respond.genericError', (err && typeof err === 'object' && 'message' in err) ? err as GenericError : { message: String(err) }));
           setLoading(false);
         }
       }
@@ -271,7 +271,7 @@ const Respond = () => {
         });
       }
     } catch (err) {
-      setErrorMsg(getRespondErrorMessage(t, 'respond.genericError', err));
+      setErrorMsg(getRespondErrorMessage(t, 'respond.genericError', (err && typeof err === 'object' && 'message' in err) ? err as GenericError : { message: String(err) }));
       console.error("Netwerkfout:", err);
     }
   };
@@ -370,7 +370,7 @@ const Respond = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {errorMsg && <FormStatus status="error" message={errorMsg} />}
+        {errorMsg && <FormStatus status="error" message={errorMsg || ''} />}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-4">
             {t('respond.availableTimes')}
@@ -439,7 +439,7 @@ const Respond = () => {
             ? (_i18n.language === 'nl' ? 'Laden...' : 'Loading...')
             : (_i18n.language === 'nl' ? 'Bevestigen & mijn koffiemomentje claimen!' : 'Confirm & claim my coffee spot!')}
         </button>
-        <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') : errorMsg || undefined} />
+        <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') : errorMsg || ''} />
       </form>
     </main>
   );
