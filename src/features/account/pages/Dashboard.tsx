@@ -1,10 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { getSession, signOut } from '../../../services/authService';
+import { fetchProfile, updateLastSeen, fetchProfiles, fetchProfileByEmail } from '../../../services/profileService';
+import { fetchMeetupsForUser } from '../../../services/meetupService';
+import { fetchFriendships, removeFriendship, createInvite, findInviteByToken, createFriendships, markInviteAccepted } from '../../../services/friendService';
 import { useTranslation } from 'react-i18next';
-import LoadingIndicator from '../components/LoadingIndicator';
-import SkeletonLoader from '../components/SkeletonLoader';
-import OnboardingModal from '../components/OnboardingModal';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import SkeletonLoader from '../../../components/SkeletonLoader';
+import OnboardingModal from '../../../components/OnboardingModal';
 
 interface Invitation {
   id: string;
@@ -59,59 +62,40 @@ const Dashboard = () => {
           console.error(err);
         }
       }
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await getSession();
       if (!session?.user) {
         navigate('/login');
         return;
       }
       // Update last_seen on dashboard visit
-      await supabase
-        .from('profiles')
-        .update({ last_seen: new Date().toISOString() })
-        .eq('id', session.user.id);
+      await updateLastSeen(session.user.id);
       // Onboarding check: only show for new signups
       if (localStorage.getItem('anemi-show-onboarding')) {
         setShowOnboarding(true);
       }
       // Profiel ophalen (inclusief last_seen)
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('id, full_name, emoji, last_seen')
-        .eq('id', session.user.id)
-        .maybeSingle();
+      const { data: profileData } = await fetchProfile(session.user.id);
       setProfile(profileData as Profile);
       // Friends ophalen (accepted)
-      const { data: friendshipRows } = await supabase
-        .from('friendships')
-        .select('friend_id, status')
-        .eq('user_id', session.user.id);
+      const { data: friendshipRows } = await fetchFriendships(session.user.id);
       let friendsList: Profile[] = [];
       let pendingList: Profile[] = [];
       if (friendshipRows && friendshipRows.length > 0) {
         const acceptedIds = friendshipRows.filter((f: { friend_id: string, status: string }) => f.status === 'accepted').map((f: { friend_id: string }) => f.friend_id);
         const pendingIds = friendshipRows.filter((f: { friend_id: string, status: string }) => f.status === 'pending').map((f: { friend_id: string }) => f.friend_id);
         if (acceptedIds.length > 0) {
-          const { data: friendProfiles } = await supabase
-            .from('profiles')
-            .select('id, full_name, emoji, email')
-            .in('id', acceptedIds);
+          const { data: friendProfiles } = await fetchProfiles(acceptedIds);
           friendsList = friendProfiles || [];
         }
         if (pendingIds.length > 0) {
-          const { data: pendingProfiles } = await supabase
-            .from('profiles')
-            .select('id, full_name, emoji, email')
-            .in('id', pendingIds);
+          const { data: pendingProfiles } = await fetchProfiles(pendingIds);
           pendingList = pendingProfiles || [];
         }
       }
       setFriends(friendsList);
       setPendingFriends(pendingList);
       // Meetups ophalen
-      const { data, error } = await supabase
-        .from('invitations')
-        .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
-        .or(`invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}",email_a.eq."${session.user.email}"`);
+      const { data, error } = await fetchMeetupsForUser(session.user.id, session.user.email);
       if (error) {
         if (cached) {
           try {
@@ -158,37 +142,25 @@ const Dashboard = () => {
 
   // Remove friend handler
   const handleRemoveFriend = async (friendId: string) => {
-    await supabase.from('friendships').delete().eq('user_id', profile?.id).eq('friend_id', friendId);
+    await removeFriendship(profile?.id as string, friendId);
     setFriends(friends.filter(f => f.id !== friendId));
   };
 
   // Generate invite code handler
   const handleGenerateInvite = async () => {
     setInviteLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await getSession();
     if (!session?.user) return;
 
     let token = crypto.randomUUID().replace(/-/g, '');
     // Ensure the token is unique
-    let { data: existing } = await supabase
-      .from('friend_invites')
-      .select('id')
-      .eq('token', token)
-      .maybeSingle();
+    let { data: existing } = await findInviteByToken(token);
     while (existing) {
       token = crypto.randomUUID().replace(/-/g, '');
-      ({ data: existing } = await supabase
-        .from('friend_invites')
-        .select('id')
-        .eq('token', token)
-        .maybeSingle());
+      ({ data: existing } = await findInviteByToken(token));
     }
 
-    const { error } = await supabase.from('friend_invites').insert({
-      inviter_id: session.user.id,
-      invitee_email: '', // Will be filled when accepted
-      token
-    });
+    const { error } = await createInvite(session.user.id, token);
 
     if (!error) {
       setInviteCode(token);
@@ -209,7 +181,7 @@ const Dashboard = () => {
     setAddFriendStatus(null);
     const value = addFriendValue.trim();
     if (!value) return;
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await getSession();
     if (!session?.user) {
       setAddFriendStatus(t('inviteFriend.loginFirst', 'Please log in.'));
       return;
@@ -217,11 +189,7 @@ const Dashboard = () => {
     // If value looks like a code (token)
     if (/^[a-z0-9]+$/i.test(value) && value.length > 8) {
       // Accept invite by code
-      const { data: invite, error: inviteError } = await supabase
-        .from('friend_invites')
-        .select('id, inviter_id, accepted')
-        .eq('token', value)
-        .maybeSingle();
+      const { data: invite, error: inviteError } = await fetchFriendInvites(value);
       if (inviteError || !invite) {
         setAddFriendStatus(t('inviteFriend.invalid', 'Invalid or expired invite code.'));
         return;
@@ -231,15 +199,12 @@ const Dashboard = () => {
         return;
       }
       // Create friendship (pending for inviter, accepted for invitee)
-      const { error: friendshipError } = await supabase.from('friendships').insert([
-        { user_id: invite.inviter_id, friend_id: session.user.id, status: 'pending' },
-        { user_id: session.user.id, friend_id: invite.inviter_id, status: 'accepted' }
-      ]);
+      const { error: friendshipError } = await createFriendships(invite.inviter_id, session.user.id);
       if (friendshipError) {
         setAddFriendStatus(t('inviteFriend.error', 'Could not add friend. Maybe you are already friends?'));
         return;
       }
-      await supabase.from('friend_invites').update({ accepted: true, accepted_at: new Date().toISOString(), invitee_email: session.user.email }).eq('token', value);
+      await markInviteAccepted(value, session.user.email);
       setAddFriendStatus(t('inviteFriend.success', 'You are now friends!'));
       setAddFriendValue('');
       return;
@@ -250,32 +215,20 @@ const Dashboard = () => {
       return;
     }
     // Find user by email (case-insensitive)
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .ilike('email', value)
-      .maybeSingle();
+    const { data: userProfile } = await fetchProfileByEmail(value);
     if (!userProfile) {
       setAddFriendStatus(t('inviteFriend.notFound', 'No user found with that email.'));
       return;
     }
     // Check if already friends
-    const { data: existing } = await supabase
-      .from('friendships')
-      .select('id')
-      .eq('user_id', session.user.id)
-      .eq('friend_id', userProfile.id)
-      .maybeSingle();
-    if (existing) {
+    const { data: existing } = await fetchFriendships(session.user.id);
+    const already = existing?.some((f: any) => f.friend_id === userProfile.id);
+    if (already) {
       setAddFriendStatus(t('inviteFriend.alreadyFriends', 'You are already friends or have a pending request.'));
       return;
     }
     // Create pending friendship
-    const { error: addError } = await supabase.from('friendships').insert({
-      user_id: session.user.id,
-      friend_id: userProfile.id,
-      status: 'pending'
-    });
+    const { error: addError } = await createFriendships(session.user.id, userProfile.id);
     if (addError) {
       setAddFriendStatus(t('inviteFriend.error', 'Could not add friend.'));
       return;
@@ -446,7 +399,7 @@ const Dashboard = () => {
         </button>
         <button
           className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
-          onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }}
+          onClick={async () => { await signOut(); navigate('/login'); }}
           aria-label={t('dashboard.ctaLogout')}
         >
           {t('dashboard.ctaLogout')}

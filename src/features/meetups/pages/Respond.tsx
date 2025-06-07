@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import LoadingIndicator from '../components/LoadingIndicator';
-import SkeletonLoader from '../components/SkeletonLoader';
-import FormStatus from '../components/FormStatus';
+import { fetchInvitationByToken, fetchCafeById } from '../../../services/meetupService';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import SkeletonLoader from '../../../components/SkeletonLoader';
+import FormStatus from '../../../components/FormStatus';
 
 // TypeScript interfaces voor typeveiligheid
 interface Invitation {
@@ -111,7 +111,7 @@ const Respond = () => {
           return;
         }
         // Haal invitation op
-        const { data: invitation, error: invitationError } = await supabase.from('invitations').select('*').eq('token', token).maybeSingle();
+        const { data: invitation, error: invitationError } = await fetchInvitationByToken(token);
         if (invitationError) {
           console.error('Supabase invitation error:', invitationError);
           if (!didCancel) {
@@ -130,7 +130,7 @@ const Respond = () => {
         setInvitation(invitation as Invitation);
         // Haal cafe details op via cafe_id
         if (invitation.cafe_id) {
-          const { data: cafeData, error: cafeError } = await supabase.from('cafes').select('name, address, image_url').eq('id', invitation.cafe_id).maybeSingle();
+          const { data: cafeData, error: cafeError } = await fetchCafeById(invitation.cafe_id);
           if (!cafeError && cafeData) {
             setCafe({ name: cafeData.name, address: cafeData.address, image_url: cafeData.image_url } as Cafe);
           } else {

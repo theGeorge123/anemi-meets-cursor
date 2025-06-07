@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import Footer from './components/Footer';
 import AppRoutes from './AppRoutes';
 import NavigationBar from './components/NavigationBar';
-import { supabase } from './supabaseClient';
+import { getSession } from './services/authService';
+import { fetchProfile } from './services/profileService';
 import { NavigationProvider } from './context/NavigationContext';
 import * as Sentry from '@sentry/react';
 
@@ -30,8 +31,8 @@ function useSentryTracking() {
 
   useEffect(() => {
     // Set user context (id only)
-    import('./supabaseClient').then(({ supabase }) => {
-      supabase.auth.getUser().then(({ data }) => {
+    import('./services/authService').then(({ getUser }) => {
+      getUser().then(({ data }) => {
         if (data?.user) {
           Sentry.setUser({ id: data.user.id });
         } else {
@@ -47,9 +48,9 @@ function App() {
 
   useEffect(() => {
     const fetchEmoji = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await getSession();
       if (session?.user) {
-        const { data: profile } = await supabase.from('profiles').select('emoji').eq('id', session.user.id).maybeSingle();
+        const { data: profile } = await fetchProfile(session.user.id);
         if (profile && profile.emoji) setProfileEmoji(profile.emoji);
         else setProfileEmoji(undefined);
       } else {

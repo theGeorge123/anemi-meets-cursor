@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { signUp } from '../../../services/authService';
 import { useTranslation } from 'react-i18next';
 
 // TypeScript interface voor typeveiligheid
@@ -72,7 +72,7 @@ const Signup = () => {
     if (!validateForm()) return;
     setLoading(true);
     // Probeer altijd te registreren, maar geef altijd dezelfde feedback
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await signUp({
       email: form.email,
       password: form.password,
       options: {

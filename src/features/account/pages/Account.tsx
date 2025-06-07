@@ -1,13 +1,15 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { getSession, signOut } from '../../../services/authService';
+import { fetchProfile, updateProfile } from '../../../services/profileService';
+import { fetchMeetupsForUser } from '../../../services/meetupService';
 import { useTranslation } from 'react-i18next';
-import SkeletonLoader from '../components/SkeletonLoader';
+import SkeletonLoader from '../../../components/SkeletonLoader';
 import React from 'react';
-import FormStatus from '../components/FormStatus';
-import Toast from '../components/Toast';
-import ErrorBoundary from '../components/ErrorBoundary';
-import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
+import FormStatus from '../../../components/FormStatus';
+import Toast from '../../../components/Toast';
+import ErrorBoundary from '../../../components/ErrorBoundary';
+import { requestBrowserNotificationPermission } from '../../../utils/browserNotifications';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -64,7 +66,7 @@ const Account = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await getSession();
       if (sessionError) {
         console.error('Fout bij ophalen sessie:', sessionError);
         setMeetupsError(t('errorSession'));
@@ -76,7 +78,7 @@ const Account = () => {
         return;
       }
       // Haal profiel op
-      const { data: testProfiles, error: testProfilesError } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+      const { data: testProfiles, error: testProfilesError } = await fetchProfile(session.user.id);
       if (testProfilesError) {
         console.error('Fout bij ophalen profiel:', testProfilesError);
       }
@@ -97,10 +99,7 @@ const Account = () => {
       setMeetupsLoading(true);
       setMeetupsError(null);
       try {
-        const { data: meetups, error: meetupsError } = await supabase
-          .from('invitations')
-          .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
-          .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
+        const { data: meetups, error: meetupsError } = await fetchMeetupsForUser(session.user.id, session.user.email);
         if (meetupsError) {
           console.error('Fout bij ophalen meetups:', meetupsError.message);
           setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: meetupsError.message }));
@@ -129,7 +128,7 @@ const Account = () => {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     navigate('/login');
   };
 
@@ -137,7 +136,7 @@ const Account = () => {
     if (!user || !user.id) {
       return;
     }
-    const { error } = await supabase.from('profiles').update({ emoji }).eq('id', user.id);
+    const { error } = await updateProfile(user.id, { emoji });
     if (error) {
       console.error('Fout bij opslaan emoji:', error);
     } else {
@@ -153,12 +152,12 @@ const Account = () => {
     if (wantsNotifications && Notification.permission !== 'granted') {
       await requestBrowserNotificationPermission();
     }
-    const { error } = await supabase.from('profiles').update({
+    const { error } = await updateProfile(user.id, {
       wants_updates: wantsUpdates,
       wants_reminders: wantsReminders,
       wants_notifications: wantsNotifications,
       is_private: isPrivate
-    }).eq('id', user.id);
+    });
     if (error) {
       console.error('Fout bij opslaan voorkeuren:', error);
     } else {
@@ -170,7 +169,7 @@ const Account = () => {
   const handleDeleteAccount = async () => {
     const confirmMsg = t('account.deleteConfirm', 'Are you sure? This cannot be undone!');
     if (!window.confirm(confirmMsg)) return;
-    const { data: sessionData, error } = await supabase.auth.getSession();
+    const { data: sessionData, error } = await getSession();
     if (error || !sessionData.session?.access_token) {
       console.error('Failed to get session for deletion', error);
       return;
@@ -185,7 +184,7 @@ const Account = () => {
         console.error('Delete account failed', body);
         return;
       }
-      await supabase.auth.signOut();
+      await signOut();
       navigate('/login');
     } catch (err) {
       console.error('Unexpected delete error', err);

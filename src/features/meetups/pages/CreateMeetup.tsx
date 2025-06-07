@@ -1,9 +1,10 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../supabaseClient';
+import { getSession } from '../../../services/authService';
+import { fetchCities, fetchCafesByCity, insertInvitation, checkInvitationTable } from '../../../services/meetupService';
 import "react-datepicker/dist/react-datepicker.css";
-import DateSelector from '../components/meetups/DateSelector';
+import DateSelector from '../../../components/meetups/DateSelector';
 import { useNavigate } from 'react-router-dom';
 
 interface City { id: string; name: string; }
@@ -18,13 +19,13 @@ const getLastCity = () => {
 
 const QUEUE_KEY = 'meetups_queue_v1';
 
-async function flushMeetupQueue(supabase: any, onSuccess: () => void) {
+async function flushMeetupQueue(onSuccess: () => void) {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
   if (!queue.length) return;
   const newQueue = [];
   for (const payload of queue) {
     try {
-      const { error } = await supabase.from('invitations').insert(payload);
+      const { error } = await insertInvitation(payload);
       if (error) {
         newQueue.push(payload); // niet gelukt, blijft in queue
       } else {
@@ -66,7 +67,7 @@ const CreateMeetup = () => {
       setCityError(null);
       try {
         // Fetch all cities instead of filtering to Rotterdam only
-        const { data, error } = await supabase.from('cities').select('*');
+        const { data, error } = await fetchCities();
         if (error) {
           console.error('Error fetching cities:', error);
           setCityError(t('common.errorLoadingCities'));
@@ -107,7 +108,7 @@ const CreateMeetup = () => {
     const fetchCafes = async () => {
       if (!formData.city) return setCafes([]);
       try {
-        const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
+        const { data, error } = await fetchCafesByCity(formData.city);
         if (error) {
           console.error('Error fetching cafes:', error);
           // If no cafes found, create a default one to ensure the flow can continue
@@ -150,7 +151,7 @@ const CreateMeetup = () => {
   // Check if user is logged in
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await getSession();
       setUser(session?.user || null);
     };
     checkSession();
@@ -166,7 +167,7 @@ const CreateMeetup = () => {
 
   // Flush queue bij online komen
   useEffect(() => {
-    const flush = () => flushMeetupQueue(supabase, () => {});
+    const flush = () => flushMeetupQueue(() => {});
     window.addEventListener('online', flush);
     // Initieel ook proberen flushen
     flush();
@@ -243,9 +244,7 @@ const CreateMeetup = () => {
 
     try {
       // First, check if we can read from the table
-      const { data: checkData, error: checkError } = await supabase
-        .from('invitations')
-        .select('count');
+      const { data: checkData, error: checkError } = await checkInvitationTable();
 
       if (import.meta.env.DEV) {
         console.log('Table access check:', { data: checkData, error: checkError });
@@ -255,10 +254,7 @@ const CreateMeetup = () => {
       if (import.meta.env.DEV) {
         console.log('Attempting to insert invitation...');
       }
-      const { data: insertData, error: insertError } = await supabase
-        .from('invitations')
-        .insert(payload)
-        .select();
+      const { data: insertData, error: insertError } = await insertInvitation(payload);
 
       if (import.meta.env.DEV) {
         console.log('Insert result:', { data: insertData, error: insertError });

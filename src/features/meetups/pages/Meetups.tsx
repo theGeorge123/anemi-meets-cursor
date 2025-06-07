@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { getSession } from '../../../services/authService';
+import { fetchMeetupsForUser } from '../../../services/meetupService';
 import { useTranslation } from 'react-i18next';
 import Toast from '../components/Toast';
 
@@ -94,7 +95,7 @@ const Meetups: React.FC = () => {
     setError(null);
     setUsingCache(false);
     const fetchMeetups = async () => {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await getSession();
       if (sessionError) {
         setError(t('common:errorLoadingSession', 'Fout bij ophalen sessie.'));
         setLoading(false);
@@ -107,11 +108,7 @@ const Meetups: React.FC = () => {
         return;
       }
       try {
-        const { data, error } = await supabase
-          .from('invitations')
-          .select('*')
-          .or(`invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}",email_a.eq."${session.user.email}"`)
-          .order('selected_date', { ascending: true });
+        const { data, error } = await fetchMeetupsForUser(session.user.id, session.user.email);
         if (error || !data) throw error || new Error('No data');
         setMeetups(data || []);
         setLoading(false);
@@ -150,7 +147,7 @@ const Meetups: React.FC = () => {
   const handleJoinMeetup = useCallback(async (id: string) => {
     setJoinLoadingId(id);
     try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await getSession();
       if (sessionError || !sessionData?.session?.user) {
         throw new Error(sessionError?.message || 'No active session');
       }

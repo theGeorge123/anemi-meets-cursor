@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../supabaseClient';
+import { fetchInvitationByToken, fetchCafeById } from '../../../services/meetupService';
 import Confetti from 'react-confetti';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -47,22 +47,14 @@ const Invite = () => {
           }
         }
         try {
-          const { data: inviteData, error: inviteError } = await supabase
-            .from('invitations')
-            .select('selected_date, selected_time, cafe_id')
-            .eq('token', token)
-            .maybeSingle();
+          const { data: inviteData, error: inviteError } = await fetchInvitationByToken(token);
           if (inviteError) {
             setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));
           } else if (!inviteData) {
             setError(t('invite.errorNotFound', 'This invitation link is invalid or expired.'));
           } else {
             if (inviteData.cafe_id) {
-              const { data: cafeData, error: cafeError } = await supabase
-                .from('cafes')
-                .select('name, address')
-                .eq('id', inviteData.cafe_id)
-                .maybeSingle();
+              const { data: cafeData, error: cafeError } = await fetchCafeById(inviteData.cafe_id);
               if (!cafeError && cafeData) {
                 (inviteData as InvitationWithCafe).cafe_name = cafeData.name;
                 (inviteData as InvitationWithCafe).cafe_address = cafeData.address;

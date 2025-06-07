@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { getSession, onAuthStateChange } from '../services/authService';
 
 interface NavigationContextType {
   activePath: string;
@@ -32,11 +32,11 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await getSession();
       setIsAuthenticated(!!session?.user);
     };
     checkAuth();
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+    const { data: listener } = onAuthStateChange(() => {
       checkAuth();
     });
     return () => listener?.subscription.unsubscribe();

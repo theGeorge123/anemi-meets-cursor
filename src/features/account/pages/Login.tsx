@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import LoadingIndicator from '../components/LoadingIndicator';
-import FormStatus from '../components/FormStatus';
-import Toast from '../components/Toast';
-import ErrorBoundary from '../components/ErrorBoundary';
+import { signInWithPassword, resetPasswordForEmail, signInWithOAuth } from '../../../services/authService';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import FormStatus from '../../../components/FormStatus';
+import Toast from '../../../components/Toast';
+import ErrorBoundary from '../../../components/ErrorBoundary';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -89,7 +89,7 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await signInWithPassword({
       email: formData.email,
       password: formData.password,
     });
@@ -105,7 +105,7 @@ const Login = () => {
   const handlePasswordReset = async () => {
     setResetMsg(null);
     setResetLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail || formData.email);
+    const { error } = await resetPasswordForEmail(resetEmail || formData.email);
     if (error) {
       setResetMsg(normalizeAuthError(t, error));
     } else {
@@ -115,7 +115,7 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    const { error } = await signInWithOAuth({ provider: 'google' });
     if (error) setError(normalizeAuthError(t, error));
   };
 
