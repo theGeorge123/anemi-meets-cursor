@@ -6,18 +6,19 @@ function encodeBase64(str: string) {
 
 async function wantsReminders(
   supabase: ReturnType<typeof createClient>,
-  email: string
+  email: string,
 ): Promise<boolean> {
-  const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+  const { data: user, error: userError } = await supabase.auth.admin
+    .getUserByEmail(email);
 
   if (userError || !user) {
     return false;
   }
 
   const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('wantsReminders')
-    .eq('id', user.id)
+    .from("profiles")
+    .select("wantsReminders")
+    .eq("id", user.id)
     .maybeSingle();
 
   if (profileError) {
@@ -27,23 +28,26 @@ async function wantsReminders(
   return !!profile?.wantsReminders;
 }
 
-Deno.serve(async (req) => {
+export async function handleConfirmation(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       status: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
-      }
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
     });
   }
 
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Only POST requests allowed." }), {
-      status: 405,
-      headers: { "Access-Control-Allow-Origin": "*" }
-    });
+    return new Response(
+      JSON.stringify({ error: "Only POST requests allowed." }),
+      {
+        status: 405,
+        headers: { "Access-Control-Allow-Origin": "*" },
+      },
+    );
   }
 
   try {
@@ -52,13 +56,38 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !RESEND_API_KEY) {
-      throw new Error("Missing environment variables.");
+      console.error("env_error", {
+        message: "Missing environment variables",
+        SUPABASE_URL: !!SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY: !!SUPABASE_SERVICE_ROLE_KEY,
+        RESEND_API_KEY: !!RESEND_API_KEY,
+      });
+      return new Response(
+        JSON.stringify({ error: "Server misconfiguration" }),
+        {
+          status: 500,
+          headers: { "Access-Control-Allow-Origin": "*" },
+        },
+      );
     }
 
-    const { token, email_b, selected_date, selected_time, lang = "nl" } = await req.json();
+    const { token, email_b, selected_date, selected_time, lang = "nl" } =
+      await req.json();
     const isEnglish = lang === "en";
     if (!token || !email_b || !selected_date || !selected_time) {
-      throw new Error("Missing required fields.");
+      console.error("validation_error", {
+        token,
+        email_b,
+        selected_date,
+        selected_time,
+      });
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        {
+          status: 400,
+          headers: { "Access-Control-Allow-Origin": "*" },
+        },
+      );
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -71,15 +100,36 @@ Deno.serve(async (req) => {
       .single();
 
     if (fetchError || !existing) {
-      throw new Error(fetchError?.message || "Invitation not found.");
+      console.error("fetch_error", { message: fetchError?.message });
+      return new Response(JSON.stringify({ error: "Invitation not found" }), {
+        status: 404,
+        headers: { "Access-Control-Allow-Origin": "*" },
+      });
     }
 
     if (existing.status === "accepted") {
-      throw new Error("Invitation already used.");
+      console.error("status_error", { status: existing.status });
+      return new Response(
+        JSON.stringify({ error: "Invitation already used" }),
+        {
+          status: 400,
+          headers: { "Access-Control-Allow-Origin": "*" },
+        },
+      );
     }
 
     if (existing.email_b && existing.email_b !== email_b) {
-      throw new Error("Email does not match invitation.");
+      console.error("email_mismatch", {
+        expected: existing.email_b,
+        received: email_b,
+      });
+      return new Response(
+        JSON.stringify({ error: "Email does not match invitation" }),
+        {
+          status: 400,
+          headers: { "Access-Control-Allow-Origin": "*" },
+        },
+      );
     }
 
     const { data: invitation, error } = await supabase
@@ -89,10 +139,28 @@ Deno.serve(async (req) => {
       .select()
       .single();
 
-    if (error || !invitation) throw new Error(error?.message || "Could not update invitation.");
+    if (error || !invitation) {
+      console.error("update_error", { message: error?.message });
+      return new Response(
+        JSON.stringify({ error: "Could not update invitation" }),
+        {
+          status: 500,
+          headers: { "Access-Control-Allow-Origin": "*" },
+        },
+      );
+    }
 
     const { email_a, cafe_id } = invitation;
-    if (!email_a || !cafe_id) throw new Error("Missing email_a or cafe_id.");
+    if (!email_a || !cafe_id) {
+      console.error("data_error", { email_a, cafe_id });
+      return new Response(
+        JSON.stringify({ error: "Invitation data incomplete" }),
+        {
+          status: 500,
+          headers: { "Access-Control-Allow-Origin": "*" },
+        },
+      );
+    }
 
     const { data: cafe, error: cafeError } = await supabase
       .from("cafes")
@@ -100,17 +168,23 @@ Deno.serve(async (req) => {
       .eq("id", cafe_id)
       .single();
 
-    if (cafeError || !cafe) throw new Error("Cafe not found.");
+    if (cafeError || !cafe) {
+      console.error("cafe_error", { message: cafeError?.message });
+      return new Response(JSON.stringify({ error: "Cafe not found" }), {
+        status: 404,
+        headers: { "Access-Control-Allow-Origin": "*" },
+      });
+    }
 
     const slots = {
       morning: ["T090000", "T120000"],
       afternoon: ["T120000", "T170000"],
-      evening: ["T170000", "T210000"]
+      evening: ["T170000", "T210000"],
     };
     const readable = {
       morning: "09:00 – 12:00",
       afternoon: "12:00 – 17:00",
-      evening: "17:00 – 21:00"
+      evening: "17:00 – 21:00",
     };
 
     const slot = selected_time.toLowerCase();
@@ -118,27 +192,47 @@ Deno.serve(async (req) => {
     const readableTime = readable[slot] || readable["morning"];
     const datePart = selected_date.replace(/-/g, "");
     const uid = crypto.randomUUID();
-    const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const dtStamp =
+      new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${dtStamp}\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
+    const ics =
+      `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${dtStamp}\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
     const icsBase64 = encodeBase64(ics);
 
-    const cafeImageUrl = cafe.image_url || `https://source.unsplash.com/600x300/?coffee,${encodeURIComponent(cafe.name)}`;
-    const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("Koffie Meetup via Anemi")}&dates=${datePart}${dtStart}/${datePart}${dtEnd}&location=${encodeURIComponent(`${cafe.name} ${cafe.address}`)}`;
+    const cafeImageUrl = cafe.image_url ||
+      `https://source.unsplash.com/600x300/?coffee,${
+        encodeURIComponent(cafe.name)
+      }`;
+    const gcalUrl =
+      `https://www.google.com/calendar/render?action=TEMPLATE&text=${
+        encodeURIComponent("Koffie Meetup via Anemi")
+      }&dates=${datePart}${dtStart}/${datePart}${dtEnd}&location=${
+        encodeURIComponent(`${cafe.name} ${cafe.address}`)
+      }`;
 
-    const nameA = email_a.split('@')[0];
+    const nameA = email_a.split("@")[0];
     const subject = isEnglish
       ? `☕️ ${nameA} just booked coffee with you!`
       : `☕️ ${nameA} heeft een koffie-date gepland!`;
 
     const html = `
-      <h2>${isEnglish ? "☕️ Yes! Your coffee meetup is set!" : "☕️ Yes! Jullie koffie-date staat!"}</h2>
+      <h2>${
+      isEnglish
+        ? "☕️ Yes! Your coffee meetup is set!"
+        : "☕️ Yes! Jullie koffie-date staat!"
+    }</h2>
       <img src="${cafeImageUrl}" alt="Cafe" width="100%" style="max-width:600px;border-radius:12px;" />
       <p>${isEnglish ? "Hey legends!" : "Hey toppers!"}<br>
-      ${isEnglish ? "You're meeting at" : "Jullie hebben afgesproken bij"} <b>${cafe.name}</b>.<br>
+      ${
+      isEnglish ? "You're meeting at" : "Jullie hebben afgesproken bij"
+    } <b>${cafe.name}</b>.<br>
       <b>${isEnglish ? "Address" : "Adres"}:</b> ${cafe.address}<br>
-      <b>${isEnglish ? "Time" : "Tijd"}:</b> ${readableTime} on ${selected_date}</p>
-      <p><a href="${gcalUrl}" target="_blank">➕ ${isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"}</a></p>`;
+      <b>${
+      isEnglish ? "Time" : "Tijd"
+    }:</b> ${readableTime} on ${selected_date}</p>
+      <p><a href="${gcalUrl}" target="_blank">➕ ${
+      isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"
+    }</a></p>`;
 
     const recipients: string[] = [];
     if (await wantsReminders(supabase, email_a)) recipients.push(email_a);
@@ -149,7 +243,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: {
           Authorization: `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           from: "noreply@anemimeets.com",
@@ -159,32 +253,38 @@ Deno.serve(async (req) => {
           attachments: [{
             filename: "meeting.ics",
             content: icsBase64,
-            type: "text/calendar"
-          }]
-        })
+            type: "text/calendar",
+          }],
+        }),
       });
 
-      if (!emailRes.ok) throw new Error("Email not sent: " + (await emailRes.text()));
+      if (!emailRes.ok) {
+        throw new Error("Email not sent: " + (await emailRes.text()));
+      }
     }
 
-    return new Response(JSON.stringify({
-      success: true,
-      cafe_name: cafe.name,
-      cafe_address: cafe.address,
-      invitation_token: token,
-      selected_date,
-      selected_time,
-      ics_base64: icsBase64
-    }), {
-      status: 200,
-      headers: { "Access-Control-Allow-Origin": "*" }
-    });
-
+    return new Response(
+      JSON.stringify({
+        success: true,
+        cafe_name: cafe.name,
+        cafe_address: cafe.address,
+        invitation_token: token,
+        selected_date,
+        selected_time,
+        ics_base64: icsBase64,
+      }),
+      {
+        status: 200,
+        headers: { "Access-Control-Allow-Origin": "*" },
+      },
+    );
   } catch (e) {
-    console.error("Function error:", e.message);
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 400,
-      headers: { "Access-Control-Allow-Origin": "*" }
+    console.error("unhandled_error", { message: (e as Error).message });
+    return new Response(JSON.stringify({ error: "Unexpected server error" }), {
+      status: 500,
+      headers: { "Access-Control-Allow-Origin": "*" },
     });
   }
-});
+}
+
+Deno.serve(handleConfirmation);
