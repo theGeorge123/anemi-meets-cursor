@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
-import LoadingIndicator from "../components/LoadingIndicator";
 import FormStatus from "../components/FormStatus";
 
 function useQuery() {
@@ -10,7 +9,7 @@ function useQuery() {
 }
 
 const ResetPassword = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const query = useQuery();
   const [password, setPassword] = useState("");
