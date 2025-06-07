@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
+import { awardBadge, hasBadge } from '../services/supabaseService';
 
 // TypeScript interface voor typeveiligheid
 interface SignupForm {
@@ -125,6 +126,13 @@ const Signup = () => {
     setLoading(false);
     // Set onboarding flag for new accounts
     localStorage.setItem('anemi-show-onboarding', '1');
+    // Award badge for account creation
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user && !(await hasBadge(session.user.id, 'account'))) {
+      await awardBadge(session.user.id, 'account');
+      // Show fun toast
+      alert('🚀 Welcome Aboard! You just earned your first badge for joining Anemi Meets!');
+    }
     setTimeout(() => navigate('/account'), 2000);
   };
 

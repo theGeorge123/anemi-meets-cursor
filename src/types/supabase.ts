@@ -128,9 +128,8 @@ export interface Invitation {
   selected_date: string;
   selected_time: string;
   cafe_id: string;
-  email_a?: string;
   email_b?: string;
-  cafe_name?: string | null;
+  creator_id?: string;
   date_time_options?: { date: string; times: string[] }[] | null;
   reminded_24h?: boolean;
   reminded_1h?: boolean;
@@ -147,6 +146,28 @@ export interface Friendship {
   friend_id: string;
   created_at: string;
   status: 'pending' | 'accepted' | 'rejected';
+}
+
+/**
+ * Badge information
+ */
+export interface Badge {
+  id: number;
+  key: string;
+  label: string;
+  description: string;
+  emoji: string;
+  created_at: string;
+}
+
+/**
+ * UserBadge information
+ */
+export interface UserBadge {
+  id: number;
+  user_id: string;
+  badge_key: string;
+  awarded_at: string;
 }
 
 /**
@@ -195,6 +216,16 @@ export interface Database {
         Row: Invitation;
         Insert: Omit<Invitation, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<Invitation, 'id'>>;
+      };
+      badges: {
+        Row: Badge;
+        Insert: Omit<Badge, 'id' | 'created_at'>;
+        Update: Partial<Omit<Badge, 'id'>>;
+      };
+      user_badges: {
+        Row: UserBadge;
+        Insert: Omit<UserBadge, 'id' | 'awarded_at'>;
+        Update: Partial<Omit<UserBadge, 'id'>>;
       };
     };
     Views: {

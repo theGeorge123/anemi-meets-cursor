@@ -67,16 +67,14 @@ const InviteFriend = () => {
       setLoading(false);
       return;
     }
-    // Create friendship (pending for inviter, accepted for invitee)
-    const { error: friendshipError } = await supabase.from('friendships').insert([
-      { user_id: invite.inviter_id, friend_id: session.user.id, status: 'pending' },
-      { user_id: session.user.id, friend_id: invite.inviter_id, status: 'accepted' }
-    ]);
-    if (friendshipError) {
-      setError(t('inviteFriend.error', 'Could not add friend. Maybe you are already friends?'));
-      setLoading(false);
-      return;
-    }
+    // Accept friendship: ensure both directions are 'accepted'
+    const userId = session.user.id;
+    const inviterId = invite.inviter_id;
+    // Update both rows if they exist, otherwise insert
+    await supabase.from('friendships').upsert([
+      { user_id: inviterId, friend_id: userId, status: 'accepted' },
+      { user_id: userId, friend_id: inviterId, status: 'accepted' }
+    ], { onConflict: 'user_id,friend_id' });
     // Mark invite as accepted
     await supabase.from('friend_invites').update({ accepted: true, accepted_at: new Date().toISOString(), invitee_email: session.user.email }).eq('token', token);
     setSuccess(true);

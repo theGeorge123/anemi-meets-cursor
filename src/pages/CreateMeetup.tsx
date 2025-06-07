@@ -39,6 +39,17 @@ async function flushMeetupQueue(onSuccess: () => void) {
   localStorage.setItem(QUEUE_KEY, JSON.stringify(newQueue));
 }
 
+function getUUID() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // RFC4122 version 4 compliant fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const CreateMeetup = () => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
@@ -217,7 +228,7 @@ const CreateMeetup = () => {
     }
 
     // Prepare payload
-    const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+    const token = getUUID();
     if (import.meta.env.DEV) {
       console.log('Generated token:', token);
     }
@@ -230,7 +241,22 @@ const CreateMeetup = () => {
       selected_time: string;
       cafe_id: string;
       date_time_options: { date: string; times: string[] }[];
-      email_a?: string;
+      creator_id?: string;
+      invitee_id?: string;
+      email_b?: string;
+    }
+
+    // Look up invitee_id if possible
+    let invitee_id: string | undefined = undefined;
+    if (formData.email) {
+      const { data: inviteeUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', formData.email)
+        .maybeSingle();
+      if (inviteeUser && inviteeUser.id) {
+        invitee_id = inviteeUser.id;
+      }
     }
 
     const payload: InvitePayload = {
@@ -240,15 +266,11 @@ const CreateMeetup = () => {
       selected_date: firstDateOpt.date,
       selected_time: firstDateOpt.times[0],
       cafe_id: selectedCafe.id,
-      date_time_options: filteredDateTimeOptions
+      date_time_options: filteredDateTimeOptions,
+      ...(user?.id ? { creator_id: user.id } : {}),
+      ...(invitee_id ? { invitee_id } : {}),
+      ...(!user && formData.email ? { email_b: formData.email } : {})
     };
-
-    // Store the creator's email so the confirmation can be sent later
-    if (user?.email) {
-      payload.email_a = user.email;
-    } else if (formData.email) {
-      payload.email_a = formData.email;
-    }
 
     if (import.meta.env.DEV) {
       console.log('Payload to insert:', payload);

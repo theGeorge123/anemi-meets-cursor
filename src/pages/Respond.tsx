@@ -244,12 +244,11 @@ const Respond = () => {
         selected_time: timePart,
         cafe_id: cafeId
       };
-      const authKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authKey}`
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
         },
         body: JSON.stringify(body)
       });

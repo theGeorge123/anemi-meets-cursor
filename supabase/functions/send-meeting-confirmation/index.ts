@@ -28,6 +28,17 @@ async function wantsReminders(
   return !!profile?.wantsReminders;
 }
 
+function getUUID() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // RFC4122 version 4 compliant fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 export async function handleConfirmation(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -51,8 +62,11 @@ export async function handleConfirmation(req: Request): Promise<Response> {
   }
 
   try {
+    // @ts-expect-error Deno globals are available in Edge Functions
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    // @ts-expect-error Deno globals are available in Edge Functions
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    // @ts-expect-error Deno globals are available in Edge Functions
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !RESEND_API_KEY) {
@@ -191,7 +205,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
     const [dtStart, dtEnd] = slots[slot] || slots["morning"];
     const readableTime = readable[slot] || readable["morning"];
     const datePart = selected_date.replace(/-/g, "");
-    const uid = crypto.randomUUID();
+    const uid = getUUID();
     const dtStamp =
       new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
@@ -226,7 +240,9 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       ${
       isEnglish ? "You're meeting at" : "Jullie hebben afgesproken bij"
     } <b>${cafe.name}</b>.<br>
-      <b>${isEnglish ? "Address" : "Adres"}:</b> ${cafe.address}<br>
+      <b>${
+      isEnglish ? "Address" : "Adres"
+    }:</b> ${cafe.address}<br>
       <b>${
       isEnglish ? "Time" : "Tijd"
     }:</b> ${readableTime} on ${selected_date}</p>
@@ -263,6 +279,9 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       }
     }
 
+    // @ts-expect-error Deno globals are available in Edge Functions
+    const inviteLink = `${Deno.env.get("PUBLIC_SITE_URL") || "https://anemimeets.com"}/invite-friend/${token}`;
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -272,6 +291,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         selected_date,
         selected_time,
         ics_base64: icsBase64,
+        invite_link: inviteLink,
       }),
       {
         status: 200,

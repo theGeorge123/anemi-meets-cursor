@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import Toast from '../components/Toast';
+import { awardBadge, hasBadge, getMeetupCount } from '../services/supabaseService';
 
 interface Meetup {
   id: string;
@@ -11,7 +12,6 @@ interface Meetup {
   selected_date: string;
   selected_time: string;
   cafe_id?: string;
-  cafe_name?: string;
   status?: string;
   email_b?: string;
   invitee_id?: string;
@@ -40,7 +40,7 @@ const MeetupListItem = React.memo(function MeetupListItem({ meetup, onView, onJo
     >
       <div className="flex flex-col h-full">
         <div className="flex-1">
-          <h2 className="mobile-heading text-primary-700 mb-2">{meetup.title || meetup.cafe_name || t('meetups.untitled', 'Meetup')}</h2>
+          <h2 className="mobile-heading text-primary-700 mb-2">{meetup.title || meetup.cafe_id || t('meetups.untitled', 'Meetup')}</h2>
           <p className="mobile-text text-gray-600 mb-4 line-clamp-2">{meetup.description || ''}</p>
           <div className="space-y-3">
             <div className="flex items-center text-gray-600">
@@ -150,7 +150,7 @@ const Meetups: React.FC = () => {
 
   const filteredMeetups = useMemo(() => {
     return meetups.filter(meetup => {
-      const matchesSearch = (meetup.title || meetup.cafe_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch = (meetup.title || meetup.cafe_id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (meetup.description || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = filterStatus === 'all' || (meetup.status || 'upcoming') === filterStatus;
       return matchesSearch && matchesStatus;
@@ -184,7 +184,7 @@ const Meetups: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
         },
         body: JSON.stringify(body)
       });
@@ -193,6 +193,19 @@ const Meetups: React.FC = () => {
 
       setMeetups(prev => prev.map(m => m.id === id ? { ...m, status: 'confirmed' } : m));
       setToast({ type: 'success', message: t('meetups.joinSuccess', 'You have joined the meetup!') });
+
+      if (sessionData?.session?.user) {
+        const userId = sessionData.session.user.id;
+        if (!(await hasBadge(userId, 'first_meetup'))) {
+          await awardBadge(userId, 'first_meetup');
+          alert('🥤 First Sip! You just earned a badge for joining your first meetup!');
+        }
+        const meetupCount = await getMeetupCount(userId);
+        if (meetupCount >= 5 && !(await hasBadge(userId, 'five_meetups'))) {
+          await awardBadge(userId, 'five_meetups');
+          alert('🎉 Meetup Master! You attended 5 meetups and earned a badge!');
+        }
+      }
     } catch (err) {
       setToast({ type: 'error', message: t('meetups.joinError', 'Failed to join meetup. Please try again.') });
     } finally {

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../supabaseClient';
+import { awardBadge, hasBadge } from '../services/supabaseService';
 
 interface Props {
   open: boolean;
@@ -64,6 +66,12 @@ const ReportIssueModal: React.FC<Props> = ({ open, onClose }) => {
       setDescription('');
       setSteps('');
       setScreenshot(null);
+      // Award badge for reporting a bug
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && !(await hasBadge(session.user.id, 'report_bug'))) {
+        await awardBadge(session.user.id, 'report_bug');
+        alert('🐞 Bug Buster! Thanks for making Anemi Meets better. You earned a badge!');
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Onbekende fout';
       setError(message);

@@ -254,7 +254,7 @@ export const nl = {
     reset_error_generic: "Kon de resetmail niet sturen. Probeer het nog eens?",
     reset_success: "Resetmail verstuurd! Check je inbox.",
     toast: {
-      loginSuccess: "Je bent ingelogd! ☕️"
+      loginSuccess: "Yes, je bent binnen! 🎉"
     },
     emailPlaceholder: "Jouw e-mailadres",
     passwordPlaceholder: "Je geheime wachtwoord",

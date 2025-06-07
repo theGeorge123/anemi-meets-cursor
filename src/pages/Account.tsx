@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { getProfile } from '../services/supabaseService';
+import { getProfile, getAllBadges, getUserBadges } from '../services/supabaseService';
 import { useTranslation } from 'react-i18next';
 import type { TFunction, i18n as I18n } from 'i18next';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -10,6 +10,7 @@ import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
+import type { Badge, UserBadge } from '../types/supabase';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -30,7 +31,6 @@ interface Invitation {
   selected_date: string;
   selected_time: string;
   cafe_id?: string;
-  cafe_name?: string;
   status: string;
   email_b?: string;
 }
@@ -56,6 +56,12 @@ const Account = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
+  // Edit state for name/email/age
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editName, setEditName] = useState(name);
+  const [editEmail, setEditEmail] = useState(email);
+  const [editAge, setEditAge] = useState(age);
+
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
 
   // Split emoji options into rows of 4 for better layout
@@ -63,6 +69,20 @@ const Account = () => {
   for (let i = 0; i < EMOJI_OPTIONS.length; i += 4) {
     EMOJI_ROWS.push(EMOJI_OPTIONS.slice(i, i + 4));
   }
+
+  // Compute personal invite link (only if user is loaded)
+  const personalInviteLink = user ? `${window.location.origin}/invite-friend/${user.id}` : '';
+  // Find next upcoming meetup
+  const nextMeetup = useMemo(() => {
+    if (!myMeetups || myMeetups.length === 0) return null;
+    const now = new Date();
+    return myMeetups
+      .filter(m => new Date(m.selected_date) >= now)
+      .sort((a, b) => new Date(a.selected_date).getTime() - new Date(b.selected_date).getTime())[0] || null;
+  }, [myMeetups]);
+
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -101,7 +121,7 @@ const Account = () => {
       try {
         const { data: meetups, error: meetupsError } = await supabase
           .from('invitations')
-          .select('id, selected_date, selected_time, cafe_id, cafe_name, status, email_b')
+          .select('id, selected_date, selected_time, cafe_id, status, email_b')
           .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
         if (meetupsError) {
           console.error('Fout bij ophalen meetups:', meetupsError.message);
@@ -117,6 +137,15 @@ const Account = () => {
         setMyMeetups([]);
       }
       setMeetupsLoading(false);
+      // Fetch badges
+      if (session?.user) {
+        const [allBadges, myBadges] = await Promise.all([
+          getAllBadges(),
+          getUserBadges(session.user.id)
+        ]);
+        setBadges(allBadges);
+        setUserBadges(myBadges);
+      }
     };
     getUser();
   }, [navigate, t]);
@@ -181,7 +210,10 @@ const Account = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${sessionData.session.access_token}` }
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+        }
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.success) {
@@ -195,11 +227,105 @@ const Account = () => {
     }
   };
 
+  const handleProfileEdit = () => {
+    setEditingProfile(true);
+    setEditName(name);
+    setEditEmail(email);
+    setEditAge(age);
+  };
+
+  const handleProfileCancel = () => {
+    setEditingProfile(false);
+    setEditName(name);
+    setEditEmail(email);
+    setEditAge(age);
+  };
+
+  const handleProfileSave = async () => {
+    if (!user || !user.id) return;
+    // Update name and age in profiles table
+    const { error } = await supabase.from('profiles').update({ fullName: editName, age: editAge }).eq('id', user.id);
+    if (!error && editEmail !== email) {
+      // Update email in auth
+      const { error: emailError } = await supabase.auth.updateUser({ email: editEmail });
+      if (emailError) {
+        setShowProfileToast(false);
+        alert(t('account.errorEmailUpdate', 'Could not update email.'));
+        return;
+      }
+      setEmail(editEmail);
+    }
+    if (!error) {
+      setName(editName);
+      setAge(editAge);
+      setShowProfileToast(true);
+      setEditingProfile(false);
+    } else {
+      alert(t('account.errorProfileUpdate', 'Could not update profile.'));
+    }
+  };
+
+  // BADGE DISPLAY
+  const earnedKeys = new Set(userBadges.map(b => b.badge_key));
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-extrabold text-primary-700 mb-8">{t('account.title')}</h1>
+
+          {/* Badge Section */}
+          <div className="card mb-8">
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">Your Badges</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {badges.map(badge => (
+                <div
+                  key={badge.key}
+                  className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 ${earnedKeys.has(badge.key) ? 'border-primary-400 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'}`}
+                >
+                  <span className="text-5xl mb-2">{badge.emoji}</span>
+                  <span className="text-lg font-bold mb-1">{badge.label}</span>
+                  <span className="text-sm text-gray-600 text-center">{badge.description}</span>
+                  {!earnedKeys.has(badge.key) && <span className="mt-2 text-xs text-gray-400">Locked</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Next Meetup Section (at the top) */}
+          {nextMeetup && (
+            <div className="card mb-6 bg-primary-50 border-l-4 border-primary-400 p-4 flex flex-col sm:flex-row items-center justify-between">
+              <div>
+                <div className="text-lg font-semibold text-primary-700 mb-1">{t('account.nextMeetup', 'Your next meetup')}</div>
+                <div className="text-base text-primary-800">
+                  {nextMeetup.selected_date} {nextMeetup.selected_time && `, ${nextMeetup.selected_time}`}
+                  {nextMeetup.cafe_id && <span> @ {nextMeetup.cafe_id}</span>}
+                </div>
+              </div>
+              <button className="btn-primary mt-3 sm:mt-0">{t('account.viewMeetup', 'View details')}</button>
+            </div>
+          )}
+
+          {/* Personal Invite Link Section */}
+          {user && (
+            <div className="card mb-6 flex flex-col items-center bg-white/80">
+              <div className="text-lg font-semibold text-primary-700 mb-2">{t('account.personalInvite', 'Your personal invite link')}</div>
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full justify-center">
+                <input
+                  type="text"
+                  value={personalInviteLink}
+                  readOnly
+                  className="border rounded px-2 py-1 w-full max-w-xs text-center bg-gray-50 font-mono"
+                  onFocus={e => e.target.select()}
+                />
+                <button
+                  className="btn-secondary text-xs px-2 py-1"
+                  onClick={() => {navigator.clipboard.writeText(personalInviteLink)}}
+                >{t('account.copyInvite', 'Copy link')}</button>
+              </div>
+              <div className="text-xs text-gray-500 mt-2 text-center">{t('account.inviteHint', 'Share this link with friends so they can instantly connect with you!')}</div>
+            </div>
+          )}
 
           {/* Emoji Section */}
           <div className="card mb-6 flex flex-col items-center">
@@ -224,41 +350,73 @@ const Account = () => {
           {/* Emoji Section Label */}
           <div className="w-full text-center text-lg font-semibold mb-2 text-primary-700">{t('account.emoji')}</div>
 
-          {/* Name Section */}
-          <div className="card mb-4 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <div className="flex flex-row sm:flex-col items-center sm:items-start gap-2 sm:gap-0 w-full sm:w-32">
+          {/* Editable Name, Email, Age Section */}
+          <div className="card mb-8 px-4 py-3 flex flex-col gap-4">
+            <div className="flex flex-row items-center gap-2">
               <span className="text-xl" aria-hidden>📝</span>
               <span className="font-semibold">{t('account.name')}</span>
-              <span className="text-xs text-gray-400 italic sm:ml-0 ml-2">{t('account.nameEditHint')}</span>
-                  </div>
-            <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
-              <span className="mobile-text text-lg">{name || t('account.notSpecified')}</span>
+              <span className="text-xs text-gray-400 italic ml-2">{t('account.nameEditHint')}</span>
             </div>
-          </div>
-          <hr className="my-2 border-gray-200" />
-
-          {/* Email Section */}
-          <div className="card mb-4 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <div className="flex flex-row sm:flex-col items-center sm:items-start gap-2 sm:gap-0 w-full sm:w-32">
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
+              {editingProfile ? (
+                <input
+                  type="text"
+                  className="input-field"
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  placeholder={t('account.name')}
+                />
+              ) : (
+                <span className="mobile-text text-lg">{name || t('account.notSpecified')}</span>
+              )}
+            </div>
+            <div className="flex flex-row items-center gap-2">
               <span className="text-xl" aria-hidden>✉️</span>
               <span className="font-semibold">{t('account.email')}</span>
-              <span className="text-xs text-gray-400 italic sm:ml-0 ml-2">{t('account.emailEditHint')}</span>
-                  </div>
-            <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
-              <span className="mobile-text text-lg">{email || t('account.notSpecified')}</span>
+              <span className="text-xs text-gray-400 italic ml-2">{t('account.emailEditHint')}</span>
             </div>
-          </div>
-          <hr className="my-2 border-gray-200" />
-
-          {/* Age Section */}
-          <div className="card mb-8 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <div className="flex flex-row sm:flex-col items-center sm:items-start gap-2 sm:gap-0 w-full sm:w-32">
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
+              {editingProfile ? (
+                <input
+                  type="email"
+                  className="input-field"
+                  value={editEmail}
+                  onChange={e => setEditEmail(e.target.value)}
+                  placeholder={t('account.email')}
+                />
+              ) : (
+                <span className="mobile-text text-lg">{email || t('account.notSpecified')}</span>
+              )}
+            </div>
+            <div className="flex flex-row items-center gap-2">
               <span className="text-xl" aria-hidden>🎂</span>
               <span className="font-semibold">{t('account.age')}</span>
-              <span className="text-xs text-gray-400 italic sm:ml-0 ml-2">{t('account.ageEditHint')}</span>
-                  </div>
-            <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
-              <span className="mobile-text text-lg">{age !== '' ? age : 'immortal'}</span>
+              <span className="text-xs text-gray-400 italic ml-2">{t('account.ageEditHint')}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
+              {editingProfile ? (
+                <input
+                  type="number"
+                  className="input-field"
+                  value={editAge}
+                  onChange={e => setEditAge(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder={t('account.age')}
+                  min={0}
+                  max={120}
+                />
+              ) : (
+                <span className="mobile-text text-lg">{age !== '' ? age : 'immortal'}</span>
+              )}
+            </div>
+            <div className="flex gap-2 mt-2">
+              {editingProfile ? (
+                <>
+                  <button className="btn-primary" onClick={handleProfileSave}>{t('account.save')}</button>
+                  <button className="btn-secondary" onClick={handleProfileCancel}>{t('account.cancel')}</button>
+                </>
+              ) : (
+                <button className="btn-secondary" onClick={handleProfileEdit}>{t('account.edit')}</button>
+              )}
             </div>
           </div>
           <hr className="my-2 border-gray-200" />
@@ -456,7 +614,7 @@ const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels, 
       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
         <div className="font-semibold text-primary-700 min-w-[110px]">{m.selected_date}{m.selected_time && <span> &bull; {m.selected_time}</span>}</div>
         <div className="text-gray-700 flex-1 truncate">
-          <span className="font-medium">{i18n.language === 'nl' ? 'Café' : 'Cafe'}:</span> {m.cafe_name || (i18n.language === 'nl' ? 'Onbekend café' : 'Unknown cafe')}
+          <span className="font-medium">{i18n.language === 'nl' ? 'Café' : 'Cafe'}:</span> {m.cafe_id || (i18n.language === 'nl' ? 'Onbekend café' : 'Unknown cafe')}
         </div>
         <div className="text-gray-700 flex-1 truncate">
           <span className="font-medium">{t('account.contactPerson').toLowerCase()}:</span> {m.email_b || t('account.unknownContact')}

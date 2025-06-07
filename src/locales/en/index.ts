@@ -236,7 +236,7 @@ export const en = {
     reset_error_generic: "Couldn't send the reset email. Try again?",
     reset_success: "Reset email sent! Go check your inbox.",
     toast: {
-      loginSuccess: "You're in! ☕️"
+      loginSuccess: "Woohoo, you're in! 🎉"
     },
     emailPlaceholder: "Your email address",
     passwordPlaceholder: "Your super secret password",

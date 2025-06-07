@@ -98,8 +98,7 @@ const Login = () => {
     if (error) {
       setError(normalizeAuthError(t, error));
     } else {
-      setShowSuccess(true);
-      setTimeout(() => navigate('/dashboard'), 1200);
+      navigate('/dashboard');
     }
     setLoading(false);
   };
@@ -228,11 +227,7 @@ const Login = () => {
       </div>
 
       {showSuccess && (
-        <Toast
-          message={t('toast.loginSuccess')}
-          type="success"
-          onClose={() => setShowSuccess(false)}
-        />
+        <></>
       )}
 
       {error && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{error}</div>}
