@@ -15,7 +15,11 @@ interface SignupForm {
 const Signup = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const steps = t('signup.steps', { returnObjects: true }) as string[];
+  const steps = [
+    t('signup.nameStep', 'Name'),
+    t('signup.emailStep', 'Email'),
+    t('signup.passwordStep', 'Password'),
+  ];
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<SignupForm>({
     name: '',
@@ -208,42 +212,42 @@ const Signup = () => {
             </div>
           )}
           {step === 2 && (
-            <div>
-              <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
-                <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
-              </label>
-              <input
-                type="password"
-                id="signup-password"
-                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${errors.password ? ' border-red-500' : ''}`}
-                value={form.password}
-                onChange={handleInputChange('password')}
-                required
-                placeholder={t('signup.passwordPlaceholder')}
-                inputMode="text"
-                autoComplete="new-password"
-              />
-              {errors.password && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.password}</p>}
-            </div>
-          )}
-          {step === 3 && (
-            <div>
-              <label htmlFor="signup-confirm-password" className="block text-lg font-medium text-gray-700 mb-2">
-                <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
-              </label>
-              <input
-                type="password"
-                id="signup-confirm-password"
-                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${errors.confirmPassword ? ' border-red-500' : ''}`}
-                value={form.confirmPassword}
-                onChange={handleInputChange('confirmPassword')}
-                required
-                placeholder={t('signup.confirmPasswordPlaceholder')}
-                inputMode="text"
-                autoComplete="new-password"
-              />
-              {errors.confirmPassword && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.confirmPassword}</p>}
-            </div>
+            <>
+              <div>
+                <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
+                  <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
+                </label>
+                <input
+                  type="password"
+                  id="signup-password"
+                  className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${errors.password ? ' border-red-500' : ''}`}
+                  value={form.password}
+                  onChange={handleInputChange('password')}
+                  required
+                  placeholder={t('signup.passwordPlaceholder')}
+                  inputMode="text"
+                  autoComplete="new-password"
+                />
+                {errors.password && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.password}</p>}
+              </div>
+              <div>
+                <label htmlFor="signup-confirm-password" className="block text-lg font-medium text-gray-700 mb-2">
+                  <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
+                </label>
+                <input
+                  type="password"
+                  id="signup-confirm-password"
+                  className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${errors.confirmPassword ? ' border-red-500' : ''}`}
+                  value={form.confirmPassword}
+                  onChange={handleInputChange('confirmPassword')}
+                  required
+                  placeholder={t('signup.confirmPasswordPlaceholder')}
+                  inputMode="text"
+                  autoComplete="new-password"
+                />
+                {errors.confirmPassword && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.confirmPassword}</p>}
+              </div>
+            </>
           )}
           <button
             type="submit"

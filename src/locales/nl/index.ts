@@ -245,8 +245,8 @@ export const nl = {
   login: {
     title: "Welkom terug! 👋",
     subtitle: "Klaar voor meer koffie-avonturen? Log hieronder in!",
-    welcomeBack: "Yes, daar ben je weer!",
-    welcomeDesc: "Vul je gegevens in en je kunt weer meetuppen.",
+    welcomeBack: "Welkom terug",
+    welcomeDesc: "Fijn je weer te zien! Log in om verder te gaan.",
     forgotPassword: "Wachtwoord vergeten? Oeps!",
     noAccountCta: "Nog geen account? Doe gezellig mee!",
     error_generic: "Hmm, dat ging niet goed. Probeer het nog eens?",
