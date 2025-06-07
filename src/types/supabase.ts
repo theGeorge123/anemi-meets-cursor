@@ -15,6 +15,13 @@ export interface Profile {
   updated_at: string;
   preferred_language: 'en' | 'nl';
   timezone: string;
+  emoji?: string;
+  gender?: string;
+  age?: number;
+  wants_updates: boolean;
+  wants_reminders?: boolean;
+  wants_notifications?: boolean;
+  is_private: boolean;
 }
 
 /**
