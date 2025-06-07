@@ -63,6 +63,15 @@ src/
 - `npm run preview` - Preview production build
 - `npm run test:e2e` - Run Playwright end-to-end tests
 
+## Linting
+
+After running `npm install` to install the development dependencies (including
+`@eslint/eslintrc`), you can check the codebase for lint errors with:
+
+```bash
+npm run lint
+```
+
 ## Deploying Supabase Functions
 
 Deploy the reminder function with:
