@@ -8,7 +8,6 @@ import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
 import type { Badge, UserBadge } from '../types/supabase';
-import { v4 as uuidv4 } from 'uuid';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
