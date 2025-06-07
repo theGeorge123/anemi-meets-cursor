@@ -242,7 +242,7 @@ const Respond = () => {
         email_b: formData.email,
         selected_date: datePart,
         selected_time: timePart,
-        cafe_id: cafeId
+        cafe_id: cafeId!
       };
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
         method: 'POST',
