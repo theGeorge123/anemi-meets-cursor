@@ -24,7 +24,7 @@ interface Meetup {
 
 const LOCAL_CACHE_KEY = "meetups_cache_v1";
 
-import type { TFunction, i18n as I18n } from "i18next";
+import type { TFunction } from "i18next";
 
 interface MeetupListItemProps {
   meetup: Meetup;
