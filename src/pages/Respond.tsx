@@ -276,6 +276,9 @@ const Respond = () => {
     }
   };
 
+  // Before the return statement in the component
+  const formStatusMessage: string = confirmationInfo ? String(t('respond.success') ?? '') : String(errorMsg ?? '');
+
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -438,7 +441,10 @@ const Respond = () => {
             ? (_i18n.language === 'nl' ? 'Laden...' : 'Loading...')
             : (_i18n.language === 'nl' ? 'Bevestigen & mijn koffiemomentje claimen!' : 'Confirm & claim my coffee spot!')}
         </button>
-        <FormStatus status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'} message={confirmationInfo ? t('respond.success') || '' : errorMsg || ''} />
+        <FormStatus
+          status={loading ? 'loading' : submitted ? 'success' : errorMsg ? 'error' : 'idle'}
+          message={String(confirmationInfo ? t('respond.success') : errorMsg)}
+        />
       </form>
     </main>
   );

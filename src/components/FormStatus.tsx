@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 interface FormStatusProps {
   status: 'idle' | 'loading' | 'success' | 'error';
-  message?: string;
+  message: string;
 }
 
 const FormStatus: React.FC<FormStatusProps> = ({ status, message }) => {
