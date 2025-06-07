@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { getProfile, getAllBadges, getUserBadges } from '../services/supabaseService';
 import { useTranslation } from 'react-i18next';
-import type { TFunction, i18n as I18n } from 'i18next';
-import SkeletonLoader from '../components/SkeletonLoader';
 import React from 'react';
 import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
@@ -41,8 +39,6 @@ const Account = () => {
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [age, setAge] = useState<number | ''>('');
   const [myMeetups, setMyMeetups] = useState<Invitation[]>([]);
-  const [meetupsLoading, setMeetupsLoading] = useState(false);
-  const [meetupsError, setMeetupsError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
@@ -55,7 +51,7 @@ const Account = () => {
   const [showProfileToast, setShowProfileToast] = useState(false);
   const [showPasswordToast, setShowPasswordToast] = useState(false);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   // Edit state for name/email/age
   const [editingProfile, setEditingProfile] = useState(false);
@@ -76,8 +72,6 @@ const Account = () => {
   const [inviteGenerating, setInviteGenerating] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
 
-  // Compute personal invite link (only if user is loaded)
-  const personalInviteLink = user ? `${window.location.origin}/invite-friend/${user.id}` : '';
   // Find next upcoming meetup
   const nextMeetup = useMemo(() => {
     if (!myMeetups || myMeetups.length === 0) return null;
@@ -99,8 +93,6 @@ const Account = () => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) {
         console.error('Fout bij ophalen sessie:', sessionError);
-        setMeetupsError(t('errorSession'));
-        setMeetupsLoading(false);
         return;
       }
       if (!session?.user) {
@@ -126,8 +118,6 @@ const Account = () => {
       setEmail(session.user.email || '');
       setName(session.user.user_metadata?.full_name || '');
       // Haal meetups op
-      setMeetupsLoading(true);
-      setMeetupsError(null);
       try {
         const { data: meetups, error: meetupsError } = await supabase
           .from('invitations')
@@ -135,18 +125,13 @@ const Account = () => {
           .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
         if (meetupsError) {
           console.error('Fout bij ophalen meetups:', meetupsError.message);
-          setMeetupsError(t('account.errorLoadingMeetupsDetails', { details: meetupsError.message }));
-          setMyMeetups([]);
         } else {
           setMyMeetups((meetups || []) as Invitation[]);
         }
       } catch (err: unknown) {
         console.error('Onverwachte fout bij ophalen meetups:', err);
-        const details = err instanceof Error ? err.message : String(err);
-        setMeetupsError(t('account.errorLoadingMeetupsDetails', { details }));
         setMyMeetups([]);
       }
-      setMeetupsLoading(false);
       // Fetch badges
       if (session?.user) {
         const [allBadges, myBadges] = await Promise.all([
@@ -158,7 +143,7 @@ const Account = () => {
       }
     };
     getUser();
-  }, [navigate, t]);
+  }, [navigate]);
 
   useEffect(() => {
     const viewport = document.querySelector('meta[name=viewport]');
@@ -658,78 +643,6 @@ const Account = () => {
           )}
         </div>
       </div>
-    </div>
-  );
-};
-
-interface MeetupListItemProps {
-  m: Invitation;
-  t: TFunction;
-  statusLabels: Record<string, string>;
-  i18n: I18n;
-}
-
-const MeetupListItem = React.memo(function MeetupListItem({ m, t, statusLabels, i18n }: MeetupListItemProps) {
-  return (
-    <li key={m.id} className="bg-white rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100 mb-2 transition hover:shadow-md">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
-        <div className="font-semibold text-primary-700 min-w-[110px]">{m.selected_date}{m.selected_time && <span> &bull; {m.selected_time}</span>}</div>
-        <div className="text-gray-700 flex-1 truncate">
-          <span className="font-medium">{i18n.language === 'nl' ? 'Café' : 'Cafe'}:</span> {m.cafe_id || (i18n.language === 'nl' ? 'Onbekend café' : 'Unknown cafe')}
-        </div>
-        <div className="text-gray-700 flex-1 truncate">
-          <span className="font-medium">{t('account.contactPerson').toLowerCase()}:</span> {m.email_b || t('account.unknownContact')}
-        </div>
-      </div>
-      <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === 'confirmed' ? 'bg-green-100 text-green-700' : m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : m.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-700'}`}>{statusLabels[m.status] || m.status}</span>
-    </li>
-  );
-});
-
-interface MeetupsListProps {
-  meetups: Invitation[];
-  t: TFunction;
-  i18n: I18n;
-}
-
-const MeetupsList = ({ meetups, t, i18n }: MeetupsListProps) => {
-  const statusLabels: Record<string, string> = {
-    confirmed: t('account.status.confirmed', 'Confirmed'),
-    pending: t('account.status.pending', 'Pending'),
-    cancelled: t('account.status.cancelled', 'Cancelled'),
-    declined: t('account.status.declined', 'Declined'),
-  };
-  const parseDate = (dateStr: string) => new Date(dateStr + 'T00:00:00');
-  const now = new Date();
-  const upcoming = useMemo(() =>
-    meetups.filter(m => parseDate(m.selected_date) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()))
-      .sort((a, b) => parseDate(a.selected_date).getTime() - parseDate(b.selected_date).getTime())
-  , [meetups]);
-  const past = useMemo(() =>
-    meetups.filter(m => parseDate(m.selected_date) < new Date(now.getFullYear(), now.getMonth(), now.getDate()))
-      .sort((a, b) => parseDate(b.selected_date).getTime() - parseDate(a.selected_date).getTime())
-  , [meetups]);
-  return (
-    <div className="flex flex-col gap-6">
-      {upcoming.length > 0 && (
-        <div>
-          <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.upcomingMeetups')}</h3>
-          <ul className="space-y-2">
-            {upcoming.map(m => <MeetupListItem key={m.id} m={m} t={t} statusLabels={statusLabels} i18n={i18n} />)}
-          </ul>
-        </div>
-      )}
-      {past.length > 0 && (
-        <div>
-          <h3 className="text-lg font-bold text-primary-700 mb-2">{t('account.pastMeetups')}</h3>
-          <ul className="space-y-2">
-            {past.map(m => <MeetupListItem key={m.id} m={m} t={t} statusLabels={statusLabels} i18n={i18n} />)}
-          </ul>
-        </div>
-      )}
-      {upcoming.length === 0 && past.length === 0 && (
-        <div className="text-gray-600 text-center py-8">{t('dashboard.noMeetups')}</div>
-      )}
     </div>
   );
 };
