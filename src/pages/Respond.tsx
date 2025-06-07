@@ -6,23 +6,9 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
 import FormStatus from '../components/FormStatus';
 import type { TFunction, i18n as I18n } from 'i18next';
+import type { Invitation, Cafe, ConfirmationInfo } from '../types/models';
 
-// TypeScript interfaces voor typeveiligheid
-interface Invitation {
-  token: string;
-  cafe_id?: string;
-  cafe_name?: string;
-  cafe_address?: string;
-  date_time_options?: { date: string; times: string[] }[];
-}
-interface Cafe { name: string; address: string; image_url?: string; }
-interface ConfirmationInfo {
-  cafe_name: string;
-  cafe_address: string;
-  selected_date: string;
-  selected_time: string;
-  ics_base64?: string;
-}
+// Common interfaces are imported from src/types/models
 
 const Respond = () => {
   const { t, i18n: _i18n } = useTranslation();
@@ -53,7 +39,7 @@ const Respond = () => {
   }
 
   function mapRespondError(t: TFunction, data: { error?: string; error_code?: string }, _i18n: I18n) {
-    let msg = getRespondErrorMessage(t, 'respond.genericError', data.error);
+    let msg = getRespondErrorMessage(t, 'respond.genericError', data.error ? { message: data.error } : null);
     if (data.error && typeof data.error === 'string') {
       const err = data.error.toLowerCase();
       if (err.includes('missing email')) {
@@ -69,9 +55,9 @@ const Respond = () => {
           ? 'Deze uitnodiging is niet meer geldig. Vraag je vriend(in) om een nieuwe link!'
           : 'This invite link is no longer valid. Ask your friend for a new one!';
       } else if (err.includes('authorization')) {
-        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error);
+        msg = getRespondErrorMessage(t, 'respond.errorSendMail', { message: data.error });
       } else if (err.includes('expired') || err.includes('not found')) {
-        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error);
+        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', { message: data.error });
       }
     }
     const code = data.error_code || '';
@@ -87,10 +73,10 @@ const Respond = () => {
           : 'Please enter your email address!';
         break;
       case 'authorization':
-        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error);
+        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error ? { message: data.error } : null);
         break;
       case 'expired_or_missing':
-        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error);
+        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error ? { message: data.error } : null);
         break;
       default:
         // already handled above
@@ -237,12 +223,12 @@ const Respond = () => {
       }
 
       const body: ConfirmRequestBody = {
-        token: invitation.token,
+        token: invitation.token!,
         email: formData.email,
         email_b: formData.email,
         selected_date: datePart,
         selected_time: timePart,
-        cafe_id: cafeId
+        cafe_id: cafeId!
       };
       const authKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
@@ -272,7 +258,7 @@ const Respond = () => {
         });
       }
     } catch (err) {
-      setErrorMsg(getRespondErrorMessage(t, 'respond.genericError', err));
+      setErrorMsg(getRespondErrorMessage(t, 'respond.genericError', err as GenericError));
       console.error("Netwerkfout:", err);
     }
   };

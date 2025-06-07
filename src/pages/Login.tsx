@@ -7,6 +7,7 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
+import type { AuthError } from '../types/models';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -43,7 +44,6 @@ const Login = () => {
     }
   }, []);
 
-  interface AuthError { code?: string; message?: string }
   function normalizeAuthError(t: TFunction, error: AuthError) {
     let msg = t('error_generic');
     const code = error.code || '';

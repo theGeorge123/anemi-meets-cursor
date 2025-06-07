@@ -5,24 +5,9 @@ import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
 import OnboardingModal from '../components/OnboardingModal';
+import type { Invitation, UserProfile } from '../types/models';
 
-interface Invitation {
-  id: string;
-  selected_date: string;
-  selected_time: string;
-  cafe_id?: string;
-  cafe_name?: string;
-  status: string;
-  email_b?: string;
-}
-
-interface Profile {
-  id: string;
-  fullName: string;
-  emoji?: string;
-  lastSeen?: string;
-  email?: string;
-}
+// Interfaces are now imported from src/types/models
 
 const Dashboard = () => {
   const { t, i18n } = useTranslation();
@@ -30,10 +15,10 @@ const Dashboard = () => {
   const [meetups, setMeetups] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [friends, setFriends] = useState<Profile[]>([]);
-  const [pendingFriends, setPendingFriends] = useState<Profile[]>([]);
+  const [friends, setFriends] = useState<UserProfile[]>([]);
+  const [pendingFriends, setPendingFriends] = useState<UserProfile[]>([]);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [addFriendValue, setAddFriendValue] = useState('');
@@ -79,14 +64,14 @@ const Dashboard = () => {
         .select('id, fullName, emoji, lastSeen')
         .eq('id', session.user.id)
         .maybeSingle();
-      setProfile(profileData as Profile);
+      setProfile(profileData as UserProfile);
       // Friends ophalen (accepted)
       const { data: friendshipRows } = await supabase
         .from('friendships')
         .select('friend_id, status')
         .eq('user_id', session.user.id);
-      let friendsList: Profile[] = [];
-      let pendingList: Profile[] = [];
+      let friendsList: UserProfile[] = [];
+      let pendingList: UserProfile[] = [];
       if (friendshipRows && friendshipRows.length > 0) {
         const acceptedIds = friendshipRows.filter((f: { friend_id: string, status: string }) => f.status === 'accepted').map((f: { friend_id: string }) => f.friend_id);
         const pendingIds = friendshipRows.filter((f: { friend_id: string, status: string }) => f.status === 'pending').map((f: { friend_id: string }) => f.friend_id);

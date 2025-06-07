@@ -3,20 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import Toast from '../components/Toast';
+import type { Meetup } from '../types/models';
 
-interface Meetup {
-  id: string;
-  title?: string;
-  description?: string;
-  selected_date: string;
-  selected_time: string;
-  cafe_id?: string;
-  cafe_name?: string;
-  status?: string;
-  email_b?: string;
-  invitee_id?: string;
-  token?: string;
-}
+// Interface Meetup is imported from src/types/models
 
 const LOCAL_CACHE_KEY = 'meetups_cache_v1';
 

@@ -9,33 +9,12 @@ import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
+import type { UserProfile, Invitation } from '../types/models';
 
-// TypeScript interfaces voor typeveiligheid
-interface Profile {
-  id: string;
-  fullName: string;
-  email: string;
-  emoji?: string;
-  gender?: string;
-  age?: number;
-  wantsUpdates: boolean;
-  wantsReminders?: boolean;
-  wantsNotifications?: boolean;
-  isPrivate: boolean;
-}
-
-interface Invitation {
-  id: string;
-  selected_date: string;
-  selected_time: string;
-  cafe_id?: string;
-  cafe_name?: string;
-  status: string;
-  email_b?: string;
-}
+// TypeScript interfaces voor typeveiligheid are now imported from src/types/models
 
 const Account = () => {
-  const [user, setUser] = useState<Profile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [age, setAge] = useState<number | ''>('');
   const [myMeetups, setMyMeetups] = useState<Invitation[]>([]);
@@ -82,7 +61,7 @@ const Account = () => {
         console.error('Fout bij ophalen profiel:', testProfilesError);
       }
       if (testProfiles) {
-        setUser(testProfiles as Profile);
+        setUser(testProfiles as UserProfile);
         if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
         if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
         setWantsUpdates(!!testProfiles.wantsUpdates);

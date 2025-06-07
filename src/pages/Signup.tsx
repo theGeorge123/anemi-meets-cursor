@@ -2,14 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
+import type { SignupForm } from '../types/models';
 
-// TypeScript interface voor typeveiligheid
-interface SignupForm {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+// Common interfaces are imported from src/types/models
 
 const Signup = () => {
   const navigate = useNavigate();
