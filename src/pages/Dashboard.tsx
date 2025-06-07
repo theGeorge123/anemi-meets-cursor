@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import type { Database } from '../types/supabase';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -16,13 +17,7 @@ interface Invitation {
   email_b?: string;
 }
 
-interface Profile {
-  id: string;
-  full_name: string;
-  emoji?: string;
-  last_seen?: string;
-  email?: string;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const Dashboard = () => {
   const { t, i18n } = useTranslation();

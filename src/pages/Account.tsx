@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import type { Database } from '../types/supabase';
 import { useTranslation } from 'react-i18next';
 import SkeletonLoader from '../components/SkeletonLoader';
 import React from 'react';
@@ -10,18 +11,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
 
 // TypeScript interfaces voor typeveiligheid
-interface Profile {
-  id: string;
-  full_name: string;
-  email: string;
-  emoji?: string;
-  gender?: string;
-  age?: number;
-  wants_updates: boolean;
-  wants_reminders?: boolean;
-  wants_notifications?: boolean;
-  is_private: boolean;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface Invitation {
   id: string;
