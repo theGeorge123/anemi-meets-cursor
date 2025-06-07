@@ -73,6 +73,13 @@ supabase functions deploy send-meeting-reminders --project-ref <your-project-id>
 
 Configure the schedule for this function in `supabase/config.toml`. See the [Supabase docs](https://supabase.com/docs/guides/functions/schedule-functions) for details.
 
+## Database Migrations
+
+Migrations are stored under `supabase/migrations`. The latest migration
+(`20250615_add_invitation_indexes_and_foreign_keys.sql`) adds indexes for
+`invitations.token`, `invitations.selected_date` and sets up foreign key
+constraints linking invitations to cafes and various user tables.
+
 ## Contributing
 
 1. Fork the repository
