@@ -31,7 +31,6 @@ interface MeetupListItemProps {
   onView: (id: string) => void;
   onJoin: (id: string) => void;
   t: TFunction;
-  i18n: I18n;
   joining: boolean;
   joinLoadingId: string | null;
 }
@@ -41,7 +40,6 @@ const MeetupListItem = React.memo(function MeetupListItem({
   onView,
   onJoin,
   t,
-  i18n,
   joining,
   joinLoadingId,
 }: MeetupListItemProps) {
@@ -151,7 +149,7 @@ const MeetupListItem = React.memo(function MeetupListItem({
 
 const Meetups: React.FC = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation(["meetups", "common"]);
+  const { t } = useTranslation(["meetups", "common"]);
   const [meetups, setMeetups] = useState<Meetup[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -273,7 +271,6 @@ const Meetups: React.FC = () => {
           selected_date: meetup.selected_date,
           selected_time: meetup.selected_time,
           cafe_id: meetup.cafe_id,
-          lang: i18n.language,
         };
 
         const res = await fetch(
@@ -327,7 +324,7 @@ const Meetups: React.FC = () => {
         setJoinLoadingId(null);
       }
     },
-    [t, meetups, i18n.language],
+    [t, meetups],
   );
 
   return (
@@ -414,7 +411,6 @@ const Meetups: React.FC = () => {
                 onView={handleViewMeetup}
                 onJoin={handleJoinMeetup}
                 t={t}
-                i18n={i18n}
                 joining={!!joinLoadingId}
                 joinLoadingId={joinLoadingId}
               />
