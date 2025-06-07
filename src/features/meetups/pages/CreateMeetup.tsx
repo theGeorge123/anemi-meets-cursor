@@ -5,14 +5,11 @@ import { supabase } from '../../../services/supabaseClient';
 import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../components/DateSelector';
 import { useNavigate } from 'react-router-dom';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
 
 interface City { id: string; name: string; }
 interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
 
-interface User {
-  email: string;
-}
 
 const getLastCity = () => {
   if (typeof window !== 'undefined') {
@@ -58,7 +55,7 @@ const CreateMeetup = () => {
   const [shuffleCooldown, setShuffleCooldown] = useState(false);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [step, setStep] = useState(1);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoadingCities, setIsLoadingCities] = useState(true);
   const [cityError, setCityError] = useState<string | null>(null);
@@ -156,7 +153,7 @@ const CreateMeetup = () => {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
+      setUser(session?.user ?? null);
     };
     checkSession();
   }, []);

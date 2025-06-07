@@ -44,16 +44,21 @@ const Respond = () => {
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
   interface GenericError { message?: string }
-  function getRespondErrorMessage(t: TFunction, key: string, error: GenericError | null) {
+  function getRespondErrorMessage(
+    t: TFunction,
+    key: string,
+    error: GenericError | string | null
+  ) {
     const translated = t(key);
     if (translated === key) {
-      return `Error: ${error?.message || 'Unknown error'}`;
+      const msg = typeof error === 'string' ? error : error?.message || 'Unknown error';
+      return `Error: ${msg}`;
     }
     return translated;
   }
 
   function mapRespondError(t: TFunction, data: { error?: string; error_code?: string }, _i18n: I18n) {
-    let msg = getRespondErrorMessage(t, 'respond.genericError', data.error);
+    let msg = getRespondErrorMessage(t, 'respond.genericError', data.error ?? null);
     if (data.error && typeof data.error === 'string') {
       const err = data.error.toLowerCase();
       if (err.includes('missing email')) {
@@ -69,9 +74,9 @@ const Respond = () => {
           ? 'Deze uitnodiging is niet meer geldig. Vraag je vriend(in) om een nieuwe link!'
           : 'This invite link is no longer valid. Ask your friend for a new one!';
       } else if (err.includes('authorization')) {
-        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error);
+        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error ?? null);
       } else if (err.includes('expired') || err.includes('not found')) {
-        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error);
+        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error ?? null);
       }
     }
     const code = data.error_code || '';
@@ -87,10 +92,10 @@ const Respond = () => {
           : 'Please enter your email address!';
         break;
       case 'authorization':
-        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error);
+        msg = getRespondErrorMessage(t, 'respond.errorSendMail', data.error ?? null);
         break;
       case 'expired_or_missing':
-        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error);
+        msg = getRespondErrorMessage(t, 'respond.expiredOrMissing', data.error ?? null);
         break;
       default:
         // already handled above
@@ -242,7 +247,7 @@ const Respond = () => {
         email_b: formData.email,
         selected_date: datePart,
         selected_time: timePart,
-        cafe_id: cafeId
+        cafe_id: cafeId as string
       };
       const authKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`, {
@@ -271,8 +276,8 @@ const Respond = () => {
           ics_base64: data.ics_base64
         });
       }
-    } catch (err) {
-      setErrorMsg(getRespondErrorMessage(t, 'respond.genericError', err));
+      } catch (err) {
+      setErrorMsg(getRespondErrorMessage(t, 'respond.genericError', err as GenericError));
       console.error("Netwerkfout:", err);
     }
   };

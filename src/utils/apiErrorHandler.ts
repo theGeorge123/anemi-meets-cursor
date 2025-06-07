@@ -13,8 +13,12 @@ export const handleApiError = (error: unknown): ApiError => {
     // Handle specific HTTP status codes
     switch (status) {
       case 400:
+        const msg =
+          typeof data === 'object' && data !== null && 'message' in data
+            ? (data as { message?: string }).message
+            : undefined;
         return {
-          message: data?.message || 'errors.validation.invalid_request',
+          message: msg || 'errors.validation.invalid_request',
           code: 'BAD_REQUEST',
           details: data,
         };
