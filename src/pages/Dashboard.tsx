@@ -18,9 +18,9 @@ interface Invitation {
 
 interface Profile {
   id: string;
-  full_name: string;
+  fullName: string;
   emoji?: string;
-  last_seen?: string;
+  lastSeen?: string;
   email?: string;
 }
 
@@ -64,19 +64,19 @@ const Dashboard = () => {
         navigate('/login');
         return;
       }
-      // Update last_seen on dashboard visit
+      // Update lastSeen on dashboard visit
       await supabase
         .from('profiles')
-        .update({ last_seen: new Date().toISOString() })
+        .update({ lastSeen: new Date().toISOString() })
         .eq('id', session.user.id);
       // Onboarding check: only show for new signups
       if (localStorage.getItem('anemi-show-onboarding')) {
         setShowOnboarding(true);
       }
-      // Profiel ophalen (inclusief last_seen)
+      // Profiel ophalen (inclusief lastSeen)
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id, full_name, emoji, last_seen')
+        .select('id, fullName, emoji, lastSeen')
         .eq('id', session.user.id)
         .maybeSingle();
       setProfile(profileData as Profile);
@@ -93,14 +93,14 @@ const Dashboard = () => {
         if (acceptedIds.length > 0) {
           const { data: friendProfiles } = await supabase
             .from('profiles')
-            .select('id, full_name, emoji, email')
+            .select('id, fullName, emoji, email')
             .in('id', acceptedIds);
           friendsList = friendProfiles || [];
         }
         if (pendingIds.length > 0) {
           const { data: pendingProfiles } = await supabase
             .from('profiles')
-            .select('id, full_name, emoji, email')
+            .select('id, fullName, emoji, email')
             .in('id', pendingIds);
           pendingList = pendingProfiles || [];
         }
@@ -151,7 +151,7 @@ const Dashboard = () => {
 
   const filteredFriends = useMemo(() =>
     friends.filter(f =>
-      f.full_name.toLowerCase().includes(friendSearch.toLowerCase()) ||
+      f.fullName.toLowerCase().includes(friendSearch.toLowerCase()) ||
       (f.email ? f.email.toLowerCase().includes(friendSearch.toLowerCase()) : false)
     ),
   [friends, friendSearch]);
@@ -295,14 +295,14 @@ const Dashboard = () => {
       )}
       {/* Welkomstbericht */}
       <div className="flex items-center gap-3 mb-6">
-        {profile?.emoji && <span className="text-4xl" title={profile.full_name}>{profile.emoji}</span>}
+        {profile?.emoji && <span className="text-4xl" title={profile.fullName}>{profile.emoji}</span>}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
-            {t('dashboard.welcome')}, {profile?.full_name || t('dashboard.user')}!
+            {t('dashboard.welcome')}, {profile?.fullName || t('dashboard.user')}!
           </h1>
           {profile && (
             <div className="text-gray-600 text-sm">
-              {t('dashboard.lastLogin', { date: profile.last_seen ? new Date(profile.last_seen).toLocaleDateString() : '' })}
+              {t('dashboard.lastLogin', { date: profile.lastSeen ? new Date(profile.lastSeen).toLocaleDateString() : '' })}
             </div>
           )}
         </div>
@@ -332,8 +332,8 @@ const Dashboard = () => {
           <ul className="flex flex-wrap gap-3">
             {filteredFriends.map(friend => (
               <li key={friend.id} className="flex items-center gap-2 bg-white/80 rounded-xl shadow px-4 py-2 border border-primary-100">
-                {friend.emoji && <span className="text-2xl" title={friend.full_name}>{friend.emoji}</span>}
-                <span className="font-semibold text-primary-700">{friend.full_name}</span>
+                {friend.emoji && <span className="text-2xl" title={friend.fullName}>{friend.emoji}</span>}
+                <span className="font-semibold text-primary-700">{friend.fullName}</span>
                 {friend.email ? (
                   <span className="ml-2 text-green-600 text-xs font-semibold">{t('dashboard.hasAccount', 'Has account')}</span>
                 ) : (
@@ -361,8 +361,8 @@ const Dashboard = () => {
           <ul className="flex flex-wrap gap-3">
             {pendingFriends.map(friend => (
               <li key={friend.id} className="flex items-center gap-2 bg-yellow-50 rounded-xl shadow px-4 py-2 border border-yellow-200">
-                {friend.emoji && <span className="text-2xl" title={friend.full_name}>{friend.emoji}</span>}
-                <span className="font-semibold text-yellow-700">{friend.full_name}</span>
+                {friend.emoji && <span className="text-2xl" title={friend.fullName}>{friend.emoji}</span>}
+                <span className="font-semibold text-yellow-700">{friend.fullName}</span>
                 <span className="ml-2 text-xs text-yellow-600">{t('dashboard.pending', 'Pending')}</span>
               </li>
             ))}

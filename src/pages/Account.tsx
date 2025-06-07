@@ -13,15 +13,15 @@ import { requestBrowserNotificationPermission } from '../utils/browserNotificati
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
   id: string;
-  full_name: string;
+  fullName: string;
   email: string;
   emoji?: string;
   gender?: string;
   age?: number;
-  wants_updates: boolean;
-  wants_reminders?: boolean;
-  wants_notifications?: boolean;
-  is_private: boolean;
+  wantsUpdates: boolean;
+  wantsReminders?: boolean;
+  wantsNotifications?: boolean;
+  isPrivate: boolean;
 }
 
 interface Invitation {
@@ -85,10 +85,10 @@ const Account = () => {
         setUser(testProfiles as Profile);
         if (testProfiles.emoji) setSelectedEmoji(testProfiles.emoji);
         if (testProfiles.age !== undefined && testProfiles.age !== null) setAge(testProfiles.age);
-        setWantsUpdates(!!testProfiles.wants_updates);
-        setWantsReminders(testProfiles.wants_reminders !== false);
-        setWantsNotifications(!!testProfiles.wants_notifications);
-        setIsPrivate(!!testProfiles.is_private);
+        setWantsUpdates(!!testProfiles.wantsUpdates);
+        setWantsReminders(testProfiles.wantsReminders !== false);
+        setWantsNotifications(!!testProfiles.wantsNotifications);
+        setIsPrivate(!!testProfiles.isPrivate);
       } else {
         setUser(null);
       }
@@ -156,10 +156,10 @@ const Account = () => {
       await requestBrowserNotificationPermission();
     }
     const { error } = await supabase.from('profiles').update({
-      wants_updates: wantsUpdates,
-      wants_reminders: wantsReminders,
-      wants_notifications: wantsNotifications,
-      is_private: isPrivate
+      wantsUpdates,
+      wantsReminders,
+      wantsNotifications,
+      isPrivate
     }).eq('id', user.id);
     if (error) {
       console.error('Fout bij opslaan voorkeuren:', error);

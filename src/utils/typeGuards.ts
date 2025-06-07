@@ -12,7 +12,7 @@ export function isProfile(value: unknown): value is TableRow<'profiles'> {
   return (
     typeof profile.id === 'string' &&
     typeof profile.email === 'string' &&
-    typeof profile.full_name === 'string' &&
+    typeof profile.fullName === 'string' &&
     (profile.avatar_url === undefined || typeof profile.avatar_url === 'string') &&
     typeof profile.created_at === 'string' &&
     typeof profile.updated_at === 'string' &&
@@ -74,7 +74,7 @@ export function isCommunity(value: unknown): value is TableRow<'communities'> {
     typeof community.created_by === 'string' &&
     typeof community.created_at === 'string' &&
     typeof community.updated_at === 'string' &&
-    typeof community.is_private === 'boolean' &&
+    typeof community.isPrivate === 'boolean' &&
     (community.avatar_url === undefined || typeof community.avatar_url === 'string') &&
     (community.banner_url === undefined || typeof community.banner_url === 'string')
   );

@@ -1,1 +1,1 @@
-ALTER TABLE profiles ADD COLUMN wants_reminders boolean NOT NULL DEFAULT true;
+ALTER TABLE profiles ADD COLUMN wantsReminders boolean NOT NULL DEFAULT true;

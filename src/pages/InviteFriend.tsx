@@ -10,7 +10,7 @@ const InviteFriend = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [inviter, setInviter] = useState<{ full_name: string; emoji?: string } | null>(null);
+  const [inviter, setInviter] = useState<{ fullName: string; emoji?: string } | null>(null);
 
   useEffect(() => {
     const checkInvite = async () => {
@@ -40,7 +40,7 @@ const InviteFriend = () => {
       // Get inviter profile
       const { data: inviterProfile } = await supabase
         .from('profiles')
-        .select('full_name, emoji')
+        .select('fullName, emoji')
         .eq('id', invite.inviter_id)
         .maybeSingle();
       setInviter(inviterProfile);
@@ -97,7 +97,7 @@ const InviteFriend = () => {
         <>
           <div className="mb-6">
             <span className="text-4xl">{inviter.emoji || '👤'}</span>
-            <div className="mt-2 text-lg">{t('inviteFriend.inviteFrom', 'You have been invited by')} <b>{inviter.full_name}</b></div>
+            <div className="mt-2 text-lg">{t('inviteFriend.inviteFrom', 'You have been invited by')} <b>{inviter.fullName}</b></div>
           </div>
           <button className="btn-primary" onClick={handleAccept}>{t('inviteFriend.accept', 'Accept invite')}</button>
         </>
