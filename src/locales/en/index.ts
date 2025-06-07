@@ -23,11 +23,12 @@ export const en = {
       screenshotLabel: "Screenshot (optional)",
       submit: "Submit report",
       error: "Couldn't submit: {{error}}",
-      success: "Thanks! We've received your report."
+      success: "Thanks! We've received your report.",
     },
     testimonialsTitle: "What our users say",
     testimonial1: "Anemi Meets saves me so much time! — Sophie, Rotterdam",
-    freeAccountInfo: "With a free account you can instantly plan Meetups and send invites!",
+    freeAccountInfo:
+      "With a free account you can instantly plan Meetups and send invites!",
     alreadyHaveAccount: "Already have an account? Login",
     createAccount: "Create Account",
     error_invalid_email: "Please enter a valid email address",
@@ -35,9 +36,12 @@ export const en = {
     afternoon: "Afternoon",
     evening: "Evening",
     date: "Date",
-    cookiesFull: "Anemi Meets uses only functional cookies necessary for the site to work. By continuing you accept these cookies.",
-    privacyFull: "We only collect the details you enter to plan meetups. This information is never shared with third parties and is used solely to provide our service.",
-    termsFull: "By using Anemi Meets you agree to use the service responsibly. Accounts that abuse the platform may be suspended.",
+    cookiesFull:
+      "Anemi Meets uses only functional cookies necessary for the site to work. By continuing you accept these cookies.",
+    privacyFull:
+      "We only collect the details you enter to plan meetups. This information is never shared with third parties and is used solely to provide our service.",
+    termsFull:
+      "By using Anemi Meets you agree to use the service responsibly. Accounts that abuse the platform may be suspended.",
     rights: "All rights reserved.",
     lastUpdate: "Last updated:",
     contactIntro: "Feel free to reach out using the form below.",
@@ -49,7 +53,7 @@ export const en = {
     contactError: "Oops! Something went wrong. Please try again.",
     namePlaceholder: "Your name",
     emailPlaceholder: "Enter your email address",
-    messagePlaceholder: "Type your message here..."
+    messagePlaceholder: "Type your message here...",
   },
   navigation: {
     home: "Home",
@@ -98,7 +102,8 @@ export const en = {
     step5_sub: "Review and create your invite.",
     btn_submit: "Create invite",
     chooseCity: "Choose your city",
-    chooseCityInfo: "Choose your city! That way we know where to find the best spots for you.",
+    chooseCityInfo:
+      "Choose your city! That way we know where to find the best spots for you.",
     chooseCityLabel: "Which city do you want?",
     chooseDaysInfo: "Pick as many days as you like! The more, the merrier ☀️",
     chooseDates: "Pick your dates",
@@ -117,23 +122,27 @@ export const en = {
     errorDatesRequired: "Please select at least one date",
     errorTimesRequired: "Please select at least one time slot",
     errorCafeRequired: "Please choose a café",
-    suggestionName: "Try a fun or creative nickname"
+    suggestionName: "Try a fun or creative nickname",
   },
   invite: {
     titleStepCloser: "You're almost there! 🎉",
     detailsHeading: "Here are the details for your meetup!",
-    shareInstructions: "Share this link with your friend and let the coffee magic happen! ☕✨",
+    shareInstructions:
+      "Share this link with your friend and let the coffee magic happen! ☕✨",
     share: "Share the magic! ✨",
     copyLink: "Copy link & send! 📋",
     cafeInfoPending: "Café will be revealed soon! Stay tuned!",
     copySuccess: "Link copied! Go spread the coffee joy! ☕️🎉",
-    copyError: "Oops, copying failed! Try again or just shout the link across the room!",
+    copyError:
+      "Oops, copying failed! Try again or just shout the link across the room!",
     copy: "Copy link",
   },
   respond: {
     title: "You've got a coffee invite! ☕️🥳",
-    subtitle: "Pick a time, fill in your email, and get ready for a cozy meetup at a local café!",
-    explanation: "Your friend wants to meet up for coffee at a local spot. Just pick a time that works for you, enter your email, and we'll handle the rest. Supporting local coffee shops, one meetup at a time! ☕️❤️",
+    subtitle:
+      "Pick a time, fill in your email, and get ready for a cozy meetup at a local café!",
+    explanation:
+      "Your friend wants to meet up for coffee at a local spot. Just pick a time that works for you, enter your email, and we'll handle the rest. Supporting local coffee shops, one meetup at a time! ☕️❤️",
     timeLabel: "Pick a time slot:",
     emailLabel: "Your email",
     emailPlaceholder: "you@example.com",
@@ -199,7 +208,7 @@ export const en = {
       confirmed: "Confirmed",
       pending: "Pending",
       cancelled: "Cancelled",
-      declined: "Declined"
+      declined: "Declined",
     },
     contactPerson: "Contact person",
     unknownContact: "Unknown contact",
@@ -210,17 +219,19 @@ export const en = {
     confirmPassword: "Confirm new password",
     passwordChangeSuccess: "Password changed successfully!",
     myMeetups: "Your meetups (let's get social!)",
-    errorLoadingMeetupsDetails: "Oops! Couldn't load your meetups. Try again or refresh.",
+    errorLoadingMeetupsDetails:
+      "Oops! Couldn't load your meetups. Try again or refresh.",
     pastMeetups: "Past meetups",
     personalInvite: "Your personal invite link",
     copyInvite: "Copy link",
-    inviteHint: "Share this link with friends so they can instantly connect with you!",
+    inviteHint:
+      "Share this link with friends so they can instantly connect with you!",
     yourBadges: "Your Badges",
     locked: "Locked",
   },
   toast: {
     profileUpdated: "Profile updated!",
-    signupSuccess: "Account created! You're all set! ✨"
+    signupSuccess: "Account created! You're all set! ✨",
   },
   sessionExpiresSoon: "Your session will expire soon. Please log in again.",
 
@@ -237,13 +248,16 @@ export const en = {
     error_invalid_email: "That email looks a bit off. Double-check it!",
     error_user_banned: "This account is blocked. Need help? Contact us!",
     error_email_not_confirmed: "Check your inbox to confirm your email first!",
-    errorRateLimit: "Whoa, slow down! Too many tries. Wait a sec and try again.",
+    errorRateLimit:
+      "Whoa, slow down! Too many tries. Wait a sec and try again.",
     reset_error_generic: "Couldn't send the reset email. Try again?",
     reset_success: "Reset email sent! Go check your inbox.",
     toast: {
-      loginSuccess: "Woohoo, you're in! 🎉"
+      loginSuccess: "Woohoo, you're in! 🎉",
     },
     emailPlaceholder: "Your email address",
+    emailLabel: "Your email address",
+    passwordLabel: "Your password",
     passwordPlaceholder: "Your super secret password",
     loginButton: "Let me in!",
     googleButton: "Continue with Google",
@@ -257,7 +271,8 @@ export const en = {
     emailPlaceholder: "Your email address",
     passwordPrompt: "Which password do you want to use for this account?",
     passwordPlaceholder: "Your password",
-    confirmPasswordPrompt: "Sorry, but we need to check if you typed your password correctly",
+    confirmPasswordPrompt:
+      "Sorry, but we need to check if you typed your password correctly",
     confirmPasswordPlaceholder: "Confirm your password",
     overviewTitle: "Overview of your details",
     submit: "Sign up",
@@ -266,16 +281,18 @@ export const en = {
   onboarding: {
     welcome: {
       title: "Welcome to Anemi Meets!",
-      description: "Plan meetups with friends in a few clicks. We'll show you how!"
+      description:
+        "Plan meetups with friends in a few clicks. We'll show you how!",
     },
     features: {
       title: "Easy planning",
-      description: "Pick a city, a date, and invite your friends. We'll handle the rest!"
+      description:
+        "Pick a city, a date, and invite your friends. We'll handle the rest!",
     },
     getting_started: {
       title: "Ready to go?",
-      description: "Let's create your first meetup! Let's go!"
-    }
+      description: "Let's create your first meetup! Let's go!",
+    },
   },
   skip: "Skip",
   get_started: "Let's go! 🚀",
