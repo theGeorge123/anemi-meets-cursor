@@ -110,7 +110,7 @@ export interface Notification {
 export interface FriendInvite {
   id: string;
   inviter_id: string;
-  invitee_email: string;
+  invitee_email?: string | null;
   token: string;
   created_at: string;
   accepted: boolean;
