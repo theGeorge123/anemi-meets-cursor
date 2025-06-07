@@ -63,6 +63,11 @@ src/
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 - `npm run test:e2e` - Run Playwright end-to-end tests
+  - The command spins up the Vite dev server automatically. Set `BASE_URL` if you
+    want to point the tests at a different running instance.
+  - Browsers are downloaded on first run; reuse of the dev server is disabled in
+    CI when the `CI` environment variable is present.
+  - Ensure a valid `.env` file is present so Vite can read the Supabase keys.
 
 ## Realtime Experience
 
