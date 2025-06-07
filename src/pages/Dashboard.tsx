@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,8 @@ interface Invitation {
   cafe_name?: string;
   status: string;
   email_b?: string;
+  invitee_id?: string;
+  email_a?: string;
 }
 
 interface Profile {
@@ -40,6 +43,7 @@ const Dashboard = () => {
   const [addFriendStatus, setAddFriendStatus] = useState<string | null>(null);
   const [friendSearch, setFriendSearch] = useState('');
   const navigate = useNavigate();
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -143,6 +147,62 @@ const Dashboard = () => {
     };
     fetchData();
   }, [navigate, t]);
+
+  useEffect(() => {
+    const subscribe = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      channelRef.current = supabase.channel('invitations')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'invitations' }, payload => {
+          const newInvite = payload.new as Invitation;
+          if (newInvite.invitee_id === session.user.id || newInvite.email_b === session.user.email || newInvite.email_a === session.user.email) {
+            setMeetups(prev => {
+              if (prev.some(m => m.id === newInvite.id)) return prev;
+              const updated = [...prev, newInvite];
+              localStorage.setItem(
+                DASHBOARD_CACHE_KEY,
+                JSON.stringify({
+                  profile,
+                  friends,
+                  pendingFriends,
+                  meetups: updated
+                })
+              );
+              return updated;
+            });
+          }
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'invitations' }, payload => {
+          const updatedInvite = payload.new as Invitation;
+          if (updatedInvite.invitee_id === session.user.id || updatedInvite.email_b === session.user.email || updatedInvite.email_a === session.user.email) {
+            setMeetups(prev => {
+              const updatedList = prev.map(m => m.id === updatedInvite.id ? { ...m, ...updatedInvite } : m);
+              localStorage.setItem(
+                DASHBOARD_CACHE_KEY,
+                JSON.stringify({
+                  profile,
+                  friends,
+                  pendingFriends,
+                  meetups: updatedList
+                })
+              );
+              return updatedList;
+            });
+          }
+        });
+
+      channelRef.current.subscribe();
+    };
+
+    subscribe();
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [profile, friends, pendingFriends]);
 
   // Sorteer meetups op datum (oplopend)
   const sortedMeetups = [...meetups].sort((a, b) => a.selected_date.localeCompare(b.selected_date));
