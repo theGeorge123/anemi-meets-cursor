@@ -30,6 +30,7 @@ export interface DateSelectorProps {
   error?: string | null;
 }
 
+// Updated time slots to match new logic: 07:00–19:00
 const TIME_SLOTS = ['morning', 'afternoon', 'evening'] as const;
 
 export const DateSelector: React.FC<DateSelectorProps> = ({
