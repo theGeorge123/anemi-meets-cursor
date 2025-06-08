@@ -25,14 +25,14 @@ async function wantsReminders(
 }
 
 const slots: Record<string, [string, string]> = {
-  morning: ["T090000", "T120000"],
-  afternoon: ["T120000", "T170000"],
-  evening: ["T170000", "T210000"],
+  morning: ["T070000", "T120000"],
+  afternoon: ["T120000", "T160000"],
+  evening: ["T160000", "T190000"],
 };
 const slotReadable: Record<string, string> = {
-  morning: "09:00 – 12:00",
-  afternoon: "12:00 – 17:00",
-  evening: "17:00 – 21:00",
+  morning: "07:00 – 11:59",
+  afternoon: "12:00 – 15:59",
+  evening: "16:00 – 19:00",
 };
 
 export async function handleReminders(): Promise<Response> {
