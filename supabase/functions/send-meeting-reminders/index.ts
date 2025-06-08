@@ -35,6 +35,37 @@ const slotReadable: Record<string, string> = {
   evening: "16:00 – 19:00",
 };
 
+// Helper: check if a cafe is open on a given date and slot
+function isCafeOpenOnDay(opening_hours: Record<string, string> | null, date: string, slot: 'morning' | 'afternoon' | 'evening'): boolean {
+  if (!opening_hours) return false;
+  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+  // Map JS weekday to keys in opening_hours (e.g. 'mon', 'tue', ...)
+  const dayMap: Record<string, string> = {
+    sun: 'sun', mon: 'mon', tue: 'tue', wed: 'wed', thu: 'thu', fri: 'fri', sat: 'sat'
+  };
+  const jsDay = dayOfWeek.slice(0, 3);
+  const cafeDay = dayMap[jsDay];
+  const hours = opening_hours[cafeDay];
+  if (!hours || !hours.includes('–')) return false;
+  const [open, close] = hours.split('–').map(s => s.trim());
+  // Convert to minutes since midnight
+  const toMinutes = (t: string) => {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + (m || 0);
+  };
+  const openMin = toMinutes(open);
+  const closeMin = toMinutes(close);
+  // Slot ranges
+  const slotRanges: Record<string, [number, number]> = {
+    morning: [7 * 60, 12 * 60],
+    afternoon: [12 * 60, 16 * 60],
+    evening: [16 * 60, 19 * 60],
+  };
+  const [slotStart, slotEnd] = slotRanges[slot];
+  // Check overlap
+  return openMin < slotEnd && closeMin > slotStart;
+}
+
 export async function handleReminders(): Promise<Response> {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -95,12 +126,18 @@ export async function handleReminders(): Promise<Response> {
 
     const { data: cafe, error: cafeErr } = await supabase
       .from("cafes")
-      .select("name, address, image_url")
+      .select("name, address, image_url, opening_hours")
       .eq("id", inv.cafe_id)
       .single();
 
     if (cafeErr || !cafe) {
       console.error("cafe_error", { message: cafeErr?.message });
+      continue;
+    }
+
+    // New: Only send reminder if cafe is open on the selected day and slot
+    if (!isCafeOpenOnDay(cafe.opening_hours, inv.selected_date, slot)) {
+      console.log(`Cafe ${cafe.name} is not open on ${inv.selected_date} for slot ${slot}`);
       continue;
     }
 
