@@ -9,7 +9,21 @@ import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 
 interface City { id: string; name: string; }
-interface Cafe { id: string; name: string; address: string; description?: string; image_url?: string; }
+interface Cafe {
+  id: string;
+  name: string;
+  address: string;
+  city?: string;
+  description?: string;
+  image_url?: string;
+  tags?: string[];
+  transport?: string[];
+  price_bracket?: string;
+  opening_hours?: Record<string, string>;
+  open_morning?: boolean;
+  open_afternoon?: boolean;
+  open_evening?: boolean;
+}
 
 const getLastCity = () => {
   if (typeof window !== 'undefined') {
@@ -48,6 +62,18 @@ function getUUID() {
     const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
+}
+
+// Helper to log cafe analytics
+async function logCafeAnalytics({ cafeId, action, userId = null, sessionId = null }: { cafeId: string; action: 'selected' | 'skipped'; userId?: string | null; sessionId?: string | null; }) {
+  await supabase.from('cafe_analytics').insert([
+    {
+      cafe_id: cafeId,
+      action,
+      user_id: userId,
+      session_id: sessionId,
+    },
+  ]);
 }
 
 const CreateMeetup = () => {
@@ -115,15 +141,18 @@ const CreateMeetup = () => {
     fetchCities();
   }, [t]);
 
-  // Fetch cafes for selected city
+  // Fetch cafes for selected city and time preference
   useEffect(() => {
     const fetchCafes = async () => {
       if (!formData.city) return setCafes([]);
       try {
-        const { data, error } = await supabase.from('cafes').select('*').eq('city', formData.city);
+        let query = supabase.from('cafes').select('*').eq('city', formData.city);
+        if (formData.timePreference) {
+          query = query.eq(`open_${formData.timePreference}`, true);
+        }
+        const { data, error } = await query;
         if (error) {
           console.error('Error fetching cafes:', error);
-          // If no cafes found, create a default one to ensure the flow can continue
           setCafes([{
             id: 'default-cafe',
             name: 'Default Café',
@@ -133,7 +162,6 @@ const CreateMeetup = () => {
         } else if (data && data.length > 0) {
           setCafes(data as Cafe[]);
         } else {
-          // If no cafes found, create a default one
           setCafes([{
             id: 'default-cafe',
             name: 'Default Café',
@@ -143,7 +171,6 @@ const CreateMeetup = () => {
         }
       } catch (err) {
         console.error('Exception fetching cafes:', err);
-        // Fallback to default cafe
         setCafes([{
           id: 'default-cafe',
           name: 'Default Café',
@@ -153,7 +180,7 @@ const CreateMeetup = () => {
       }
     };
     fetchCafes();
-  }, [formData.city]);
+  }, [formData.city, formData.timePreference]);
 
   useEffect(() => {
     // Scroll naar boven bij laden
@@ -347,11 +374,21 @@ const CreateMeetup = () => {
     }
   };
 
-  const shuffleCafe = () => {
+  const shuffleCafe = async () => {
     if (shuffleCooldown || cafes.length <= 1) return;
     let newCafe = selectedCafe;
     while (newCafe === selectedCafe) {
       newCafe = cafes[Math.floor(Math.random() * cafes.length)];
+    }
+    // Log skip event for analytics
+    if (selectedCafe) {
+      const { data: { session } } = await supabase.auth.getSession();
+      await logCafeAnalytics({
+        cafeId: selectedCafe.id,
+        action: 'skipped',
+        userId: session?.user?.id || null,
+        // Optionally add a sessionId if you want to group events
+      });
     }
     setSelectedCafe(newCafe);
     setShuffleCooldown(true);
@@ -637,7 +674,32 @@ const CreateMeetup = () => {
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">{selectedCafe.name}</h3>
                 <p className="text-gray-600 mb-2">{selectedCafe.address}</p>
                 {selectedCafe.description && (
-                  <p className="text-gray-500 text-sm">{selectedCafe.description}</p>
+                  <p className="text-gray-500 text-sm mb-2">{selectedCafe.description}</p>
+                )}
+                {/* Show tags as badges */}
+                {selectedCafe.tags && selectedCafe.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedCafe.tags.map(tag => (
+                      <span key={tag} className="bg-primary-100 text-primary-700 px-2 py-1 rounded-full text-xs font-semibold">{tag}</span>
+                    ))}
+                  </div>
+                )}
+                {/* Show price bracket */}
+                {selectedCafe.price_bracket && (
+                  <div className="mb-2 text-sm text-primary-700 font-semibold">
+                    {t('cafe.priceBracket', 'Price')}: {selectedCafe.price_bracket}
+                  </div>
+                )}
+                {/* Show opening hours */}
+                {selectedCafe.opening_hours && (
+                  <div className="mb-2">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">{t('cafe.openingHours', 'Opening hours')}:</div>
+                    <ul className="text-xs text-gray-700">
+                      {Object.entries(selectedCafe.opening_hours).map(([day, hours]) => (
+                        <li key={day}><span className="font-semibold">{day}:</span> {hours}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
             </div>
