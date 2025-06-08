@@ -97,6 +97,17 @@ const Account = () => {
         navigate('/login');
         return;
       }
+      // --- NEW: Sync Google profile info to Supabase profiles table ---
+      const user = session.user;
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+      const email = user.email;
+      // Upsert profile info (id, fullName, email)
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        fullName,
+        email,
+      });
+      // --- END NEW ---
       // Haal profiel op
       const { data: profileData, error: profileError } = await getProfile(session.user.id);
       if (profileError) {
@@ -113,8 +124,8 @@ const Account = () => {
       } else {
         setUser(null);
       }
-      setEmail(session.user.email || '');
-      setName(session.user.user_metadata?.full_name || '');
+      setEmail(user.email || '');
+      setName(fullName);
       // Haal meetups op
       try {
         const { data: meetups, error: meetupsError } = await supabase
