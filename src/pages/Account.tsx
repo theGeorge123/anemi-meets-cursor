@@ -8,6 +8,7 @@ import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
 import type { Badge, UserBadge } from '../types/supabase';
+import { displayCafeTag, displayPriceBracket } from '../utils/display';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -569,7 +570,7 @@ const Account = () => {
                           onClick={() => setCafePrefTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
                           aria-pressed={cafePrefTags.includes(tag)}
                         >
-                          {tag}
+                          {displayCafeTag(tag, t)}
                         </button>
                       ))}
                     </div>
@@ -585,7 +586,7 @@ const Account = () => {
                           onClick={() => setCafePrefPrice(bracket)}
                           aria-pressed={cafePrefPrice === bracket}
                         >
-                          {bracket}
+                          {displayPriceBracket(bracket, t)}
                         </button>
                       ))}
                       <button

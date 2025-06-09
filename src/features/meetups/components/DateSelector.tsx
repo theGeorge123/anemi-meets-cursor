@@ -33,6 +33,12 @@ export interface DateSelectorProps {
 // Updated time slots to match new logic: 07:00–19:00
 const TIME_SLOTS = ['morning', 'afternoon', 'evening'] as const;
 
+const TIME_SLOT_HOURS: Record<string, string> = {
+  morning: '07:00–11:59',
+  afternoon: '12:00–17:59',
+  evening: '18:00–23:00',
+};
+
 export const DateSelector: React.FC<DateSelectorProps> = ({
   selectedDates,
   setSelectedDates,
@@ -112,6 +118,11 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
         />
         <p className="text-xs sm:text-sm text-gray-500 mt-2">{t('meetup.chooseDaysInfo', 'Pick as many days as you like! The more, the merrier ☀️')}</p>
       </div>
+      <div className="mb-3 text-xs text-gray-500 text-center">
+        {i18n.language === 'nl'
+          ? t('meetup.timeDisclaimer', 'Onze tijdvakken zijn lekker breed, zodat je zelf een tijd kunt kiezen die past. Spreek samen af wat werkt, maar het is wel zo leuk als je binnen het gekozen blok aankomt!')
+          : t('meetup.timeDisclaimer', "Our time slots are intentionally broad, so you and your friend can pick the exact time that works for you. Just agree together, but it's nice if you arrive within the chosen slot!")}
+      </div>
       {selectedDates.length > 0 && (
         <div className="space-y-4">
           <h3 className="font-medium text-gray-700">{t('meetup.selectedDates', 'Your picked days')}</h3>
@@ -163,6 +174,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
                         aria-pressed={isSelected}
                       >
                         {t(time, { ns: 'common' })}
+                        <span className="text-xs text-gray-400 mt-1">{TIME_SLOT_HOURS[time]}</span>
                       </button>
                     );
                   })}

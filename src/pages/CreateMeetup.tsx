@@ -7,6 +7,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../features/meetups/components/DateSelector';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
+import { displayCafeTag, displayPriceBracket } from '../utils/display';
 
 interface City { id: string; name: string; }
 interface Cafe {
@@ -708,14 +709,14 @@ const CreateMeetup = () => {
                 {selectedCafe.tags && selectedCafe.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-2">
                     {selectedCafe.tags.map(tag => (
-                      <span key={tag} className="bg-primary-100 text-primary-700 px-2 py-1 rounded-full text-xs font-semibold">{tag}</span>
+                      <span key={tag} className="bg-primary-100 text-primary-700 px-2 py-1 rounded-full text-xs font-semibold">{displayCafeTag(tag, t)}</span>
                     ))}
                   </div>
                 )}
                 {/* Show price bracket */}
                 {selectedCafe.price_bracket && (
                   <div className="mb-2 text-sm text-primary-700 font-semibold">
-                    {t('cafe.priceBracket', 'Price')}: {selectedCafe.price_bracket}
+                    {t('cafe.priceBracket', 'Price')}: {displayPriceBracket(selectedCafe.price_bracket, t)}
                   </div>
                 )}
                 {/* Show opening hours */}
