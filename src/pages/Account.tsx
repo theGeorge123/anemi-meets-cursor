@@ -21,6 +21,10 @@ interface Profile {
   wantsReminders?: boolean;
   wantsNotifications?: boolean;
   isPrivate: boolean;
+  cafe_preferences?: {
+    tags?: string[];
+    price_bracket?: string;
+  };
 }
 
 interface Invitation {
@@ -86,6 +90,14 @@ const Account = () => {
   const [emojiLoading, setEmojiLoading] = useState(false);
   const [emojiError, setEmojiError] = useState<string | null>(null);
 
+  const CAFE_TAG_OPTIONS = [
+    'cozy', 'laptop_friendly', 'vegan', 'outdoor', 'quiet', 'trendy', 'local', 'breakfast', 'lunch', 'specialty_coffee', 'pastries', 'dog_friendly', 'plant_based', 'wifi', 'kids', 'board_games', 'art', 'music', 'book_corner', 'sustainable', 'student_discount'
+  ];
+  const PRICE_BRACKET_OPTIONS = ['low', 'mid', 'high'];
+
+  const [cafePrefTags, setCafePrefTags] = useState<string[]>([]);
+  const [cafePrefPrice, setCafePrefPrice] = useState<string>('');
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -121,6 +133,10 @@ const Account = () => {
         setWantsReminders(profileData.wantsReminders !== false);
         setWantsNotifications(!!profileData.wantsNotifications);
         setIsPrivate(!!profileData.isPrivate);
+        if (profileData.cafe_preferences) {
+          setCafePrefTags(profileData.cafe_preferences.tags || []);
+          setCafePrefPrice(profileData.cafe_preferences.price_bracket || '');
+        }
       } else {
         setUser(null);
       }
@@ -194,11 +210,16 @@ const Account = () => {
     if (wantsNotifications && Notification.permission !== 'granted') {
       await requestBrowserNotificationPermission();
     }
+    const cafe_preferences = {
+      tags: cafePrefTags,
+      price_bracket: cafePrefPrice,
+    };
     const { error } = await supabase.from('profiles').update({
       wantsUpdates,
       wantsReminders,
       wantsNotifications,
-      isPrivate
+      isPrivate,
+      cafe_preferences,
     }).eq('id', user.id);
     if (error) {
       console.error('Fout bij opslaan voorkeuren:', error);
@@ -532,6 +553,51 @@ const Account = () => {
                     />
                     {t('account.isPrivateCheckbox', 'Yeah, I want to keep my profile private!')}
                   </label>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="w-full sm:w-32 font-semibold">{t('account.cafePreferences', 'Café preferences')}</label>
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="mb-2">
+                    <div className="font-medium text-sm mb-1">{t('account.cafeTags', 'Preferred tags')}</div>
+                    <div className="flex flex-wrap gap-2">
+                      {CAFE_TAG_OPTIONS.map(tag => (
+                        <button
+                          key={tag}
+                          type="button"
+                          className={`px-2 py-1 rounded-full border text-xs font-semibold transition ${cafePrefTags.includes(tag) ? 'bg-primary-200 border-primary-500 text-primary-900' : 'bg-gray-100 border-gray-300 text-gray-500'}`}
+                          onClick={() => setCafePrefTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
+                          aria-pressed={cafePrefTags.includes(tag)}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm mb-1">{t('account.cafePriceBracket', 'Preferred price bracket')}</div>
+                    <div className="flex gap-2">
+                      {PRICE_BRACKET_OPTIONS.map(bracket => (
+                        <button
+                          key={bracket}
+                          type="button"
+                          className={`px-3 py-1 rounded-full border text-xs font-semibold transition ${cafePrefPrice === bracket ? 'bg-primary-200 border-primary-500 text-primary-900' : 'bg-gray-100 border-gray-300 text-gray-500'}`}
+                          onClick={() => setCafePrefPrice(bracket)}
+                          aria-pressed={cafePrefPrice === bracket}
+                        >
+                          {bracket}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className={`px-3 py-1 rounded-full border text-xs font-semibold transition ${cafePrefPrice === '' ? 'bg-primary-100 border-primary-300 text-primary-700' : 'bg-gray-100 border-gray-300 text-gray-400'}`}
+                        onClick={() => setCafePrefPrice('')}
+                        aria-pressed={cafePrefPrice === ''}
+                      >
+                        {t('account.noPreference', 'No preference')}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end">

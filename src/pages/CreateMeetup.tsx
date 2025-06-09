@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
-import { createInvitation } from '../services/supabaseService';
+import { createInvitation, getProfile } from '../services/supabaseService';
 import "react-datepicker/dist/react-datepicker.css";
 import DateSelector from '../features/meetups/components/DateSelector';
 import { useNavigate } from 'react-router-dom';
@@ -97,6 +97,7 @@ const CreateMeetup = () => {
   const [isLoadingCities, setIsLoadingCities] = useState(true);
   const [cityError, setCityError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [userCafePreferences, setUserCafePreferences] = useState<{ tags?: string[]; price_bracket?: string } | null>(null);
 
   // Fetch cities (no longer restricted to just Rotterdam)
   useEffect(() => {
@@ -141,7 +142,21 @@ const CreateMeetup = () => {
     fetchCities();
   }, [t]);
 
-  // Fetch cafes for selected city and time preference
+  // Fetch user cafe preferences on login
+  useEffect(() => {
+    const fetchUserPrefs = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        const { data: profile } = await getProfile(session.user.id);
+        if (profile && profile.cafe_preferences) {
+          setUserCafePreferences(profile.cafe_preferences);
+        }
+      }
+    };
+    fetchUserPrefs();
+  }, []);
+
+  // Fetch cafes for selected city and time preference, now also using userCafePreferences
   useEffect(() => {
     const fetchCafes = async () => {
       if (!formData.city) return setCafes([]);
@@ -151,6 +166,19 @@ const CreateMeetup = () => {
           query = query.eq(`open_${formData.timePreference}`, true);
         }
         const { data, error } = await query;
+        let filtered = (data || []) as Cafe[];
+        if (userCafePreferences) {
+          if (userCafePreferences.tags && userCafePreferences.tags.length > 0) {
+            filtered = filtered.filter(cafe =>
+              cafe.tags && cafe.tags.some(tag => userCafePreferences.tags!.includes(tag))
+            );
+          }
+          if (userCafePreferences.price_bracket) {
+            filtered = filtered.filter(cafe =>
+              cafe.price_bracket === userCafePreferences.price_bracket
+            );
+          }
+        }
         if (error) {
           console.error('Error fetching cafes:', error);
           setCafes([{
@@ -159,8 +187,8 @@ const CreateMeetup = () => {
             address: 'City Center',
             description: 'A cozy place to meet'
           }]);
-        } else if (data && data.length > 0) {
-          setCafes(data as Cafe[]);
+        } else if (filtered.length > 0) {
+          setCafes(filtered);
         } else {
           setCafes([{
             id: 'default-cafe',
@@ -180,7 +208,7 @@ const CreateMeetup = () => {
       }
     };
     fetchCafes();
-  }, [formData.city, formData.timePreference]);
+  }, [formData.city, formData.timePreference, userCafePreferences]);
 
   useEffect(() => {
     // Scroll naar boven bij laden
