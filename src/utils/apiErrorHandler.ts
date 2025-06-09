@@ -16,8 +16,9 @@ export const handleApiError = (error: unknown): ApiError => {
     switch (status) {
       case 400:
         return {
-          message: (typeof data === 'object' && data !== null && 'message' in data && typeof (data as any).message === 'string'
-            ? (data as any).message
+          message: (typeof data === 'object' && data !== null && 'message' in data &&
+            typeof (data as Record<string, unknown>).message === 'string'
+            ? (data as { message: string }).message
             : 'errors.validation.invalid_request'),
           code: 'BAD_REQUEST',
           details: data,
