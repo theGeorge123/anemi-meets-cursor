@@ -4,6 +4,11 @@ function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
+function sanitizeICSText(text: string) {
+  // eslint-disable-next-line no-control-regex
+  return text.replace(/[\u0000-\u001F\u007F]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
 async function wantsReminders(
   supabase: ReturnType<typeof createClient>,
   email: string,
@@ -144,7 +149,7 @@ export async function handleReminders(): Promise<Response> {
     const datePart = inv.selected_date.replace(/-/g, "");
     const [_, dtEnd] = slots[slot] || slots["morning"];
     const ics =
-      `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
+      `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${sanitizeICSText(cafe.name)} ${sanitizeICSText(cafe.address)}\nEND:VEVENT\nEND:VCALENDAR`;
     const cafeImageUrl = cafe.image_url ||
       `https://source.unsplash.com/600x300/?coffee,${
         encodeURIComponent(cafe.name)
