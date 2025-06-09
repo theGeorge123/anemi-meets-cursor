@@ -55,7 +55,7 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
     }
 
     const { inviter_id, invitee_email, lang = "nl" } = await req.json();
-    if (!inviter_id || !invitee_email) {
+    if (!inviter_id) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         {
@@ -87,11 +87,11 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
     }
 
     // Insert the friend_invites row
-    const { error: insertError } = await supabase.from("friend_invites").insert({
-      inviter_id,
-      invitee_email,
-      token
-    });
+    const insertData: Record<string, unknown> = { inviter_id, token };
+    if (invitee_email) insertData.invitee_email = invitee_email;
+    const { error: insertError } = await supabase.from("friend_invites").insert(
+      insertData,
+    );
     if (insertError) {
       return new Response(
         JSON.stringify({ error: "Could not create invite" }),
@@ -165,22 +165,24 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
         </p>
       `;
 
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "noreply@anemimeets.com",
-        to: [invitee_email],
-        subject,
-        html,
-      }),
-    });
+    if (invitee_email) {
+      const emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "noreply@anemimeets.com",
+          to: [invitee_email],
+          subject,
+          html,
+        }),
+      });
 
-    if (!emailRes.ok) {
-      throw new Error("Email not sent: " + (await emailRes.text()));
+      if (!emailRes.ok) {
+        throw new Error("Email not sent: " + (await emailRes.text()));
+      }
     }
 
     return new Response(
