@@ -91,18 +91,28 @@ export async function hasBadge(userId: string, badgeKey: string): Promise<boolea
 }
 
 export async function getFriendCount(userId: string): Promise<number> {
-  const { data } = await supabase.from('friendships').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'accepted');
-  return data?.length ?? 0;
+  const { count, error } = await supabase
+    .from('friendships')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('status', 'accepted');
+  if (error) {
+    console.error('Error fetching friend count:', error);
+  }
+  return count ?? 0;
 }
 
 export async function getMeetupCount(userId: string): Promise<number> {
   // Count confirmed meetups where user is invitee or email matches
-  const { data } = await supabase
+  const { count, error } = await supabase
     .from('invitations')
     .select('id', { count: 'exact', head: true })
     .or(`invitee_id.eq.${userId},email_b.eq."${userId}"`)
     .eq('status', 'confirmed');
-  return data?.length ?? 0;
+  if (error) {
+    console.error('Error fetching meetup count:', error);
+  }
+  return count ?? 0;
 }
 
 export const service = {
