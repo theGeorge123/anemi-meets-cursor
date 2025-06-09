@@ -18,7 +18,7 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
       },
     });
   }
@@ -28,7 +28,10 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       JSON.stringify({ error: "Only POST requests allowed." }),
       {
         status: 405,
-        headers: { "Access-Control-Allow-Origin": "*" },
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+        },
       },
     );
   }
@@ -43,7 +46,10 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
         JSON.stringify({ error: "Server misconfiguration" }),
         {
           status: 500,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+          },
         },
       );
     }
@@ -54,7 +60,10 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
         JSON.stringify({ error: "Missing required fields" }),
         {
           status: 400,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+          },
         },
       );
     }
@@ -88,7 +97,10 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
         JSON.stringify({ error: "Could not create invite" }),
         {
           status: 500,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+          },
         },
       );
     }
@@ -104,7 +116,10 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
         JSON.stringify({ error: "Inviter not found" }),
         {
           status: 404,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+          },
         },
       );
     }
@@ -172,13 +187,19 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       JSON.stringify({ success: true, token }),
       {
         status: 200,
-        headers: { "Access-Control-Allow-Origin": "*" },
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+        },
       },
     );
   } catch (e) {
     return new Response(JSON.stringify({ error: "Unexpected server error" }), {
       status: 500,
-      headers: { "Access-Control-Allow-Origin": "*" },
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+      },
     });
   }
 }
