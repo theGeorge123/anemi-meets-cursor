@@ -94,6 +94,12 @@ Migrations are stored under `supabase/migrations`. The latest migration
 `invitations.token`, `invitations.selected_date` and sets up foreign key
 constraints linking invitations to cafes and various user tables.
 
+## Database Schema Updates (July 2025)
+
+- The canonical schema for the `cafes` table is now defined in `supabase/migrations/20250701_create_cafes_table.sql`. This includes all fields used in production: tags, transport, price_bracket, opening_hours (jsonb), open_morning, open_afternoon, open_evening, rating, verified, etc.
+- The `profiles` table now includes a `cafe_preferences` (jsonb) column, as defined in `supabase/migrations/20250701_add_cafe_preferences_to_profiles.sql`.
+- These migrations should be used as the reference for future development and for recreating the schema from scratch.
+
 ## Contributing
 
 1. Fork the repository
