@@ -7,7 +7,7 @@ export async function handleCreateNotification(req: Request): Promise<Response> 
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
       },
     });
   }
@@ -35,6 +35,20 @@ export async function handleCreateNotification(req: Request): Promise<Response> 
       );
     }
 
+    // Require Authorization header
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Missing authorization" }), { status: 401, headers: { "Access-Control-Allow-Origin": "*" } });
+    }
+    const jwt = authHeader.replace("Bearer ", "");
+    // Verify JWT via Supabase
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data, error: verifyError } = await supabase.auth.getUser(jwt);
+    if (verifyError || !data?.user) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { "Access-Control-Allow-Origin": "*" } });
+    }
+    const userId = data.user.id;
+
     const { user_id, type, content, related_id } = await req.json();
     if (!user_id || !type || !content) {
       return new Response(
@@ -45,8 +59,11 @@ export async function handleCreateNotification(req: Request): Promise<Response> 
         },
       );
     }
+    // Only allow notifications for yourself
+    if (user_id !== userId) {
+      return new Response(JSON.stringify({ error: "Forbidden: can only create notifications for yourself" }), { status: 403, headers: { "Access-Control-Allow-Origin": "*" } });
+    }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { error } = await supabase.from("notifications").insert({
       user_id,
       type,

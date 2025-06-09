@@ -4,11 +4,18 @@ function getUUID() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
   }
-  // RFC4122 version 4 compliant fallback
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+  // Secure fallback using crypto.getRandomValues
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    // Per RFC4122 v4
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    return [...bytes].map((b, i) =>
+      ([4, 6, 8, 10].includes(i) ? "-" : "") + b.toString(16).padStart(2, "0")
+    ).join("");
+  }
+  throw new Error("No secure random generator available for UUID");
 }
 
 export async function handleFriendInvite(req: Request): Promise<Response> {

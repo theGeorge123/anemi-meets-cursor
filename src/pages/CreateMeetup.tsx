@@ -246,13 +246,6 @@ const CreateMeetup = () => {
     e.preventDefault();
     setFormError(null);
 
-    // Log the form data for debugging (development only)
-    if (import.meta.env.DEV) {
-      console.log('Submitting form data:', formData);
-      console.log('Selected cafe:', selectedCafe);
-      console.log('Date/time options:', dateTimeOptions);
-    }
-
     // Validation (keep existing validation)
     if (formData.dates.length === 0) {
       setFormError(t('meetup.requiredTime'));
@@ -285,9 +278,6 @@ const CreateMeetup = () => {
 
     // Prepare payload
     const token = getUUID();
-    if (import.meta.env.DEV) {
-      console.log('Generated token:', token);
-    }
 
     interface InvitePayload {
       token: string;
@@ -328,29 +318,14 @@ const CreateMeetup = () => {
       ...(!user && formData.email ? { email_b: formData.email } : {})
     };
 
-    if (import.meta.env.DEV) {
-      console.log('Payload to insert:', payload);
-    }
-
     try {
       // First, check if we can read from the table
-      const { data: checkData, error: checkError } = await supabase
+      await supabase
         .from('invitations')
         .select('count');
 
-      if (import.meta.env.DEV) {
-        console.log('Table access check:', { data: checkData, error: checkError });
-      }
-
       // Now try the insert
-      if (import.meta.env.DEV) {
-        console.log('Attempting to insert invitation...');
-      }
       const { data: insertData, error: insertError } = await createInvitation(payload);
-
-      if (import.meta.env.DEV) {
-        console.log('Insert result:', { data: insertData, error: insertError });
-      }
 
         if (insertError) {
           console.error('Insert error details:', insertError);
@@ -377,13 +352,8 @@ const CreateMeetup = () => {
 
       let responseToken = token;
       if (!insertData || insertData.length === 0) {
-        if (import.meta.env.DEV) {
-          console.warn('No data returned from insert; using generated token');
-        }
+        console.warn('No data returned from insert; using generated token');
       } else {
-        if (import.meta.env.DEV) {
-          console.log('Created invitation:', insertData[0]);
-        }
         if (insertData[0].token) {
           responseToken = insertData[0].token as string;
         }
