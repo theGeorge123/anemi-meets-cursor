@@ -4,6 +4,11 @@ function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
+function sanitizeICSText(text: string) {
+  // eslint-disable-next-line no-control-regex
+  return text.replace(/[\u0000-\u001F\u007F]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
 async function wantsReminders(
   supabase: ReturnType<typeof createClient>,
   email: string,
@@ -210,7 +215,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
     const ics =
-      `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${dtStamp}\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${cafe.name} ${cafe.address}\nEND:VEVENT\nEND:VCALENDAR`;
+      `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${dtStamp}\nSUMMARY:Koffie Meetup\nDTSTART:${datePart}${dtStart}\nDTEND:${datePart}${dtEnd}\nDESCRIPTION:Jullie koffie-afspraak!\nLOCATION:${sanitizeICSText(cafe.name)} ${sanitizeICSText(cafe.address)}\nEND:VEVENT\nEND:VCALENDAR`;
     const icsBase64 = encodeBase64(ics);
 
     const cafeImageUrl = cafe.image_url ||
