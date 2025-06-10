@@ -36,7 +36,7 @@ const TIME_SLOTS = ['morning', 'afternoon', 'evening'] as const;
 const TIME_SLOT_HOURS: Record<string, string> = {
   morning: '07:00–11:59',
   afternoon: '12:00–17:59',
-  evening: '18:00–23:00',
+  evening: '18:00–19:00',
 };
 
 export const DateSelector: React.FC<DateSelectorProps> = ({

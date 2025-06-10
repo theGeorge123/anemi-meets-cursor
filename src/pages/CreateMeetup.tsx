@@ -660,6 +660,12 @@ const CreateMeetup = () => {
       {step === 4 && (
         <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
           <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('meetup.chooseCafe', 'Pick your café!')}</h2>
+          {/* Show message if only the default cafe is present and user has preferences set */}
+          {cafes.length === 1 && cafes[0].id === 'default-cafe' && userCafePreferences && ((userCafePreferences.tags && userCafePreferences.tags.length > 0) || userCafePreferences.price_bracket) && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-center">
+              {t('meetup.noCafeMatch')}
+            </div>
+          )}
           {selectedCafe && (
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
               {selectedCafe.image_url && (

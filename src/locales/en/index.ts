@@ -155,6 +155,7 @@ export const en = {
     errorEmailRequired: "Email is required",
     chooseCityLabel: "Which city do you want?",
     chooseCafeInfo: "Shuffle for a surprise café!",
+    noCafeMatch: "Oops! We couldn't find a café that matches your preferences. Maybe try relaxing your filters, or just go wild and pick any spot! ☕️✨",
   },
   dashboard: {
     title: "Your Dashboard",

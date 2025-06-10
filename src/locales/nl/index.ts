@@ -177,6 +177,7 @@ export const nl = {
       "Geen steden beschikbaar. Neem contact op met support of probeer het later opnieuw.",
     chooseCityLabel: "Welke stad wil je?",
     chooseCafeInfo: "Shuffle voor een verrassingscafé!",
+    noCafeMatch: "Oeps! We konden geen café vinden dat bij jouw voorkeuren past. Probeer je filters te versoepelen, of kies gewoon lekker een willekeurige plek! ☕️✨",
   },
   dashboard: {
     title: "Jouw Dashboard",

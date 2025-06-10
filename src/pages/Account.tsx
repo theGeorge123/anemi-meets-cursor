@@ -26,6 +26,7 @@ interface Profile {
     tags?: string[];
     price_bracket?: string;
   };
+  lastSeen?: string;
 }
 
 interface Invitation {
@@ -358,6 +359,22 @@ const Account = () => {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-extrabold text-primary-700 mb-8">{t('account.title')}</h1>
 
+          {/* Show logged in message */}
+          {user && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-center font-semibold">
+              {i18n.language === 'nl' ? 'Je bent ingelogd!' : "You're logged in!"}
+            </div>
+          )}
+
+          {/* Show last seen */}
+          {user && user.lastSeen && (
+            <div className="mb-4 text-sm text-gray-500 text-center">
+              {i18n.language === 'nl'
+                ? `Laatst gezien: ${new Date(user.lastSeen).toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' })}`
+                : `Last seen: ${new Date(user.lastSeen).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`}
+            </div>
+          )}
+
           {/* Next Meetup Section (at the top) */}
           {nextMeetup && (
             <div className="card mb-6 bg-primary-50 border-l-4 border-primary-400 p-4 flex flex-col sm:flex-row items-center justify-between">
@@ -501,7 +518,7 @@ const Account = () => {
           <hr className="my-2 border-gray-200" />
 
           {/* Preferences Section */}
-          <div className="card mb-8">
+          <div className="card mb-8 bg-white/90 rounded-xl shadow p-6 border border-primary-100">
             <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.profileInfo')}</h2>
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -605,10 +622,14 @@ const Account = () => {
                 <button
                   onClick={handlePrefsSave}
                   disabled={prefsSaving}
-                  className="btn-primary active:scale-95 active:bg-primary-100"
+                  className="btn-primary active:scale-95 active:bg-primary-100 focus-visible:ring-2 focus-visible:ring-primary-500"
+                  aria-busy={prefsSaving}
                 >
                   {prefsSaving ? t('account.saving') : t('account.save')}
                 </button>
+                {prefsSaving === false && showProfileToast && (
+                  <div className="mt-2 text-green-600 text-sm">{t('toast.profileUpdated')}</div>
+                )}
               </div>
             </div>
           </div>
@@ -673,13 +694,13 @@ const Account = () => {
           </div>
 
           {/* Badges Section (now between password and danger zone) */}
-          <div className="card mb-8">
+          <div className="card mb-8 bg-white/90 rounded-xl shadow p-6 border border-primary-100">
             <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.yourBadges')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {badges.map(badge => (
                 <div
                   key={badge.key}
-                  className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 ${earnedKeys.has(badge.key) ? 'border-primary-400 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'}`}
+                  className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 transition-all duration-200 ${earnedKeys.has(badge.key) ? 'border-primary-400 bg-white scale-105' : 'border-gray-200 bg-gray-50 opacity-60 grayscale'}`}
                 >
                   <span className="text-5xl mb-2">{badge.emoji}</span>
                   <span className="text-lg font-bold mb-1">{badge.label}</span>
