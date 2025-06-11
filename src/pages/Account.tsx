@@ -306,14 +306,20 @@ const Account = () => {
     setInviteGenerating(true);
     setInviteError(null);
     try {
+      // Haal huidige sessie voor access token
+      const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr || !sessionData.session?.access_token) {
+        throw new Error('no session');
+      }
       // Call Supabase Edge Function to generate invite and get the link
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-friend-invite`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${sessionData.session.access_token}`
         },
-        body: JSON.stringify({ inviter_id: user.id, invitee_email: null, lang: (i18n?.language || 'nl') }),
+        body: JSON.stringify({ invitee_email: null, lang: (i18n?.language || 'nl') }),
       });
       const data = await res.json();
       if (!res.ok || !data.token) {

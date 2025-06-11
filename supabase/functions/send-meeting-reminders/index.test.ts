@@ -1,5 +1,10 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { handleReminders } from "./index.ts";
+
+// Stub Deno.cron to avoid errors when importing the handler
+// deno-lint-ignore no-explicit-any
+(Deno as any).cron = () => {};
+
+const { handleReminders } = await import("./index.ts");
 
 Deno.test("missing env vars", async () => {
   Deno.env.delete("SUPABASE_URL");

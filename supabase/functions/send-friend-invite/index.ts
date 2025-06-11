@@ -61,12 +61,31 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       );
     }
 
-    const { inviter_id, invitee_email, lang = "nl" } = await req.json();
-    if (!inviter_id) {
+    // Require Authorization header
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "Missing authorization" }),
         {
-          status: 400,
+          status: 401,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+          },
+        },
+      );
+    }
+    const jwt = authHeader.replace("Bearer ", "");
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
+    if (authError || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid token" }),
+        {
+          status: 401,
           headers: {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
@@ -75,9 +94,26 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       );
     }
 
+    const userId = userData.user.id;
+
+    const { inviter_id, invitee_email, lang = "nl" } = await req.json();
+    if (inviter_id && inviter_id !== userId) {
+      return new Response(
+        JSON.stringify({ error: "Inviter mismatch" }),
+        {
+          status: 403,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+          },
+        },
+      );
+    }
+
+    const finalInviterId = inviter_id || userId;
+
     // Generate a unique token
     let token = getUUID().replace(/-/g, "");
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     // Ensure the token is unique
     let { data: existingInvite } = await supabase
       .from("friend_invites")
@@ -94,7 +130,7 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
     }
 
     // Insert the friend_invites row
-    const insertData: Record<string, unknown> = { inviter_id, token };
+    const insertData: Record<string, unknown> = { inviter_id: finalInviterId, token };
     if (invitee_email) insertData.invitee_email = invitee_email;
     const { error: insertError } = await supabase.from("friend_invites").insert(
       insertData,
@@ -116,7 +152,7 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
     const { data: inviter, error: inviterError } = await supabase
       .from("profiles")
       .select("fullName, email")
-      .eq("id", inviter_id)
+      .eq("id", finalInviterId)
       .maybeSingle();
     if (inviterError || !inviter) {
       return new Response(
