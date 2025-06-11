@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { escapeHtml } from "../utils.ts";
 
 function getUUID() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -135,38 +136,41 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
     // @ts-expect-error Deno globals are available in Edge Functions
     const inviteLink = `${Deno.env.get("PUBLIC_SITE_URL") || "https://anemimeets.com"}/invite-friend/${token}`;
     const siteUrl = inviteLink.split('/invite-friend/')[0];
+    const safeName = escapeHtml(inviter.fullName || (isEnglish ? "A friend" : "Een vriend"));
     const subject = isEnglish
-      ? `${inviter.fullName || "A friend"} invited you for coffee on Anemi Meets! ☕️`
-      : `${inviter.fullName || "Een vriend"} heeft je uitgenodigd op Anemi Meets! ☕️`;
+      ? `${safeName} invited you for coffee on Anemi Meets! ☕️`
+      : `${safeName} heeft je uitgenodigd op Anemi Meets! ☕️`;
+    const safeInviteLink = escapeHtml(inviteLink);
+    const safeSiteUrl = escapeHtml(siteUrl);
     const html = isEnglish
       ? `
-        <h2>☕️ ${inviter.fullName || "A friend"} wants to connect with you on Anemi Meets!</h2>
+        <h2>☕️ ${safeName} wants to connect with you on Anemi Meets!</h2>
         <p>Hi there!<br><br>
-        <b>${inviter.fullName || "A friend"}</b> thinks you're awesome and wants to be friends on <b>Anemi Meets</b>.<br>
+        <b>${safeName}</b> thinks you're awesome and wants to be friends on <b>Anemi Meets</b>.<br>
         <br>
-        <a href="${inviteLink}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:16px;">Accept Invite & Become Friends</a>
+        <a href="${safeInviteLink}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:16px;">Accept Invite & Become Friends</a>
         <br><br>
         <b>Why did you get this invite?</b><br>
         Someone you know wants to connect, plan meetups, and share good times!<br><br>
         <b>What is Anemi Meets?</b><br>
         Anemi Meets is the easiest way to plan real-life coffee meetups with friends. No endless group chats, just pick a time and meet up! 100% free, privacy-friendly, and made for real connections.<br><br>
-        Curious? <a href="${siteUrl}">${siteUrl}</a>
+        Curious? <a href="${safeSiteUrl}">${safeSiteUrl}</a>
         <br><br>
         See you soon! ☕️✨
         </p>
       `
       : `
-        <h2>☕️ ${inviter.fullName || "Een vriend"} wil met je verbinden op Anemi Meets!</h2>
+        <h2>☕️ ${safeName} wil met je verbinden op Anemi Meets!</h2>
         <p>Hoi!<br><br>
-        <b>${inviter.fullName || "Een vriend"}</b> vindt jou gezellig en wil vrienden worden op <b>Anemi Meets</b>.<br>
+        <b>${safeName}</b> vindt jou gezellig en wil vrienden worden op <b>Anemi Meets</b>.<br>
         <br>
-        <a href="${inviteLink}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:16px;">Accepteer Uitnodiging & Word Vrienden</a>
+        <a href="${safeInviteLink}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:16px;">Accepteer Uitnodiging & Word Vrienden</a>
         <br><br>
         <b>Waarom krijg je deze uitnodiging?</b><br>
         Iemand die je kent wil met je verbinden, samen afspreken en leuke momenten delen!<br><br>
         <b>Wat is Anemi Meets?</b><br>
         Anemi Meets is de makkelijkste manier om echte koffiedates te plannen met vrienden. Geen eindeloze groepsapps, gewoon een tijd kiezen en afspreken! 100% gratis, privacyvriendelijk en gemaakt voor échte connecties.<br><br>
-        Nieuwsgierig? <a href="${siteUrl}">${siteUrl}</a>
+        Nieuwsgierig? <a href="${safeSiteUrl}">${safeSiteUrl}</a>
         <br><br>
         Tot snel! ☕️✨
         </p>
