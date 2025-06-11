@@ -1,12 +1,15 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import {
   getProfile,
   getFriends,
-  getPendingFriends,
+  getOutgoingFriendRequests,
   getIncomingFriendRequests,
+  sendFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
 } from "../services/supabaseService";
 import { useTranslation } from "react-i18next";
 import LoadingIndicator from "../components/LoadingIndicator";
@@ -42,15 +45,17 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [friends, setFriends] = useState<Profile[]>([]);
-  const [pendingFriends, setPendingFriends] = useState<Profile[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
+  const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
   const [friendSearch, setFriendSearch] = useState("");
-  const [incomingRequests, setIncomingRequests] = useState<Profile[]>([]);
+  const [requestFeedback, setRequestFeedback] = useState<string | null>(null);
+  const [userSearch, setUserSearch] = useState("");
+  const [userResults, setUserResults] = useState<Profile[]>([]);
+  const [searching, setSearching] = useState(false);
   const navigate = useNavigate();
   const channelRef = useRef<RealtimeChannel | null>(null);
   // Tab state
-  const [activeTab, setActiveTab] = useState<
-    "friends" | "pending" | "requests"
-  >("friends");
+  const [activeTab, setActiveTab] = useState<"friends" | "outgoing" | "incoming">("friends");
 
   // Find next upcoming meetup
   const nextMeetup = useMemo(() => {
@@ -77,9 +82,9 @@ const Dashboard = () => {
           const cache = JSON.parse(cached);
           setProfile(cache.profile || null);
           setFriends(cache.friends || []);
-          setPendingFriends(cache.pendingFriends || []);
-          setMeetups(cache.meetups || []);
+          setOutgoingRequests(cache.outgoingRequests || []);
           setIncomingRequests(cache.incomingRequests || []);
+          setMeetups(cache.meetups || []);
           setLoading(false);
           return;
         } catch (err) {
@@ -108,12 +113,12 @@ const Dashboard = () => {
       // Friends ophalen (accepted)
       const friendsList = await getFriends(session.user.id);
       setFriends(friendsList);
-      // Pending friends ophalen
-      const pendingList = await getPendingFriends(session.user.id);
-      setPendingFriends(pendingList);
-      // Incoming friend requests ophalen
-      const incomingList = await getIncomingFriendRequests(session.user.id);
-      setIncomingRequests(incomingList);
+      // Outgoing requests ophalen
+      const outgoing = await getOutgoingFriendRequests(session.user.id);
+      setOutgoingRequests(outgoing);
+      // Incoming requests ophalen
+      const incoming = await getIncomingFriendRequests(session.user.id);
+      setIncomingRequests(incoming);
       // Meetups ophalen
       const { data, error } = await supabase
         .from("invitations")
@@ -127,7 +132,7 @@ const Dashboard = () => {
             const cache = JSON.parse(cached);
             setProfile(cache.profile || null);
             setFriends(cache.friends || []);
-            setPendingFriends(cache.pendingFriends || []);
+            setOutgoingRequests(cache.outgoingRequests || []);
             setIncomingRequests(cache.incomingRequests || []);
             setMeetups(cache.meetups || []);
             setLoading(false);
@@ -144,8 +149,8 @@ const Dashboard = () => {
           JSON.stringify({
             profile: profileData,
             friends: friendsList,
-            pendingFriends: pendingList,
-            incomingRequests: incomingList,
+            outgoingRequests: outgoing,
+            incomingRequests: incoming,
             meetups: data || [],
           }),
         );
@@ -182,7 +187,7 @@ const Dashboard = () => {
                   JSON.stringify({
                     profile,
                     friends,
-                    pendingFriends,
+                    outgoingRequests,
                     incomingRequests,
                     meetups: updated,
                   }),
@@ -211,7 +216,7 @@ const Dashboard = () => {
                   JSON.stringify({
                     profile,
                     friends,
-                    pendingFriends,
+                    outgoingRequests,
                     incomingRequests,
                     meetups: updatedList,
                   }),
@@ -232,7 +237,7 @@ const Dashboard = () => {
         channelRef.current = null;
       }
     };
-  }, [profile, friends, pendingFriends, incomingRequests]);
+  }, [profile, friends, outgoingRequests, incomingRequests]);
 
   // Sorteer meetups op datum (oplopend)
   const sortedMeetups = [...meetups].sort((a, b) =>
@@ -266,75 +271,93 @@ const Dashboard = () => {
     setFriends(friends.filter((f) => f.id !== friendId));
   };
 
-  const handleAcceptRequest = async (requesterId: string) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session?.user) return;
-    // Update the original row to accepted
-    await supabase
-      .from("friendships")
-      .update({ status: "accepted" })
-      .eq("user_id", requesterId)
-      .eq("friend_id", session.user.id);
-    // Insert reciprocal row
-    await supabase
-      .from("friendships")
-      .upsert(
-        {
-          user_id: session.user.id,
-          friend_id: requesterId,
-          status: "accepted",
-        },
-        { onConflict: "user_id,friend_id" },
-      );
-    // Notify the requester
-    await fetch("/functions/v1/create-notification", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({
-        user_id: requesterId,
-        type: "friend_accept",
-        content: `${profile?.fullName || "Someone"} accepted your friend request!`,
-        related_id: session.user.id,
-      }),
-    });
-    setIncomingRequests(incomingRequests.filter((f) => f.id !== requesterId));
-    const newFriend = incomingRequests.find((f) => f.id === requesterId);
-    if (newFriend) setFriends([...friends, newFriend]);
+  // Handler: Stuur een vriendverzoek
+  const handleSendFriendRequest = async (addresseeId: string) => {
+    try {
+      await sendFriendRequest(addresseeId);
+      setRequestFeedback("Verzoek verstuurd! Tijd voor koffie?");
+      // Refresh outgoing requests
+      if (profile) {
+        const outgoing = await getOutgoingFriendRequests(profile.id);
+        setOutgoingRequests(outgoing);
+      }
+    } catch (e: any) {
+      setRequestFeedback(e.message || "Oeps! Er ging iets mis.");
+    }
+    setTimeout(() => setRequestFeedback(null), 3000);
   };
 
-  const handleRejectRequest = async (requesterId: string) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session?.user) return;
-    // Delete the pending request
-    await supabase
-      .from("friendships")
-      .delete()
-      .eq("user_id", requesterId)
-      .eq("friend_id", session.user.id)
-      .eq("status", "pending");
-    // Notify the requester
-    await fetch("/functions/v1/create-notification", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({
-        user_id: requesterId,
-        type: "friend_reject",
-        content: `${profile?.fullName || "Someone"} declined your friend request.`,
-        related_id: session.user.id,
-      }),
-    });
-    setIncomingRequests(incomingRequests.filter((f) => f.id !== requesterId));
+  // Handler: Accepteer een verzoek
+  const handleAcceptRequest = async (requestId: string) => {
+    try {
+      await acceptFriendRequest(requestId);
+      setRequestFeedback("Nieuwe koffie-vriend! ☕️");
+      // Refresh friends & incoming requests
+      if (profile) {
+        setFriends(await getFriends(profile.id));
+        setIncomingRequests(await getIncomingFriendRequests(profile.id));
+      }
+    } catch (e: any) {
+      setRequestFeedback(e.message || "Oeps! Er ging iets mis.");
+    }
+    setTimeout(() => setRequestFeedback(null), 3000);
   };
+
+  // Handler: Weiger een verzoek
+  const handleRejectRequest = async (requestId: string) => {
+    try {
+      await rejectFriendRequest(requestId);
+      setRequestFeedback("Misschien een andere keer! 🚫");
+      // Refresh incoming requests
+      if (profile) {
+        setIncomingRequests(await getIncomingFriendRequests(profile.id));
+      }
+    } catch (e: any) {
+      setRequestFeedback(e.message || "Oeps! Er ging iets mis.");
+    }
+    setTimeout(() => setRequestFeedback(null), 3000);
+  };
+
+  // Zoek gebruikers behalve jezelf en bestaande vrienden
+  const handleUserSearch = useCallback(async () => {
+    if (!userSearch.trim() || !profile) {
+      setUserResults([]);
+      return;
+    }
+    setSearching(true);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, full_name, emoji, email")
+      .ilike("full_name", `%${userSearch.trim()}%`)
+      .neq("id", profile.id);
+    if (error) {
+      setUserResults([]);
+      setSearching(false);
+      return;
+    }
+    // Filter bestaande vrienden en pending/outgoing requests
+    const excludeIds = new Set([
+      profile.id,
+      ...friends.map((f) => f.id),
+      ...outgoingRequests.map((r) => r.addressee_id),
+    ]);
+    // Map naar Profile type (full_name -> fullName)
+    const mapped = (data || []).filter((u) => !excludeIds.has(u.id)).map((u) => ({
+      id: u.id,
+      fullName: u.full_name,
+      emoji: u.emoji,
+      email: u.email,
+    }));
+    setUserResults(mapped);
+    setSearching(false);
+  }, [userSearch, profile, friends, outgoingRequests]);
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      handleUserSearch();
+    }, 400);
+    return () => clearTimeout(delayDebounce);
+  }, [userSearch, handleUserSearch]);
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
@@ -414,16 +437,16 @@ const Dashboard = () => {
             {t("dashboard.friends", "Friends")}
           </button>
           <button
-            className={`px-4 py-2 rounded-t-lg font-semibold ${activeTab === "pending" ? "bg-primary-100 text-primary-700" : "bg-gray-100 text-gray-500"}`}
-            onClick={() => setActiveTab("pending")}
+            className={`px-4 py-2 rounded-t-lg font-semibold ${activeTab === "outgoing" ? "bg-primary-100 text-primary-700" : "bg-gray-100 text-gray-500"}`}
+            onClick={() => setActiveTab("outgoing")}
           >
-            {t("dashboard.pendingFriends", "Pending")}
+            {t("dashboard.outgoingRequests", "Outgoing Requests")}
           </button>
           <button
-            className={`px-4 py-2 rounded-t-lg font-semibold ${activeTab === "requests" ? "bg-primary-100 text-primary-700" : "bg-gray-100 text-gray-500"}`}
-            onClick={() => setActiveTab("requests")}
+            className={`px-4 py-2 rounded-t-lg font-semibold ${activeTab === "incoming" ? "bg-primary-100 text-primary-700" : "bg-gray-100 text-gray-500"}`}
+            onClick={() => setActiveTab("incoming")}
           >
-            {t("dashboard.incomingRequests", "Requests")}
+            {t("dashboard.incomingRequests", "Incoming Requests")}
           </button>
         </div>
 
@@ -495,89 +518,99 @@ const Dashboard = () => {
           </>
         )}
 
-        {/* Pending Tab */}
-        {activeTab === "pending" && (
+        {/* Outgoing Requests Tab */}
+        {activeTab === "outgoing" && (
           <>
-            {pendingFriends.length > 0 ? (
+            {outgoingRequests.length > 0 ? (
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {pendingFriends.map((friend) => (
-                  <li
-                    key={friend.id}
-                    className="flex items-center gap-2 bg-white/80 rounded-xl shadow px-4 py-2 border border-primary-100"
-                  >
-                    {friend.emoji && (
-                      <span className="text-2xl" title={friend.fullName}>
-                        {friend.emoji}
-                      </span>
-                    )}
+                {outgoingRequests.map((req) => (
+                  <li key={req.id} className="flex items-center gap-2 bg-white/80 rounded-xl shadow px-4 py-2 border border-primary-100">
                     <span className="font-semibold text-primary-700">
-                      {friend.fullName}
+                      {req.addressee_id}
                     </span>
-                    <span className="ml-2 text-yellow-600 text-xs font-semibold">
-                      {t("dashboard.pending", "Pending")}
-                    </span>
+                    <span className={`ml-2 text-xs font-semibold ${req.status === 'pending' ? 'text-yellow-600' : req.status === 'accepted' ? 'text-green-600' : 'text-gray-400'}`}>{req.status === 'pending' ? 'Wachten...' : req.status === 'accepted' ? 'Geaccepteerd!' : 'Geweigerd'}</span>
                   </li>
                 ))}
               </ul>
             ) : (
               <div className="text-gray-500 italic mt-2">
-                {
-                  [
-                    "No pending requests. Send a friend invite!",
-                    "All your requests are answered. Time for more coffee?",
-                    "No one left you hanging. Yet!",
-                  ][Math.floor(Math.random() * 3)]
-                }
+                {[
+                  "Je hebt nog geen verzoeken verstuurd. Tijd om iemand uit te nodigen!",
+                  "Niemand op de koffie-radar? Stuur een verzoek!",
+                  "Je uitgaande verzoekenlijst is net zo leeg als een koffiekopje na een goed gesprek.",
+                ][Math.floor(Math.random() * 3)]}
               </div>
             )}
           </>
         )}
 
-        {/* Requests Tab */}
-        {activeTab === "requests" && (
+        {/* Incoming Requests Tab */}
+        {activeTab === "incoming" && (
           <>
             {incomingRequests.length > 0 ? (
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {incomingRequests.map((friend) => (
-                  <li
-                    key={friend.id}
-                    className="flex items-center gap-2 bg-white/80 rounded-xl shadow px-4 py-2 border border-primary-100"
-                  >
-                    {friend.emoji && (
-                      <span className="text-2xl" title={friend.fullName}>
-                        {friend.emoji}
-                      </span>
-                    )}
+                {incomingRequests.filter((req) => req.status === 'pending').map((req) => (
+                  <li key={req.id} className="flex items-center gap-2 bg-white/80 rounded-xl shadow px-4 py-2 border border-primary-100">
                     <span className="font-semibold text-primary-700">
-                      {friend.fullName}
+                      {req.requester_id}
                     </span>
-                    <button
-                      className="ml-2 btn-primary text-xs px-2 py-1"
-                      onClick={() => handleAcceptRequest(friend.id)}
-                    >
-                      {t("dashboard.accept", "Accept")}
+                    <button className="ml-2 btn-primary text-xs px-2 py-1" onClick={() => handleAcceptRequest(req.id)}>
+                      {t("dashboard.accept", "Accepteren")}
                     </button>
-                    <button
-                      className="ml-2 btn-secondary text-xs px-2 py-1"
-                      onClick={() => handleRejectRequest(friend.id)}
-                    >
-                      {t("dashboard.reject", "Reject")}
+                    <button className="ml-2 btn-secondary text-xs px-2 py-1" onClick={() => handleRejectRequest(req.id)}>
+                      {t("dashboard.reject", "Weigeren")}
                     </button>
                   </li>
                 ))}
               </ul>
             ) : (
               <div className="text-gray-500 italic mt-2">
-                {
-                  [
-                    "No incoming requests. You're all caught up!",
-                    "No one is knocking on your coffee door right now.",
-                    "No requests yet. Maybe send one yourself?",
-                  ][Math.floor(Math.random() * 3)]
-                }
+                {[
+                  "Geen nieuwe verzoeken. Iedereen is al aan de koffie!",
+                  "Niemand klopt nu op je koffie-deur.",
+                  "Nog geen verzoeken. Misschien zelf iemand uitnodigen?",
+                ][Math.floor(Math.random() * 3)]}
               </div>
             )}
           </>
+        )}
+        {requestFeedback && (
+          <div className="mt-4 text-center text-primary-700 font-semibold animate-bounce">
+            {requestFeedback}
+          </div>
+        )}
+      </div>
+
+      {/* Zoek & voeg vriend toe */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold text-primary-700 mb-2">Nieuwe vriend zoeken</h2>
+        <input
+          type="text"
+          className="border rounded px-2 py-1 w-full mb-2"
+          placeholder="Zoek op naam..."
+          value={userSearch}
+          onChange={(e) => setUserSearch(e.target.value)}
+        />
+        {searching && <div className="text-gray-400 italic">Even zoeken...</div>}
+        {!searching && userSearch && userResults.length === 0 && (
+          <div className="text-gray-500 italic">Geen matches gevonden. Misschien typfoutje? Of iedereen is al je vriend!</div>
+        )}
+        {!searching && userResults.length > 0 && (
+          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+            {userResults.map((user) => (
+              <li key={user.id} className="flex items-center gap-2 bg-white/80 rounded-xl shadow px-4 py-2 border border-primary-100">
+                {user.emoji && <span className="text-2xl" title={user.fullName}>{user.emoji}</span>}
+                <span className="font-semibold text-primary-700">{user.fullName}</span>
+                <button
+                  className="ml-2 btn-primary text-xs px-2 py-1"
+                  onClick={() => handleSendFriendRequest(user.id)}
+                  disabled={!!outgoingRequests.find((r) => r.addressee_id === user.id)}
+                >
+                  {outgoingRequests.find((r) => r.addressee_id === user.id) ? "Verzoek verstuurd!" : "Stuur koffie-verzoek!"}
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 

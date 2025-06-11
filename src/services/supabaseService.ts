@@ -54,23 +54,6 @@ export async function getPendingFriends(userId: string): Promise<ProfileRow[]> {
   return pendingProfiles || [];
 }
 
-export async function getIncomingFriendRequests(userId: string): Promise<ProfileRow[]> {
-  // Get incoming friend requests (where user is the target)
-  const { data: incomingRows } = await supabase
-    .from('friendships')
-    .select('user_id')
-    .eq('friend_id', userId)
-    .eq('status', 'pending');
-  if (!incomingRows) return [];
-  const requesterIds = incomingRows.map((f: { user_id: string }) => f.user_id);
-  if (requesterIds.length === 0) return [];
-  const { data: requesterProfiles } = await supabase
-    .from('profiles')
-    .select('*')
-    .in('id', requesterIds);
-  return requesterProfiles || [];
-}
-
 export async function getAllBadges(): Promise<Badge[]> {
   const { data } = await supabase.from('badges').select('*');
   return data || [];
@@ -115,18 +98,94 @@ export async function getMeetupCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
+// --- FRIEND REQUESTS (nieuw systeem, lekker informeel!) ---
+
+/**
+ * Stuur een vriendverzoek naar iemand. Spread the love! 💌
+ */
+export async function sendFriendRequest(addresseeId: string) {
+  const { data, error } = await supabase.from('friend_requests').insert({ addressee_id: addresseeId }).select().single();
+  if (error) throw new Error("Oeps! Je verzoek kon niet worden verstuurd. Probeer het straks nog eens ☕️");
+  return data;
+}
+
+/**
+ * Haal alle verzoeken op die jij hebt verstuurd (pending of anders).
+ */
+export async function getOutgoingFriendRequests(userId: string) {
+  const { data, error } = await supabase
+    .from('friend_requests')
+    .select('*')
+    .eq('requester_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw new Error("Kon je verzonden verzoeken niet ophalen. Even opnieuw proberen?");
+  return data || [];
+}
+
+/**
+ * Haal alle verzoeken op die jij ontvangt (pending of anders).
+ */
+export async function getIncomingFriendRequests(userId: string) {
+  const { data, error } = await supabase
+    .from('friend_requests')
+    .select('*')
+    .eq('addressee_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw new Error("Kon je ontvangen verzoeken niet ophalen. Even opnieuw proberen?");
+  return data || [];
+}
+
+/**
+ * Accepteer een vriendverzoek. Tijd voor koffie samen! ☕️
+ */
+export async function acceptFriendRequest(requestId: string) {
+  // Update status
+  const { data, error } = await supabase
+    .from('friend_requests')
+    .update({ status: 'accepted' })
+    .eq('id', requestId)
+    .select()
+    .single();
+  if (error) throw new Error("Kon het verzoek niet accepteren. Probeer het straks nog eens!");
+  // Maak vriendschap aan in beide richtingen
+  const { requester_id, addressee_id } = data;
+  await supabase.from('friendships').upsert([
+    { user_id: requester_id, friend_id: addressee_id, status: 'accepted' },
+    { user_id: addressee_id, friend_id: requester_id, status: 'accepted' },
+  ], { onConflict: 'user_id,friend_id' });
+  return data;
+}
+
+/**
+ * Weiger een vriendverzoek. Misschien een andere keer! 🚫
+ */
+export async function rejectFriendRequest(requestId: string) {
+  const { data, error } = await supabase
+    .from('friend_requests')
+    .update({ status: 'rejected' })
+    .eq('id', requestId)
+    .select()
+    .single();
+  if (error) throw new Error("Kon het verzoek niet weigeren. Probeer het straks nog eens!");
+  return data;
+}
+
 export const service = {
   getProfile,
   createInvitation,
   getFriends,
   getPendingFriends,
-  getIncomingFriendRequests,
   getAllBadges,
   getUserBadges,
   awardBadge,
   hasBadge,
   getFriendCount,
   getMeetupCount,
+  sendFriendRequest,
+  getOutgoingFriendRequests,
+  getIncomingFriendRequests,
+  acceptFriendRequest,
+  rejectFriendRequest,
 };
 
 export default service;
