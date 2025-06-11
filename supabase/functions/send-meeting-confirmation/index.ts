@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { escapeHtml } from "../utils.ts";
 
 function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
@@ -229,17 +230,24 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       `https://source.unsplash.com/600x300/?coffee,${
         encodeURIComponent(cafe.name)
       }`;
+    const safeCafeImageUrl = escapeHtml(cafeImageUrl);
     const gcalUrl =
       `https://www.google.com/calendar/render?action=TEMPLATE&text=${
         encodeURIComponent("Koffie Meetup via Anemi")
       }&dates=${datePart}${dtStart}/${datePart}${dtEnd}&location=${
         encodeURIComponent(`${cafe.name} ${cafe.address}`)
       }`;
+    const safeGcalUrl = escapeHtml(gcalUrl);
 
     const nameA = email_a.split("@")[0];
+    const safeNameA = escapeHtml(nameA);
+    const safeCafeName = escapeHtml(cafe.name);
+    const safeCafeAddress = escapeHtml(cafe.address);
+    const safeReadableTime = escapeHtml(readableTime);
+    const safeSelectedDate = escapeHtml(selected_date);
     const subject = isEnglish
-      ? `☕️ ${nameA} just booked coffee with you!`
-      : `☕️ ${nameA} heeft een koffie-date gepland!`;
+      ? `☕️ ${safeNameA} just booked coffee with you!`
+      : `☕️ ${safeNameA} heeft een koffie-date gepland!`;
 
     const html = `
       <h2>${
@@ -247,18 +255,18 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         ? "☕️ Yes! Your coffee meetup is set!"
         : "☕️ Yes! Jullie koffie-date staat!"
     }</h2>
-      <img src="${cafeImageUrl}" alt="Cafe" width="100%" style="max-width:600px;border-radius:12px;" />
+      <img src="${safeCafeImageUrl}" alt="Cafe" width="100%" style="max-width:600px;border-radius:12px;" />
       <p>${isEnglish ? "Hey legends!" : "Hey toppers!"}<br>
       ${
       isEnglish ? "You're meeting at" : "Jullie hebben afgesproken bij"
-    } <b>${cafe.name}</b>.<br>
+    } <b>${safeCafeName}</b>.<br>
       <b>${
       isEnglish ? "Address" : "Adres"
-    }:</b> ${cafe.address}<br>
+    }:</b> ${safeCafeAddress}<br>
       <b>${
       isEnglish ? "Time" : "Tijd"
-    }:</b> ${readableTime} on ${selected_date}</p>
-      <p><a href="${gcalUrl}" target="_blank">➕ ${
+    }:</b> ${safeReadableTime} on ${safeSelectedDate}</p>
+      <p><a href="${safeGcalUrl}" target="_blank">➕ ${
       isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"
     }</a></p>`;
 
