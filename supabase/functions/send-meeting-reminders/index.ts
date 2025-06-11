@@ -212,6 +212,14 @@ Deno.serve((req) => {
   if (req.method !== "POST") {
     return new Response("Only POST requests allowed", { status: 405 });
   }
+  const secret = Deno.env.get("MEETING_REMINDERS_SECRET");
+  if (!secret) {
+    return new Response("Server misconfiguration", { status: 500 });
+  }
+  const auth = req.headers.get("Authorization");
+  if (!auth || auth !== `Bearer ${secret}`) {
+    return new Response("Unauthorized", { status: 401 });
+  }
   return handleReminders();
 });
 

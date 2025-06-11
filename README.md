@@ -37,7 +37,7 @@ A modern, calming web application for coordinating coffee meetups with friends. 
    ```bash
    supabase start
    ```
-5. Copy `.env.example` to `.env` and set your environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, etc.)
+5. Copy `.env.example` to `.env` and set your environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `MEETING_REMINDERS_SECRET`, etc.)
 6. Start the development server:
    ```bash
    npm run dev
