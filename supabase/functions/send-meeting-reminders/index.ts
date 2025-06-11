@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { escapeHtml } from "../utils.ts";
 
 function encodeBase64(str: string) {
   return btoa(unescape(encodeURIComponent(str)));
@@ -154,15 +155,20 @@ export async function handleReminders(): Promise<Response> {
       `https://source.unsplash.com/600x300/?coffee,${
         encodeURIComponent(cafe.name)
       }`;
+    const safeCafeImageUrl = escapeHtml(cafeImageUrl);
     const readableTime = slotReadable[slot] || slotReadable["morning"];
+    const safeCafeName = escapeHtml(cafe.name);
+    const safeCafeAddress = escapeHtml(cafe.address);
+    const safeReadableTime = escapeHtml(readableTime);
+    const safeSelectedDate = escapeHtml(inv.selected_date);
     const subject = needs1h
       ? `☕️ Your meetup starts in about an hour!`
       : `☕️ Reminder: coffee meetup tomorrow!`;
     const html = `
         <h2>☕️ Your coffee meetup is coming up!</h2>
-        <img src="${cafeImageUrl}" alt="Cafe" width="100%" style="max-width:600px;border-radius:12px;" />
-        <p>You'll meet at <b>${cafe.name}</b> (${cafe.address})</p>
-        <p>Time: ${readableTime} on ${inv.selected_date}</p>`;
+        <img src="${safeCafeImageUrl}" alt="Cafe" width="100%" style="max-width:600px;border-radius:12px;" />
+        <p>You'll meet at <b>${safeCafeName}</b> (${safeCafeAddress})</p>
+        <p>Time: ${safeReadableTime} on ${safeSelectedDate}</p>`;
 
     const recipients: string[] = [];
     if (await wantsReminders(supabase, inv.email_a)) {
