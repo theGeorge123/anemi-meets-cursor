@@ -15,6 +15,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Suspense } from 'react';
 import InviteFriend from './pages/InviteFriend';
 import ChangeEmailConfirm from './pages/ChangeEmailConfirm';
+import ResetPassword from './pages/ResetPassword';
+import CheckEmail from './pages/CheckEmail';
 
 const AppRoutes = () => {
   const { t } = useTranslation();
@@ -34,6 +36,9 @@ const AppRoutes = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/change-email-confirm" element={<ChangeEmailConfirm />} />
           <Route path="/invite-friend/:token" element={<InviteFriend />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/check-email" element={<CheckEmail />} />
+          <Route path="/invite-friend" element={<InviteFriend />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
