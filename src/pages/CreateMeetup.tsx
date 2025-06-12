@@ -351,12 +351,10 @@ const CreateMeetup = () => {
         }
 
       let responseToken = token;
-      if (!insertData || insertData.length === 0) {
+      if (!insertData || !insertData.token) {
         console.warn('No data returned from insert; using generated token');
       } else {
-        if (insertData[0].token) {
-          responseToken = insertData[0].token as string;
-        }
+        responseToken = insertData.token as string;
       }
 
       // Navigate to the invite page regardless of the returned data
