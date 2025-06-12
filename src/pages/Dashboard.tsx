@@ -56,6 +56,10 @@ const Dashboard = () => {
   const channelRef = useRef<RealtimeChannel | null>(null);
   // Tab state
   const [activeTab, setActiveTab] = useState<"friends" | "outgoing" | "incoming">("friends");
+  // Friend invite link state
+  const [friendInviteLink, setFriendInviteLink] = useState<string>("");
+  const [inviteGenerating, setInviteGenerating] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   // Find next upcoming meetup
   const nextMeetup = useMemo(() => {
@@ -359,6 +363,36 @@ const Dashboard = () => {
     return () => clearTimeout(delayDebounce);
   }, [userSearch, handleUserSearch]);
 
+  const handleGenerateFriendInvite = async () => {
+    if (!profile || !profile.id) return;
+    setInviteGenerating(true);
+    setInviteError(null);
+    try {
+      const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr || !sessionData.session?.access_token) {
+        throw new Error("no session");
+      }
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-friend-invite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+        body: JSON.stringify({ invitee_email: null, lang: (navigator.language || "nl") }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.token) {
+        setInviteError(t("dashboard.inviteError", "Could not generate invite link. Please try again."));
+      } else {
+        setFriendInviteLink(`${window.location.origin}/invite-friend/${data.token}`);
+      }
+    } catch (err) {
+      setInviteError(t("dashboard.inviteError", "Could not generate invite link. Please try again."));
+    }
+    setInviteGenerating(false);
+  };
+
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {showOnboarding && (
@@ -379,8 +413,7 @@ const Dashboard = () => {
         )}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
-            {t("dashboard.welcome")}, {profile?.fullName || t("dashboard.user")}
-            !
+            {t("dashboard.welcome")}, {profile?.fullName || t("dashboard.user")}!
           </h1>
           {profile && (
             <div className="text-gray-600 text-sm">
@@ -393,7 +426,36 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-
+      {/* Friend Invite Link Section */}
+      {profile && (
+        <div className="card mb-6 flex flex-col items-center bg-white/80">
+          <div className="text-lg font-semibold text-primary-700 mb-2">{t('dashboard.personalInvite', 'Your personal invite link')}</div>
+          <button
+            className="btn-primary mb-2"
+            onClick={handleGenerateFriendInvite}
+            disabled={inviteGenerating}
+          >
+            {inviteGenerating ? t('dashboard.generating', 'Generating...') : t('dashboard.generateInvite', 'Generate invite link')}
+          </button>
+          {friendInviteLink && (
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full justify-center">
+              <input
+                type="text"
+                value={friendInviteLink}
+                readOnly
+                className="border rounded px-2 py-1 w-full max-w-xs text-center bg-gray-50 font-mono"
+                onFocus={e => e.target.select()}
+              />
+              <button
+                className="btn-secondary text-xs px-2 py-1"
+                onClick={() => {navigator.clipboard.writeText(friendInviteLink)}}
+              >{t('dashboard.copyInvite', 'Copy link')}</button>
+            </div>
+          )}
+          {inviteError && <div className="text-xs text-red-500 mt-2">{inviteError}</div>}
+          <div className="text-xs text-gray-500 mt-2 text-center">{t('dashboard.inviteHint', 'Share this link with friends so they can instantly connect with you!')}</div>
+        </div>
+      )}
       {/* Next Meetup Section (just below welcome) */}
       {nextMeetup && (
         <div className="card mb-6 bg-primary-50 border-l-4 border-primary-400 p-4 flex flex-col sm:flex-row items-center justify-between">

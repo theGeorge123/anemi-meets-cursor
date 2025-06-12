@@ -71,20 +71,6 @@ const Account = () => {
     EMOJI_ROWS.push(EMOJI_OPTIONS.slice(i, i + 4));
   }
 
-  // State for generated friend invite link
-  const [friendInviteLink, setFriendInviteLink] = useState<string>('');
-  const [inviteGenerating, setInviteGenerating] = useState(false);
-  const [inviteError, setInviteError] = useState<string | null>(null);
-
-  // Find next upcoming meetup
-  const nextMeetup = useMemo(() => {
-    if (!myMeetups || myMeetups.length === 0) return null;
-    const now = new Date();
-    return myMeetups
-      .filter(m => new Date(m.selected_date) >= now)
-      .sort((a, b) => new Date(a.selected_date).getTime() - new Date(b.selected_date).getTime())[0] || null;
-  }, [myMeetups]);
-
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
 
@@ -99,6 +85,15 @@ const Account = () => {
 
   const [cafePrefTags, setCafePrefTags] = useState<string[]>([]);
   const [cafePrefPrice, setCafePrefPrice] = useState<string>('');
+
+  // Find next upcoming meetup
+  const nextMeetup = useMemo(() => {
+    if (!myMeetups || myMeetups.length === 0) return null;
+    const now = new Date();
+    return myMeetups
+      .filter(m => new Date(m.selected_date) >= now)
+      .sort((a, b) => new Date(a.selected_date).getTime() - new Date(b.selected_date).getTime())[0] || null;
+  }, [myMeetups]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -300,39 +295,6 @@ const Account = () => {
   // BADGE DISPLAY
   const earnedKeys = new Set(userBadges.map(b => b.badge_key));
 
-  // Handler to generate a friend invite link
-  const handleGenerateFriendInvite = async () => {
-    if (!user || !user.id) return;
-    setInviteGenerating(true);
-    setInviteError(null);
-    try {
-      // Haal huidige sessie voor access token
-      const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
-      if (sessErr || !sessionData.session?.access_token) {
-        throw new Error('no session');
-      }
-      // Call Supabase Edge Function to generate invite and get the link
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-friend-invite`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${sessionData.session.access_token}`
-        },
-        body: JSON.stringify({ invitee_email: null, lang: (i18n?.language || 'nl') }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.token) {
-        setInviteError(t('account.inviteError', 'Kon uitnodigingslink niet genereren. Probeer het opnieuw.'));
-      } else {
-        setFriendInviteLink(`${window.location.origin}/invite-friend/${data.token}`);
-      }
-    } catch (err) {
-      setInviteError(t('account.inviteError', 'Kon uitnodigingslink niet genereren. Probeer het opnieuw.'));
-    }
-    setInviteGenerating(false);
-  };
-
   // Hardcode badges for testing
   useEffect(() => {
     setBadges([
@@ -392,37 +354,6 @@ const Account = () => {
                 </div>
               </div>
               <button className="btn-primary mt-3 sm:mt-0">{t('account.viewMeetup', 'View details')}</button>
-            </div>
-          )}
-
-          {/* Personal Invite Link Section (always visible if user) */}
-          {user && (
-            <div className="card mb-6 flex flex-col items-center bg-white/80">
-              <div className="text-lg font-semibold text-primary-700 mb-2">{t('account.personalInvite')}</div>
-              <button
-                className="btn-primary mb-2"
-                onClick={handleGenerateFriendInvite}
-                disabled={inviteGenerating}
-              >
-                {inviteGenerating ? t('account.generating', 'Bezig met genereren...') : t('account.generateInvite', 'Genereer uitnodigingslink')}
-              </button>
-              {friendInviteLink && (
-                <div className="flex flex-col sm:flex-row items-center gap-2 w-full justify-center">
-                  <input
-                    type="text"
-                    value={friendInviteLink}
-                    readOnly
-                    className="border rounded px-2 py-1 w-full max-w-xs text-center bg-gray-50 font-mono"
-                    onFocus={e => e.target.select()}
-                  />
-                  <button
-                    className="btn-secondary text-xs px-2 py-1"
-                    onClick={() => {navigator.clipboard.writeText(friendInviteLink)}}
-                  >{t('account.copyInvite')}</button>
-                </div>
-              )}
-              {inviteError && <div className="text-xs text-red-500 mt-2">{inviteError}</div>}
-              <div className="text-xs text-gray-500 mt-2 text-center">{t('account.inviteHint')}</div>
             </div>
           )}
 
