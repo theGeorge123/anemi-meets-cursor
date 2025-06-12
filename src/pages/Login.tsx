@@ -50,39 +50,39 @@ const Login = () => {
     const code = error.code || "";
     switch (code) {
       case "user_not_found":
-        msg = t("error_user_not_found");
+        msg = t("login.error_user_not_found", "Can't find that email. Did you type it right? 🕵️‍♂️");
         break;
       case "invalid_login_credentials":
-        msg = t("error_invalid_password");
+        msg = t("login.error_invalid_password", "That combo doesn't look right. Try again! 🤔");
         break;
       case "email_address_invalid":
       case "invalid_email":
-        msg = t("error_invalid_email");
+        msg = t("login.error_invalid_email", "That email looks a bit off. Double-check it! 🧐");
         break;
       case "user_banned":
-        msg = t("error_user_banned");
+        msg = t("login.error_user_banned", "This account is blocked. Need help? Contact us! 🚫");
         break;
       case "email_not_confirmed":
-        msg = t("error_email_not_confirmed");
+        msg = t("login.error_email_not_confirmed", "Check your inbox to confirm your email first! 📧");
         break;
       case "over_email_send_rate_limit":
       case "over_request_rate_limit":
-        msg = t("errorRateLimit");
+        msg = t("login.errorRateLimit", "Whoa, slow down! Too many tries. Wait a sec and try again. 🐢");
         break;
       default:
         const errMsg = error.message?.toLowerCase() || "";
         if (errMsg.includes("invalid login credentials")) {
-          msg = t("error_invalid_password");
+          msg = t("login.error_invalid_password", "That combo doesn't look right. Try again! 🤔");
         } else if (errMsg.includes("user not found")) {
-          msg = t("error_user_not_found");
+          msg = t("login.error_user_not_found", "Can't find that email. Did you type it right? 🕵️‍♂️");
         } else if (errMsg.includes("email")) {
-          msg = t("error_invalid_email");
+          msg = t("login.error_invalid_email", "That email looks a bit off. Double-check it! 🧐");
         } else if (errMsg.includes("banned")) {
-          msg = t("error_user_banned");
+          msg = t("login.error_user_banned", "This account is blocked. Need help? Contact us! 🚫");
         } else if (errMsg.includes("not confirmed")) {
-          msg = t("error_email_not_confirmed");
+          msg = t("login.error_email_not_confirmed", "Check your inbox to confirm your email first! 📧");
         } else if (errMsg.includes("rate limit")) {
-          msg = t("errorRateLimit");
+          msg = t("login.errorRateLimit", "Whoa, slow down! Too many tries. Wait a sec and try again. 🐢");
         }
     }
     return msg;

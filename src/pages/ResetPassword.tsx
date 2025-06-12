@@ -25,8 +25,8 @@ const ResetPassword = () => {
     if (!password || password.length < 8) {
       setMessage(
         i18n.language === "nl"
-          ? "Wachtwoord moet minstens 8 tekens zijn."
-          : "Password must be at least 8 characters."
+          ? "Je wachtwoord moet minstens 8 tekens zijn. Maak er iets moois van! ✨"
+          : "Password must be at least 8 characters. Make it a good one! ✨"
       );
       setStatus("error");
       return;
@@ -34,8 +34,8 @@ const ResetPassword = () => {
     if (password !== confirm) {
       setMessage(
         i18n.language === "nl"
-          ? "Wachtwoorden komen niet overeen."
-          : "Passwords do not match."
+          ? "Oeps! Je wachtwoorden komen niet overeen. Probeer het nog eens. 🤔"
+          : "Oops! Your passwords don't match. Try again! 🤔"
       );
       setStatus("error");
       return;
@@ -43,8 +43,8 @@ const ResetPassword = () => {
     if (!accessToken) {
       setMessage(
         i18n.language === "nl"
-          ? "Geen geldige reset-link gevonden. Probeer opnieuw via de e-mail."
-          : "No valid reset link found. Please try again from your email."
+          ? "Geen geldige reset-link gevonden. Klik opnieuw op de link in je e-mail! 📧"
+          : "No valid reset link found. Please try again from your email! 📧"
       );
       setStatus("error");
       return;
@@ -58,8 +58,8 @@ const ResetPassword = () => {
     if (error) {
       setMessage(
         i18n.language === "nl"
-          ? "Kon je sessie niet herstellen. Probeer de link opnieuw."
-          : "Could not restore your session. Please try the link again."
+          ? "Kon je sessie niet herstellen. Probeer de link opnieuw! 🔄"
+          : "Could not restore your session. Please try the link again! 🔄"
       );
       setStatus("error");
       return;
@@ -69,8 +69,8 @@ const ResetPassword = () => {
     if (updateError) {
       setMessage(
         i18n.language === "nl"
-          ? "Kon wachtwoord niet wijzigen. Probeer het opnieuw."
-          : "Could not update password. Please try again."
+          ? "Wachtwoord wijzigen is niet gelukt. Probeer het nog eens! 😅"
+          : "Couldn't update your password. Try again! 😅"
       );
       setStatus("error");
       return;
@@ -78,8 +78,8 @@ const ResetPassword = () => {
     setStatus("success");
     setMessage(
       i18n.language === "nl"
-        ? "Je wachtwoord is gewijzigd! Je kunt nu inloggen."
-        : "Your password has been changed! You can now log in."
+        ? "Yes! Je wachtwoord is veranderd. Je kunt nu inloggen en weer koffie drinken ☕️🎉"
+        : "Yes! Your password has been changed. You can now log in and grab a coffee ☕️🎉"
     );
     setTimeout(() => navigate("/login"), 2500);
   };
