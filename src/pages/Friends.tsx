@@ -30,8 +30,6 @@ const Friends = () => {
   const [pendingReceived, setPendingReceived] = useState<FriendRequest[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
-  // Optional: block list UI
-  const [blockList, setBlockList] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchUser = async () => {
