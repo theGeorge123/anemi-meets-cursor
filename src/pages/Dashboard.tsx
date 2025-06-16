@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
@@ -7,9 +7,6 @@ import {
   getFriends,
   getOutgoingFriendRequests,
   getIncomingFriendRequests,
-  sendFriendRequest,
-  acceptFriendRequest,
-  rejectFriendRequest,
 } from "../services/supabaseService";
 import { useTranslation } from "react-i18next";
 import LoadingIndicator from "../components/LoadingIndicator";
