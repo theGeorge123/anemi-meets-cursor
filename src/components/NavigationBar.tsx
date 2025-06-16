@@ -40,6 +40,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
   const NAV_LINKS = [
     { to: '/dashboard', label: t('navigation.dashboard'), auth: true },
     { to: '/create-meetup', label: t('navigation.plan'), auth: true },
+    { to: '/friends', label: t('navigation.friends', 'Friends'), auth: true },
     { to: '/login', label: t('login.title'), auth: false },
   ];
 
