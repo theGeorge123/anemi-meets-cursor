@@ -101,44 +101,53 @@ const Friends = () => {
 
   return (
     <main className="max-w-xl mx-auto py-8 px-2">
-      <h1 className="text-2xl font-bold mb-6">{t('friends.title', 'Friends & Requests')}</h1>
+      <h1 className="text-3xl font-extrabold mb-6 text-primary-700 flex items-center gap-2">
+        ☕️ {t('friends.title')}
+      </h1>
       {/* Send Friend Request */}
-      <form onSubmit={handleSendRequest} className="mb-6 flex flex-col sm:flex-row gap-2 items-center">
+      <form onSubmit={handleSendRequest} className="mb-6 flex flex-col sm:flex-row gap-2 items-center bg-yellow-50 rounded-xl p-4 shadow">
         <input
           type="email"
           className="input-field flex-1"
-          placeholder={t('friends.emailPlaceholder', "Friend's email")}
+          placeholder={t('friends.emailPlaceholder')}
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
         />
         <button type="submit" className="btn-primary min-w-[120px]" disabled={sendStatus==='loading'}>
-          {sendStatus==='loading' ? <LoadingIndicator size="sm" /> : t('friends.sendRequest', 'Send Request')}
+          {sendStatus==='loading' ? <LoadingIndicator size="sm" /> : t('friends.sendRequest')}
         </button>
       </form>
       {sendStatus==='error' && <div className="text-red-600 mb-4">{sendError}</div>}
-      {sendStatus==='success' && <div className="text-green-600 mb-4">{t('friends.requestSent', 'Request sent!')}</div>}
+      {sendStatus==='success' && <div className="text-green-600 mb-4 animate-bounce">{t('friends.requestSent')}</div>}
       {/* Pending Requests */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-2">{t('friends.pending', 'Pending Requests')}</h2>
+        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">⏳ {t('friends.pending')}</h2>
         {loading ? <LoadingIndicator /> : (
           <>
-            <div className="mb-2 font-medium">{t('friends.sent', 'Sent')}:</div>
-            {pendingSent.length === 0 ? <div className="text-gray-500 mb-2">{t('friends.none', 'None')}</div> : (
+            <div className="mb-2 font-medium">{t('friends.sent')}:</div>
+            {pendingSent.length === 0 ? (
+              <div className="text-gray-500 mb-2 italic">😶 {t('friends.none')}</div>
+            ) : (
               <ul className="mb-4">
                 {pendingSent.map(req => (
-                  <li key={req.id} className="mb-1">{req.addressee_id}</li>
+                  <li key={req.id} className="mb-1 flex items-center gap-2">
+                    <span className="font-mono text-primary-700">{req.addressee_id}</span>
+                    <span className="text-yellow-600 text-xs">⏳</span>
+                  </li>
                 ))}
               </ul>
             )}
-            <div className="mb-2 font-medium">{t('friends.received', 'Received')}:</div>
-            {pendingReceived.length === 0 ? <div className="text-gray-500">{t('friends.none', 'None')}</div> : (
+            <div className="mb-2 font-medium">{t('friends.received')}:</div>
+            {pendingReceived.length === 0 ? (
+              <div className="text-gray-500 italic">🕵️‍♂️ {t('friends.none')}</div>
+            ) : (
               <ul>
                 {pendingReceived.map(req => (
                   <li key={req.id} className="mb-2 flex items-center gap-2">
-                    {req.requester_id}
-                    <button className="btn-primary btn-xs" onClick={() => handleRespond(req.id, true)}>{t('friends.accept', 'Accept')}</button>
-                    <button className="btn-secondary btn-xs" onClick={() => handleRespond(req.id, false)}>{t('friends.reject', 'Reject')}</button>
+                    <span className="font-mono text-primary-700">{req.requester_id}</span>
+                    <button className="btn-primary btn-xs" onClick={() => handleRespond(req.id, true)}>{t('friends.accept')}</button>
+                    <button className="btn-secondary btn-xs" onClick={() => handleRespond(req.id, false)}>{t('friends.reject')}</button>
                   </li>
                 ))}
               </ul>
@@ -148,12 +157,17 @@ const Friends = () => {
       </section>
       {/* Friends List */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-2">{t('friends.list', 'Your Friends')}</h2>
+        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">🎉 {t('friends.list')}</h2>
         {loading ? <LoadingIndicator /> : (
-          friends.length === 0 ? <div className="text-gray-500">{t('friends.none', 'No friends yet!')}</div> : (
+          friends.length === 0 ? (
+            <div className="text-gray-500 italic">🥲 {t('friends.none')}</div>
+          ) : (
             <ul>
               {friends.map(f => (
-                <li key={f.friend_id} className="mb-1">{f.friend_id}</li>
+                <li key={f.friend_id} className="mb-1 flex items-center gap-2">
+                  <span className="font-mono text-primary-700">{f.friend_id}</span>
+                  <span className="text-green-600 text-xs">☕️</span>
+                </li>
               ))}
             </ul>
           )
@@ -161,8 +175,8 @@ const Friends = () => {
       </section>
       {/* Block/Privacy UI (optional, not functional) */}
       <section>
-        <h2 className="text-lg font-semibold mb-2">{t('friends.block', 'Blocked Users (coming soon)')}</h2>
-        <div className="text-gray-400">{t('friends.blockDesc', 'You will be able to block users here in the future.')}</div>
+        <h2 className="text-lg font-semibold mb-2">🚫 {t('friends.block')}</h2>
+        <div className="text-gray-400 italic">{t('friends.blockDesc')}</div>
       </section>
     </main>
   );

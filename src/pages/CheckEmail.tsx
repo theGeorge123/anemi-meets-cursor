@@ -5,7 +5,7 @@ import { supabase } from "../supabaseClient";
 import FormStatus from "../components/FormStatus";
 
 const CheckEmail = () => {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState<string>("");
@@ -16,22 +16,16 @@ const CheckEmail = () => {
     const { data, error } = await supabase.auth.getUser();
     if (error) {
       setStatus("error");
-      setMessage(i18n.language === "nl"
-        ? "Kon je status niet controleren. Probeer het opnieuw."
-        : "Could not check your status. Please try again.");
+      setMessage(t("checkEmail.error"));
       return;
     }
     if (data?.user?.email_confirmed_at) {
       setStatus("success");
-      setMessage(i18n.language === "nl"
-        ? "Je account is bevestigd! Je wordt doorgestuurd..."
-        : "Your account is confirmed! Redirecting...");
+      setMessage(t("checkEmail.confirmed"));
       setTimeout(() => navigate("/dashboard"), 1800);
     } else {
       setStatus("error");
-      setMessage(i18n.language === "nl"
-        ? "Je account is nog niet bevestigd. Klik op de link in je e-mail!"
-        : "Your account is not confirmed yet. Please click the link in your email!");
+      setMessage(t("checkEmail.notConfirmed"));
     }
   };
 
@@ -45,22 +39,16 @@ const CheckEmail = () => {
       <div className="card bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center">
         <div className="text-5xl mb-4">📬</div>
         <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-2">
-          {i18n.language === "nl"
-            ? "Bevestig je e-mailadres!"
-            : "Confirm your email!"}
+          {t("checkEmail.title")}
         </h1>
         <p className="text-gray-700 mb-4 text-base sm:text-lg">
-          {i18n.language === "nl"
-            ? "We hebben je een e-mail gestuurd. Klik op de link in je inbox om je account te activeren."
-            : "We've sent you an email. Click the link in your inbox to activate your account."}
+          {t("checkEmail.description")}
         </p>
         <button
           className="btn-secondary w-full mb-2"
           onClick={openEmailApp}
         >
-          {i18n.language === "nl"
-            ? "Open je e-mail app"
-            : "Open your email app"}
+          {t("checkEmail.openApp")}
         </button>
         <button
           className="btn-primary w-full"
@@ -68,18 +56,12 @@ const CheckEmail = () => {
           disabled={status === "loading"}
         >
           {status === "loading"
-            ? i18n.language === "nl"
-              ? "Controleren..."
-              : "Checking..."
-            : i18n.language === "nl"
-              ? "Ik heb bevestigd!"
-              : "I have confirmed!"}
+            ? t("checkEmail.checking")
+            : t("checkEmail.cta")}
         </button>
         <FormStatus status={status} message={message} />
         <div className="mt-6 text-xs text-gray-500">
-          {i18n.language === "nl"
-            ? "Geen mail ontvangen? Kijk in je spam of probeer opnieuw aan te melden."
-            : "Didn't get the email? Check your spam or try signing up again."}
+          {t("checkEmail.notReceived")}
         </div>
       </div>
     </main>

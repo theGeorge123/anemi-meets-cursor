@@ -9,7 +9,7 @@ function useQuery() {
 }
 
 const ResetPassword = () => {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const query = useQuery();
   const [password, setPassword] = useState("");
@@ -23,29 +23,17 @@ const ResetPassword = () => {
     e.preventDefault();
     setMessage("");
     if (!password || password.length < 8) {
-      setMessage(
-        i18n.language === "nl"
-          ? "Je wachtwoord moet minstens 8 tekens zijn. Maak er iets moois van! ✨"
-          : "Password must be at least 8 characters. Make it a good one! ✨"
-      );
+      setMessage(t("resetPassword.errorShort"));
       setStatus("error");
       return;
     }
     if (password !== confirm) {
-      setMessage(
-        i18n.language === "nl"
-          ? "Oeps! Je wachtwoorden komen niet overeen. Probeer het nog eens. 🤔"
-          : "Oops! Your passwords don't match. Try again! 🤔"
-      );
+      setMessage(t("resetPassword.errorMismatch"));
       setStatus("error");
       return;
     }
     if (!accessToken) {
-      setMessage(
-        i18n.language === "nl"
-          ? "Geen geldige reset-link gevonden. Klik opnieuw op de link in je e-mail! 📧"
-          : "No valid reset link found. Please try again from your email! 📧"
-      );
+      setMessage(t("resetPassword.errorNoToken"));
       setStatus("error");
       return;
     }
@@ -56,49 +44,33 @@ const ResetPassword = () => {
       refresh_token: accessToken,
     });
     if (error) {
-      setMessage(
-        i18n.language === "nl"
-          ? "Kon je sessie niet herstellen. Probeer de link opnieuw! 🔄"
-          : "Could not restore your session. Please try the link again! 🔄"
-      );
+      setMessage(t("resetPassword.errorSession"));
       setStatus("error");
       return;
     }
     // Now update the password
     const { error: updateError } = await supabase.auth.updateUser({ password });
     if (updateError) {
-      setMessage(
-        i18n.language === "nl"
-          ? "Wachtwoord wijzigen is niet gelukt. Probeer het nog eens! 😅"
-          : "Couldn't update your password. Try again! 😅"
-      );
+      setMessage(t("resetPassword.errorUpdate"));
       setStatus("error");
       return;
     }
     setStatus("success");
-    setMessage(
-      i18n.language === "nl"
-        ? "Yes! Je wachtwoord is veranderd. Je kunt nu inloggen en weer koffie drinken ☕️🎉"
-        : "Yes! Your password has been changed. You can now log in and grab a coffee ☕️🎉"
-    );
+    setMessage(t("resetPassword.success"));
     setTimeout(() => navigate("/login"), 2500);
   };
 
   return (
     <main className="max-w-md mx-auto px-2 sm:px-0 py-8">
       <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-6 text-center">
-        {i18n.language === "nl"
-          ? "Nieuw wachtwoord instellen"
-          : "Set a new password"}
+        {t("resetPassword.title")}
       </h1>
       <div className="card bg-white rounded-xl shadow-md p-6">
         <form onSubmit={handleSubmit} className="space-y-4 flex flex-col justify-between mt-2">
           <div>
             <label htmlFor="new-password" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">🔒</span>{" "}
-              {i18n.language === "nl"
-                ? "Nieuw wachtwoord"
-                : "New password"}
+              {t("resetPassword.newPassword")}
             </label>
             <input
               type="password"
@@ -107,7 +79,7 @@ const ResetPassword = () => {
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              placeholder={i18n.language === "nl" ? "Nieuw wachtwoord" : "New password"}
+              placeholder={t("resetPassword.newPassword")}
               autoFocus
               autoComplete="new-password"
             />
@@ -115,9 +87,7 @@ const ResetPassword = () => {
           <div>
             <label htmlFor="confirm-password" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">🔒</span>{" "}
-              {i18n.language === "nl"
-                ? "Herhaal wachtwoord"
-                : "Repeat password"}
+              {t("resetPassword.repeatPassword")}
             </label>
             <input
               type="password"
@@ -126,7 +96,7 @@ const ResetPassword = () => {
               value={confirm}
               onChange={e => setConfirm(e.target.value)}
               required
-              placeholder={i18n.language === "nl" ? "Herhaal wachtwoord" : "Repeat password"}
+              placeholder={t("resetPassword.repeatPassword")}
               autoComplete="new-password"
             />
           </div>
@@ -137,12 +107,8 @@ const ResetPassword = () => {
             disabled={status === "loading"}
           >
             {status === "loading"
-              ? i18n.language === "nl"
-                ? "Bezig..."
-                : "Working..."
-              : i18n.language === "nl"
-                ? "Wachtwoord instellen"
-                : "Set password"}
+              ? t("resetPassword.working")
+              : t("resetPassword.setPassword")}
           </button>
         </form>
       </div>
