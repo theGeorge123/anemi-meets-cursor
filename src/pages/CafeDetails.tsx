@@ -1,15 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-// Mock cafe data
-const cafe = {
-  id: '1',
-  name: 'Café de Koffiehoek',
-  address: 'Koffiestraat 1, Rotterdam',
-  image_url: 'https://source.unsplash.com/600x300/?coffee,rotterdam',
-  description: 'Gezellig café met de beste koffie van de stad. Kom langs voor een heerlijke espresso of cappuccino en geniet van onze huisgemaakte taarten.'
-};
-
 const CafeDetails: React.FC = () => {
   const { t } = useTranslation();
   return (
