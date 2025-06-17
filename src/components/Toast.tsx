@@ -7,6 +7,7 @@ interface ToastProps {
   duration?: number; // ms
   onClose?: () => void;
   type?: 'success' | 'error' | 'info';
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 }
 
 const ICONS = {
@@ -15,7 +16,7 @@ const ICONS = {
   info: <span aria-hidden="true" className="text-blue-600 text-2xl">ℹ️</span>,
 };
 
-const Toast: React.FC<ToastProps> = ({ message, icon, duration = 5000, onClose, type = 'success' }) => {
+const Toast: React.FC<ToastProps> = ({ message, icon, duration = 5000, onClose, type = 'success', position = 'top-right' }) => {
   const { t } = useTranslation();
   const timer = useRef<NodeJS.Timeout | null>(null);
 
@@ -30,9 +31,25 @@ const Toast: React.FC<ToastProps> = ({ message, icon, duration = 5000, onClose, 
     };
   }, [duration, onClose]);
 
+  // Positioning logic
+  let positionClass = '';
+  switch (position) {
+    case 'top-left':
+      positionClass = 'top-6 left-6 right-auto';
+      break;
+    case 'bottom-right':
+      positionClass = 'bottom-6 right-6 top-auto';
+      break;
+    case 'bottom-left':
+      positionClass = 'bottom-6 left-6 top-auto right-auto';
+      break;
+    default:
+      positionClass = 'top-6 right-6';
+  }
+
   return (
     <div
-      className={`fixed z-50 top-6 right-6 max-w-xs w-full shadow-lg rounded-lg flex items-start gap-3 p-4 border-2 bg-white
+      className={`fixed z-50 max-w-xs w-full shadow-lg rounded-lg flex items-start gap-3 p-4 border-2 bg-white ${positionClass}
         ${type === 'success' ? 'border-green-400' : type === 'error' ? 'border-red-400' : 'border-blue-400'}`}
       role="alert"
       aria-live="polite"

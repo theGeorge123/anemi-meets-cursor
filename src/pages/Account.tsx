@@ -12,7 +12,7 @@ import { displayCafeTag, displayPriceBracket } from '../utils/display';
 import BadgeNotification from '../components/BadgeNotification';
 import BadgeProgress from '../components/BadgeProgress';
 import BadgeShareModal from '../components/BadgeShareModal';
-import { User, Settings, Bell, Award, Trash2 } from 'lucide-react';
+import { User, Settings, Award, Trash2 } from 'lucide-react';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -699,7 +699,7 @@ const Account = () => {
               type="success"
               onClose={() => setShowProfileToast(false)}
               duration={3000}
-              position="bottom-center"
+              position="bottom-right"
             />
           )}
           {showPasswordToast && (
