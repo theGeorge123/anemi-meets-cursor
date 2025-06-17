@@ -30,14 +30,8 @@ export default {
           700: '#212121',
         },
         accent: {
-          50: '#fff3e0',
-          100: '#ffe0b2',
-          200: '#ffcc80',
-          300: '#ffb74d',
-          400: '#ffa726',
-          500: '#ff914d',
-          600: '#fb8c00',
-          700: '#ef6c00',
+          50: '#E4FBF1',
+          500: '#03B475',
         },
         blue: {
           50: '#e3f2fd',
@@ -80,8 +74,14 @@ export default {
           900: '#111827',
         },
       },
+      borderRadius: {
+        lg: '16px',
+      },
+      boxShadow: {
+        card: '0 4px 8px rgba(0,0,0,.05)',
+      },
       fontFamily: {
-        sans: ['Inter var', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
   },

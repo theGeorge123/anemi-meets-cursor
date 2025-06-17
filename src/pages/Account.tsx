@@ -12,6 +12,7 @@ import { displayCafeTag, displayPriceBracket } from '../utils/display';
 import BadgeNotification from '../components/BadgeNotification';
 import BadgeProgress from '../components/BadgeProgress';
 import BadgeShareModal from '../components/BadgeShareModal';
+import { User, Settings, Bell, Award, Trash2 } from 'lucide-react';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -101,6 +102,18 @@ const Account = () => {
   // Add state for badge notification and sharing
   const [badgeNotification, setBadgeNotification] = useState<Badge | null>(null);
   const [shareBadge, setShareBadge] = useState<Badge | null>(null);
+
+  // BADGE TABS LOGIC
+  const badgeStatusTabs = [
+    { key: 'unlocked', label: 'Unlocked' },
+    { key: 'inprogress', label: 'In Progress' },
+    { key: 'locked', label: 'Locked' },
+  ];
+  const [activeBadgeTab, setActiveBadgeTab] = useState('unlocked');
+  const earnedKeys = new Set(userBadges.map(b => b.badge_key));
+  const unlockedBadges = badges.filter(b => earnedKeys.has(b.key));
+  const inProgressBadges = badges.filter(b => !earnedKeys.has(b.key) && b.key === 'five_friends'); // Example: only five_friends is progress
+  const lockedBadges = badges.filter(b => !earnedKeys.has(b.key) && b.key !== 'five_friends');
 
   useEffect(() => {
     const getUser = async () => {
@@ -299,58 +312,6 @@ const Account = () => {
     }
   };
 
-  // BADGE DISPLAY
-  const earnedKeys = new Set(userBadges.map(b => b.badge_key));
-
-  // Hardcode badges for testing
-  useEffect(() => {
-    setBadges([
-      { id: 1, key: 'coffee', emoji: '☕️', label: 'Coffee Lover', description: 'Had your first meetup', created_at: '' },
-      { id: 2, key: 'unicorn', emoji: '🦄', label: 'Unicorn', description: 'Planned a unique meetup', created_at: '' },
-      { id: 3, key: 'party', emoji: '🎉', label: 'Party Starter', description: 'Invited 5 friends', created_at: '' },
-      { id: 4, key: 'trophy', emoji: '🏆', label: 'Champion', description: 'Reached 10 meetups', created_at: '' },
-      { id: 5, key: 'star', emoji: '🌟', label: 'Star', description: 'Received great feedback', created_at: '' },
-      { id: 6, key: 'idea', emoji: '💡', label: 'Innovator', description: 'Suggested a new feature', created_at: '' },
-      { id: 7, key: 'heart', emoji: '❤️', label: 'Heart', description: 'Supported a local café', created_at: '' },
-      { id: 8, key: 'cool', emoji: '😎', label: 'Cool Cat', description: 'Logged in 7 days in a row', created_at: '' },
-      { id: 9, key: 'rockstar', emoji: '🧑‍🎤', label: 'Rockstar', description: 'Hosted a big meetup', created_at: '' },
-      { id: 10, key: 'cat', emoji: '🐱', label: 'Cat Person', description: 'Met up with a cat lover', created_at: '' },
-      { id: 11, key: 'dog', emoji: '🐶', label: 'Dog Person', description: 'Met up with a dog lover', created_at: '' },
-      { id: 12, key: 'rainbow', emoji: '🌈', label: 'Rainbow', description: 'Joined a pride event', created_at: '' },
-    ]);
-  }, []);
-
-  useEffect(() => {
-    const fetchBadges = async () => {
-      const allBadges = await getAllBadges();
-      setBadges(allBadges);
-    };
-    fetchBadges();
-  }, []);
-
-  // Example: show notification when a badge is earned (replace with real logic)
-  useEffect(() => {
-    if (userBadges.length > 0) {
-      const lastBadge = userBadges[userBadges.length - 1];
-      const badge = badges.find(b => b.key === lastBadge.badge_key);
-      if (badge) setBadgeNotification(badge);
-    }
-  }, [userBadges, badges]);
-
-  // Badge categories
-  const BadgeCategories = {
-    SOCIAL: 'social',
-    ACTIVITY: 'activity',
-    CONTRIBUTION: 'contribution',
-    MILESTONE: 'milestone'
-  };
-  const categorizedBadges = {
-    [BadgeCategories.SOCIAL]: ['add_friend', 'five_friends'],
-    [BadgeCategories.ACTIVITY]: ['first_meetup', 'five_meetups'],
-    [BadgeCategories.CONTRIBUTION]: ['report_bug'],
-    [BadgeCategories.MILESTONE]: ['account']
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
@@ -416,7 +377,7 @@ const Account = () => {
           {/* Editable Name, Email, Age Section (restyled) */}
           <div className="card mb-8 px-4 py-3 flex flex-col gap-4 bg-white/80 rounded-xl shadow-md">
             <div className="flex flex-row items-center gap-2">
-              <span className="text-xl" aria-hidden>📝</span>
+              <User className="w-5 h-5 text-accent-500 mr-2 inline" />
               <span className="font-semibold">{t('account.name')}</span>
               <span className="text-xs text-gray-400 italic ml-2">{t('account.nameEditHint')}</span>
             </div>
@@ -434,7 +395,7 @@ const Account = () => {
               )}
             </div>
             <div className="flex flex-row items-center gap-2">
-              <span className="text-xl" aria-hidden>✉️</span>
+              <Settings className="w-5 h-5 text-accent-500 mr-2 inline" />
               <span className="font-semibold">{t('account.email')}</span>
               <span className="text-xs text-gray-400 italic ml-2">{t('account.emailEditHint')}</span>
             </div>
@@ -452,7 +413,7 @@ const Account = () => {
               )}
             </div>
             <div className="flex flex-row items-center gap-2">
-              <span className="text-xl" aria-hidden>🎂</span>
+              <User className="w-5 h-5 text-accent-500 mr-2 inline" />
               <span className="font-semibold">{t('account.age')}</span>
               <span className="text-xs text-gray-400 italic ml-2">{t('account.ageEditHint')}</span>
             </div>
@@ -497,7 +458,7 @@ const Account = () => {
                       checked={wantsUpdates}
                       onChange={(e) => setWantsUpdates(e.target.checked)}
                     />
-                    {t('account.wantsUpdatesCheckbox', 'Yeah, I want to receive updates!')}
+                    {t('account.wantsUpdatesCheckbox', 'Surprise me with new stuff')}
                   </label>
                 </div>
               </div>
@@ -510,7 +471,7 @@ const Account = () => {
                       checked={wantsReminders}
                       onChange={(e) => setWantsReminders(e.target.checked)}
                     />
-                    {t('account.wantsRemindersCheckbox', 'Yes, remind me before a meetup!')}
+                    {t('account.wantsRemindersCheckbox', 'Nudge me before a meetup')}
                   </label>
                 </div>
               </div>
@@ -536,7 +497,7 @@ const Account = () => {
                       checked={isPrivate}
                       onChange={(e) => setIsPrivate(e.target.checked)}
                     />
-                    {t('account.isPrivateCheckbox', 'Yeah, I want to keep my profile private!')}
+                    {t('account.isPrivateCheckbox', 'Hide my profile from others')}
                   </label>
                 </div>
               </div>
@@ -603,7 +564,7 @@ const Account = () => {
 
           {/* Password Section */}
           <div className="card mb-8">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.password')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6"><Settings className="w-5 h-5 text-accent-500 mr-2 inline" />{t('account.password')}</h2>
             {showPwForm ? (
               <form onSubmit={e => e.preventDefault()} className="space-y-6">
                 <div className="flex flex-col gap-4">
@@ -662,40 +623,46 @@ const Account = () => {
 
           {/* Badges Section */}
           <div className="card mb-8 bg-white/90 rounded-xl shadow p-6 border border-primary-100">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.yourBadges')}</h2>
-            {Object.entries(categorizedBadges).map(([category, badgeKeys]) => (
-              <div key={category} className="mb-6">
-                <div className="font-semibold text-primary-600 mb-2">{category} Badges</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {badgeKeys.map(badgeKey => {
-                    const badge = badges.find(b => b.key === badgeKey);
-                    if (!badge) return null;
-                    const earned = earnedKeys.has(badge.key);
-                    // Progress for five_friends
-                    let progress = null;
-                    if (badge.key === 'five_friends') {
-                      const friendCount = userBadges.filter(b => b.badge_key === 'add_friend').length + 1; // Example logic
-                      progress = <BadgeProgress badge={badge} currentProgress={friendCount} requiredProgress={5} />;
-                    }
-                    return (
-                      <div
-                        key={badge.key}
-                        className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 transition-all duration-200 ${earned ? 'border-primary-400 bg-white scale-105' : 'border-gray-200 bg-gray-50 opacity-60 grayscale'}`}
-                      >
-                        <span className="text-5xl mb-2">{badge.emoji}</span>
-                        <span className="text-lg font-bold mb-1">{badge.label}</span>
-                        <span className="text-sm text-gray-600 text-center">{badge.description}</span>
-                        {progress}
-                        {earned && (
-                          <button className="btn-secondary mt-2" onClick={() => setShareBadge(badge)}>Share</button>
-                        )}
-                        {!earned && <span className="mt-2 text-xs text-gray-400">{t('account.locked')}</span>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+            <h2 className="text-2xl font-bold text-primary-700 mb-6"><Award className="w-5 h-5 text-accent-500 mr-2 inline" />{t('account.yourBadges')}</h2>
+            <div className="flex gap-4 mb-6">
+              {badgeStatusTabs.map(tab => (
+                <button
+                  key={tab.key}
+                  className={`px-4 py-2 rounded-full font-semibold transition-colors text-base flex items-center gap-2 ${activeBadgeTab === tab.key ? 'bg-accent-500 text-white' : 'bg-accent-50 text-accent-500'}`}
+                  onClick={() => setActiveBadgeTab(tab.key)}
+                >
+                  {tab.label}
+                  <span className="ml-1 bg-white/30 text-xs px-2 py-0.5 rounded-full font-bold">
+                    {tab.key === 'unlocked' ? unlockedBadges.length : tab.key === 'inprogress' ? inProgressBadges.length : lockedBadges.length}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {(activeBadgeTab === 'unlocked' ? unlockedBadges : activeBadgeTab === 'inprogress' ? inProgressBadges : lockedBadges).map(badge => {
+                const earned = earnedKeys.has(badge.key);
+                let progress = null;
+                if (badge.key === 'five_friends') {
+                  const friendCount = userBadges.filter(b => b.badge_key === 'add_friend').length + 1; // Example logic
+                  progress = <BadgeProgress badge={badge} currentProgress={friendCount} requiredProgress={5} />;
+                }
+                return (
+                  <div
+                    key={badge.key}
+                    className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 transition-all duration-200 ${earned ? 'border-primary-400 bg-white scale-105' : badge.key === 'five_friends' ? 'border-accent-500 bg-accent-50' : 'border-gray-200 bg-gray-50 opacity-60 grayscale'}`}
+                  >
+                    <span className="text-5xl mb-2">{badge.emoji}</span>
+                    <span className="text-lg font-bold mb-1">{badge.label}</span>
+                    <span className="text-sm text-gray-600 text-center">{badge.description}</span>
+                    {progress}
+                    {earned && (
+                      <button className="btn-secondary mt-2" onClick={() => setShareBadge(badge)}>Share</button>
+                    )}
+                    {!earned && badge.key !== 'five_friends' && <span className="mt-2 text-xs text-gray-400">{t('account.locked')}</span>}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {badgeNotification && (
@@ -707,7 +674,7 @@ const Account = () => {
 
           {/* Danger Zone */}
           <div className="card border-2 border-red-500">
-            <h2 className="text-2xl font-bold text-red-500 mb-6">{t('account.dangerZone')}</h2>
+            <h2 className="text-2xl font-bold text-red-500 mb-6"><Trash2 className="w-5 h-5 text-red-500 mr-2 inline" />Delete account</h2>
               <button
                 onClick={handleDeleteAccount}
                 className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
@@ -728,9 +695,11 @@ const Account = () => {
 
           {showProfileToast && (
             <Toast
-              message={t('toast.profileUpdated')}
+              message="Got it – settings saved."
               type="success"
               onClose={() => setShowProfileToast(false)}
+              duration={3000}
+              position="bottom-center"
             />
           )}
           {showPasswordToast && (
