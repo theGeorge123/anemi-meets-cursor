@@ -14,6 +14,12 @@ type InvitationWithCafe = {
   cafe_address?: string;
 };
 
+const TIME_SLOT_LABELS: Record<string, string> = {
+  morning: '07:00–12:00',
+  afternoon: '12:00–16:00',
+  evening: '16:00–19:00',
+};
+
 const Invite = () => {
   const { t } = useTranslation();
   const [inviteLink, setInviteLink] = useState("");
@@ -204,6 +210,9 @@ const Invite = () => {
               🕵️‍♂️ Café will be revealed soon! Stay tuned!
             </div>
           )}
+          <div className="mt-2 text-base text-primary-700">
+            {t('invite.timeLabel', 'Time')}: {TIME_SLOT_LABELS[invitation.selected_time] || invitation.selected_time}
+          </div>
         </div>
       )}
 

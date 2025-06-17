@@ -144,6 +144,12 @@ const Respond = () => {
     return msg;
   }
 
+  const TIME_SLOT_LABELS: Record<string, string> = {
+    morning: '07:00–12:00',
+    afternoon: '12:00–16:00',
+    evening: '16:00–19:00',
+  };
+
   useEffect(() => {
     // Scroll to top on mount
     window.scrollTo(0, 0);
@@ -405,7 +411,7 @@ const Respond = () => {
               </div>
               <div className="text-gray-600">
                 {_i18n.language === "nl" ? "Tijd" : "Time"}:{" "}
-                {confirmationInfo.selected_time}
+                {TIME_SLOT_LABELS[confirmationInfo.selected_time] || confirmationInfo.selected_time}
               </div>
               {confirmationInfo.ics_base64 && (
                 <a

@@ -77,6 +77,12 @@ async function logCafeAnalytics({ cafeId, action, userId = null, sessionId = nul
   ]);
 }
 
+const TIME_SLOT_LABELS: Record<string, string> = {
+  morning: '07:00–12:00',
+  afternoon: '12:00–16:00',
+  evening: '16:00–19:00',
+};
+
 const CreateMeetup = () => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
