@@ -170,6 +170,18 @@ export async function rejectFriendRequest(requestId: string) {
   return data;
 }
 
+export async function callAwardBadges(userId: string, action: string, metadata?: any) {
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/award-badges`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+    },
+    body: JSON.stringify({ userId, action, metadata })
+  });
+  return res.json();
+}
+
 export const service = {
   getProfile,
   createInvitation,
@@ -186,6 +198,7 @@ export const service = {
   getIncomingFriendRequests,
   acceptFriendRequest,
   rejectFriendRequest,
+  callAwardBadges,
 };
 
 export default service;

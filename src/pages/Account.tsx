@@ -9,6 +9,9 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
 import type { Badge, UserBadge } from '../types/supabase';
 import { displayCafeTag, displayPriceBracket } from '../utils/display';
+import BadgeNotification from '../components/BadgeNotification';
+import BadgeProgress from '../components/BadgeProgress';
+import BadgeShareModal from '../components/BadgeShareModal';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
@@ -94,6 +97,10 @@ const Account = () => {
       .filter(m => new Date(m.selected_date) >= now)
       .sort((a, b) => new Date(a.selected_date).getTime() - new Date(b.selected_date).getTime())[0] || null;
   }, [myMeetups]);
+
+  // Add state for badge notification and sharing
+  const [badgeNotification, setBadgeNotification] = useState<Badge | null>(null);
+  const [shareBadge, setShareBadge] = useState<Badge | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -320,6 +327,29 @@ const Account = () => {
     };
     fetchBadges();
   }, []);
+
+  // Example: show notification when a badge is earned (replace with real logic)
+  useEffect(() => {
+    if (userBadges.length > 0) {
+      const lastBadge = userBadges[userBadges.length - 1];
+      const badge = badges.find(b => b.key === lastBadge.badge_key);
+      if (badge) setBadgeNotification(badge);
+    }
+  }, [userBadges, badges]);
+
+  // Badge categories
+  const BadgeCategories = {
+    SOCIAL: 'social',
+    ACTIVITY: 'activity',
+    CONTRIBUTION: 'contribution',
+    MILESTONE: 'milestone'
+  };
+  const categorizedBadges = {
+    [BadgeCategories.SOCIAL]: ['add_friend', 'five_friends'],
+    [BadgeCategories.ACTIVITY]: ['first_meetup', 'five_meetups'],
+    [BadgeCategories.CONTRIBUTION]: ['report_bug'],
+    [BadgeCategories.MILESTONE]: ['account']
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
@@ -630,23 +660,50 @@ const Account = () => {
             )}
           </div>
 
-          {/* Badges Section (now between password and danger zone) */}
+          {/* Badges Section */}
           <div className="card mb-8 bg-white/90 rounded-xl shadow p-6 border border-primary-100">
             <h2 className="text-2xl font-bold text-primary-700 mb-6">{t('account.yourBadges')}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {badges.map(badge => (
-                <div
-                  key={badge.key}
-                  className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 transition-all duration-200 ${earnedKeys.has(badge.key) ? 'border-primary-400 bg-white scale-105' : 'border-gray-200 bg-gray-50 opacity-60 grayscale'}`}
-                >
-                  <span className="text-5xl mb-2">{badge.emoji}</span>
-                  <span className="text-lg font-bold mb-1">{badge.label}</span>
-                  <span className="text-sm text-gray-600 text-center">{badge.description}</span>
-                  {!earnedKeys.has(badge.key) && <span className="mt-2 text-xs text-gray-400">{t('account.locked')}</span>}
+            {Object.entries(categorizedBadges).map(([category, badgeKeys]) => (
+              <div key={category} className="mb-6">
+                <div className="font-semibold text-primary-600 mb-2">{category} Badges</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {badgeKeys.map(badgeKey => {
+                    const badge = badges.find(b => b.key === badgeKey);
+                    if (!badge) return null;
+                    const earned = earnedKeys.has(badge.key);
+                    // Progress for five_friends
+                    let progress = null;
+                    if (badge.key === 'five_friends') {
+                      const friendCount = userBadges.filter(b => b.badge_key === 'add_friend').length + 1; // Example logic
+                      progress = <BadgeProgress badge={badge} currentProgress={friendCount} requiredProgress={5} />;
+                    }
+                    return (
+                      <div
+                        key={badge.key}
+                        className={`flex flex-col items-center p-4 rounded-xl shadow-md border-2 transition-all duration-200 ${earned ? 'border-primary-400 bg-white scale-105' : 'border-gray-200 bg-gray-50 opacity-60 grayscale'}`}
+                      >
+                        <span className="text-5xl mb-2">{badge.emoji}</span>
+                        <span className="text-lg font-bold mb-1">{badge.label}</span>
+                        <span className="text-sm text-gray-600 text-center">{badge.description}</span>
+                        {progress}
+                        {earned && (
+                          <button className="btn-secondary mt-2" onClick={() => setShareBadge(badge)}>Share</button>
+                        )}
+                        {!earned && <span className="mt-2 text-xs text-gray-400">{t('account.locked')}</span>}
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
+
+          {badgeNotification && (
+            <BadgeNotification badge={badgeNotification} onClose={() => setBadgeNotification(null)} />
+          )}
+          {shareBadge && (
+            <BadgeShareModal badge={shareBadge} onClose={() => setShareBadge(null)} />
+          )}
 
           {/* Danger Zone */}
           <div className="card border-2 border-red-500">
