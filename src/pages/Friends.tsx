@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
+import Toast from '../components/Toast';
+import { getFriends, acceptFriendRequest, rejectFriendRequest, removeFriend } from '../services/supabaseService';
 
 interface User {
   id: string;
@@ -28,8 +30,9 @@ const Friends = () => {
   const [sendError, setSendError] = useState('');
   const [pendingSent, setPendingSent] = useState<FriendRequest[]>([]);
   const [pendingReceived, setPendingReceived] = useState<FriendRequest[]>([]);
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friends, setFriends] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -57,10 +60,9 @@ const Friends = () => {
       .eq('status', 'pending')
       .then(({ data }) => setPendingReceived((data as FriendRequest[]) || []));
     // Fetch friends (accepted requests)
-    supabase.rpc('get_friends_for_user', { uid_param: user.id })
-      .then(({ data }) => setFriends((data as Friend[]) || []));
+    getFriends(user.id).then(setFriends);
     setLoading(false);
-  }, [user, sendStatus]);
+  }, [user, sendStatus, toast]);
 
   const handleSendRequest = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,6 +78,7 @@ const Friends = () => {
     if (error || !profile) {
       setSendStatus('error');
       setSendError(t('friends.errorNoUser', 'No user found with that email.'));
+      setToast({ message: t('friends.errorNoUser', 'No user found with that email.'), type: 'error' });
       return;
     }
     // Send request
@@ -85,18 +88,38 @@ const Friends = () => {
     if (reqError) {
       setSendStatus('error');
       setSendError(reqError.message);
+      setToast({ message: reqError.message, type: 'error' });
     } else {
       setSendStatus('success');
       setEmail('');
+      setToast({ message: t('friends.requestSent'), type: 'success' });
     }
   };
 
   const handleRespond = async (id: string, accept: boolean) => {
-    await supabase
-      .from('friend_requests')
-      .update({ status: accept ? 'accepted' : 'rejected' })
-      .eq('id', id);
-    setSendStatus('idle');
+    try {
+      if (accept) {
+        await acceptFriendRequest(id);
+        setToast({ message: t('friends.accepted', 'Friend request accepted!'), type: 'success' });
+      } else {
+        await rejectFriendRequest(id);
+        setToast({ message: t('friends.rejected', 'Friend request rejected.'), type: 'info' });
+      }
+      setSendStatus('idle');
+    } catch (err: any) {
+      setToast({ message: err.message || t('friends.errorAction', 'Something went wrong.'), type: 'error' });
+    }
+  };
+
+  const handleRemoveFriend = async (friendId: string) => {
+    if (!user) return;
+    try {
+      await removeFriend(user.id, friendId);
+      setToast({ message: t('friends.removed', 'Friend removed.'), type: 'success' });
+      setFriends(friends.filter(f => f.id !== friendId));
+    } catch (err: any) {
+      setToast({ message: err.message || t('friends.errorRemove', 'Could not remove friend.'), type: 'error' });
+    }
   };
 
   return (
@@ -164,9 +187,10 @@ const Friends = () => {
           ) : (
             <ul>
               {friends.map(f => (
-                <li key={f.friend_id} className="mb-1 flex items-center gap-2">
-                  <span className="font-mono text-primary-700">{f.friend_id}</span>
-                  <span className="text-green-600 text-xs">☕️</span>
+                <li key={f.id} className="mb-1 flex items-center gap-2">
+                  <span className="text-2xl">{f.emoji || '👤'}</span>
+                  <span className="font-bold text-primary-700">{f.fullName || f.email}</span>
+                  <button className="btn-secondary btn-xs ml-2" onClick={() => handleRemoveFriend(f.id)}>{t('friends.remove', 'Remove')}</button>
                 </li>
               ))}
             </ul>
@@ -178,6 +202,14 @@ const Friends = () => {
         <h2 className="text-lg font-semibold mb-2">🚫 {t('friends.block')}</h2>
         <div className="text-gray-400 italic">{t('friends.blockDesc')}</div>
       </section>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+          position="bottom-right"
+        />
+      )}
     </main>
   );
 };

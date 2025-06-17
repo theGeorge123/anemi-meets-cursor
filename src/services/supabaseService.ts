@@ -182,6 +182,18 @@ export async function callAwardBadges(userId: string, action: string, metadata?:
   return res.json();
 }
 
+/**
+ * Verwijder een vriend (unfriend). Beide richtingen worden verwijderd.
+ */
+export async function removeFriend(userId: string, friendId: string) {
+  const { error } = await supabase
+    .from('friendships')
+    .delete()
+    .or(`and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`);
+  if (error) throw new Error("Kon vriend niet verwijderen. Probeer het straks nog eens!");
+  return true;
+}
+
 export const service = {
   getProfile,
   createInvitation,
@@ -199,6 +211,7 @@ export const service = {
   acceptFriendRequest,
   rejectFriendRequest,
   callAwardBadges,
+  removeFriend,
 };
 
 export default service;

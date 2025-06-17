@@ -8,6 +8,7 @@ import DateSelector from '../features/meetups/components/DateSelector';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import { displayCafeTag, displayPriceBracket } from '../utils/display';
+import Toast from '../components/Toast';
 
 interface City { id: string; name: string; }
 interface Cafe {
@@ -99,6 +100,7 @@ const CreateMeetup = () => {
   const [cityError, setCityError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [userCafePreferences, setUserCafePreferences] = useState<{ tags?: string[]; price_bracket?: string } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   // Fetch cities (no longer restricted to just Rotterdam)
   useEffect(() => {
@@ -111,6 +113,7 @@ const CreateMeetup = () => {
         if (error) {
           console.error('Error fetching cities:', error);
           setCityError(t('common.errorLoadingCities'));
+          setToast({ message: t('common.errorLoadingCities'), type: 'error' });
           // Provide default cities if the query fails
           setCities([
             { id: 'default-rotterdam', name: 'Rotterdam' },
@@ -119,6 +122,7 @@ const CreateMeetup = () => {
           ]);
         } else if (data && data.length > 0) {
           setCities(data as City[]);
+          setToast({ message: t('meetup.citiesLoaded', 'Cities loaded!'), type: 'success' });
         } else {
           // If no cities found in the database, create default ones
           setCities([
@@ -126,10 +130,12 @@ const CreateMeetup = () => {
             { id: 'default-amsterdam', name: 'Amsterdam' },
             { id: 'default-utrecht', name: 'Utrecht' }
           ]);
+          setToast({ message: t('meetup.noCitiesAvailable', 'No cities available. Using Rotterdam as default.'), type: 'info' });
         }
       } catch (err) {
         console.error('Exception fetching cities:', err);
         setCityError(t('common.errorLoadingCities'));
+        setToast({ message: t('common.errorLoadingCities'), type: 'error' });
         // Fallback to default cities
         setCities([
           { id: 'default-rotterdam', name: 'Rotterdam' },
@@ -733,7 +739,7 @@ const CreateMeetup = () => {
           <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">{t('meetup.summary')}</h2>
           <div className="mb-4">
             <div className="mb-2"><span className="font-medium">{t('meetup.name')}:</span> {formData.name}</div>
-            <div className="mb-2"><span className="font-medium">{t('meetup.city')}:</span> {formData.city}</div>
+            <div className="mb-2"><span className="font-medium">{t('meetup.city')}:</span> {formData.city || t('meetup.noCitySelected', 'No city selected')}</div>
             <div className="mb-2"><span className="font-medium">{t('meetup.selectedDates')}:</span>
               <ul className="list-disc ml-6">
                 {formData.dates.map(date => {
@@ -756,6 +762,14 @@ const CreateMeetup = () => {
             <button type="button" onClick={handleSubmit} className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500">{t('meetup.submit')}</button>
           </div>
         </div>
+      )}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+          position="bottom-right"
+        />
       )}
     </div>
   );
