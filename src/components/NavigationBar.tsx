@@ -57,14 +57,18 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
           {filteredLinks.map(link => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className={`px-3 py-2 rounded-xl font-medium transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center text-center ${activePath === link.to ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-primary-50'} active:scale-95 active:bg-primary-100`}
-              aria-current={activePath === link.to ? 'page' : undefined}
-            >
-              {link.label}
-            </Link>
+            link.to === '/login' && isAuthenticated ? (
+              <span key="logged-in" className="px-3 py-2 rounded-xl font-medium text-green-700 bg-green-100">Yes, you're logged in!</span>
+            ) : (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`px-3 py-2 rounded-xl font-medium transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center text-center ${activePath === link.to ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-primary-50'} active:scale-95 active:bg-primary-100`}
+                aria-current={activePath === link.to ? 'page' : undefined}
+              >
+                {link.label}
+              </Link>
+            )
           ))}
           {/* Language Switcher Dropdown */}
           <div className="ml-4 relative">

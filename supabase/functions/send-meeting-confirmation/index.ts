@@ -59,7 +59,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, apikey, authorization",
       },
     });
   }
@@ -69,7 +69,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       JSON.stringify({ error: "Only POST requests allowed." }),
       {
         status: 405,
-        headers: { "Access-Control-Allow-Origin": "*" },
+        headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
       },
     );
   }
@@ -93,7 +93,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         JSON.stringify({ error: "Server misconfiguration" }),
         {
           status: 500,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
         },
       );
     }
@@ -112,7 +112,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         JSON.stringify({ error: "Missing required fields" }),
         {
           status: 400,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
         },
       );
     }
@@ -130,7 +130,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       console.error("fetch_error", { message: fetchError?.message });
       return new Response(JSON.stringify({ error: "Invitation not found" }), {
         status: 404,
-        headers: { "Access-Control-Allow-Origin": "*" },
+        headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
       });
     }
 
@@ -140,7 +140,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         JSON.stringify({ error: "Invitation already used" }),
         {
           status: 400,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
         },
       );
     }
@@ -154,7 +154,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         JSON.stringify({ error: "Email does not match invitation" }),
         {
           status: 400,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
         },
       );
     }
@@ -172,7 +172,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         JSON.stringify({ error: "Could not update invitation" }),
         {
           status: 500,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
         },
       );
     }
@@ -184,7 +184,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         JSON.stringify({ error: "Invitation data incomplete" }),
         {
           status: 500,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
         },
       );
     }
@@ -199,7 +199,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       console.error("cafe_error", { message: cafeError?.message });
       return new Response(JSON.stringify({ error: "Cafe not found" }), {
         status: 404,
-        headers: { "Access-Control-Allow-Origin": "*" },
+        headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
       });
     }
 
@@ -315,14 +315,14 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       }),
       {
         status: 200,
-        headers: { "Access-Control-Allow-Origin": "*" },
+        headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, apikey, authorization" },
       },
     );
   } catch (e) {
     console.error("unhandled_error", { message: (e as Error).message });
     return new Response(JSON.stringify({ error: "Unexpected server error" }), {
       status: 500,
-      headers: { "Access-Control-Allow-Origin": "*" },
+      headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" },
     });
   }
 }
