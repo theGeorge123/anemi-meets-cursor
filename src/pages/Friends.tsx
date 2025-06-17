@@ -18,10 +18,6 @@ interface FriendRequest {
   created_at: string;
 }
 
-interface Friend {
-  friend_id: string;
-}
-
 const Friends = () => {
   const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
