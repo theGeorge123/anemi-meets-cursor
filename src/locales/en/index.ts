@@ -25,7 +25,7 @@ export const en = {
       error: "Couldn't submit: {{error}}",
       success: "Thanks! We've received your report.",
     },
-    testimonialsTitle: "What our users say",
+    testimonialsTitle: "What our users would say",
     testimonial1: "Anemi Meets saves me so much time! — Sophie, Rotterdam",
     freeAccountInfo:
       "With a free account you can instantly plan Meetups and send invites!",
@@ -371,5 +371,21 @@ export const en = {
   success: {
     cta: "Want to get back to real connections too? Register now!",
     ctaButton: "Create account",
+  },
+  betaSignup: {
+    title: "Stay Tuned for the Beta!",
+    description: "Want to be the first to sip the new Anemi Meets? Sign up for our beta and we'll keep you in the loop!",
+    tagline: "Anemi Meets is all about making new friends over coffee, in real life. No swiping, just sipping!",
+    emailPlaceholder: "Your email address ☕️",
+    sending: "Sending...",
+    cta: "Count me in!",
+    invalidEmail: "Please enter a valid email address! ☕️",
+    alreadyOnList: "You're already on the list! ☕️",
+    error: "Oops! Something went wrong. Try again later.",
+    success: "You're on the list! We'll let you know when the coffee's ready. ☕️✨"
+  },
+  inviteFriend: {
+    stayStranger: "Stay a stranger",
+    joinFamily: "Join the family",
   },
 };

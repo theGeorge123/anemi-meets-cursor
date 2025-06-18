@@ -11,6 +11,7 @@ type InvitationWithCafe = {
   cafe_id?: string;
   cafe_name?: string;
   cafe_address?: string;
+  date_time_options?: { date: string; time: string }[];
 };
 
 const TIME_SLOT_LABELS: Record<string, string> = {
@@ -55,7 +56,7 @@ const Invite = () => {
         try {
           const { data: inviteData, error: inviteError } = await supabase
             .from("invitations")
-            .select("selected_date, selected_time, cafe_id")
+            .select("selected_date, selected_time, cafe_id, date_time_options")
             .eq("token", token)
             .maybeSingle();
           if (inviteError) {
@@ -145,13 +146,6 @@ const Invite = () => {
 
   return (
     <div className="max-w-2xl mx-auto text-center px-2 sm:px-4 py-6">
-      {inviteLink && <Confetti numberOfPieces={180} recycle={false} />}
-      <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-4">
-        {t("invite.titleStepCloser", "You're almost there! 🎉") ===
-        "invite.titleStepCloser"
-          ? "You're almost there! 🎉"
-          : t("invite.titleStepCloser", "You're almost there! 🎉")}
-      </h1>
       {/* <img src={happyGif} alt="Happy connect" className="mx-auto mb-6 w-40 sm:w-56 rounded-xl shadow-lg" style={{maxWidth:'100%'}} /> */}
       {/* <LoadingIndicator
         label={t("common.loading")}
@@ -176,7 +170,20 @@ const Invite = () => {
             <span className="text-2xl">☕</span>
             <span className="font-bold text-xl">{invitation.cafe_name || t('invite.cafeInfoPending', 'Café will be revealed soon!')}</span>
             {invitation.cafe_address && <span className="text-gray-700">{invitation.cafe_address}</span>}
-            <span className="text-primary-700 mt-2">Time: {TIME_SLOT_LABELS[invitation.selected_time] || invitation.selected_time}</span>
+            {invitation?.date_time_options && invitation.date_time_options.length > 0 && (
+              <div className="mt-4">
+                <div className="font-semibold mb-1 text-primary-700">{t('invite.allProposedTimes', 'All suggested dates & times:')}</div>
+                <ul className="flex flex-col gap-1 items-center">
+                  {invitation.date_time_options.map((opt, i) => (
+                    <li key={i} className="text-primary-700">
+                      <span className="font-mono bg-primary-100 rounded px-2 py-1">
+                        {opt.date} — {TIME_SLOT_LABELS[opt.time] || opt.time}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           {detailsLoading && (
             <SkeletonLoader count={1} height="h-8" className="my-2" ariaLabel={t("common.loading")} />

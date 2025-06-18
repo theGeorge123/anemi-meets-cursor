@@ -109,13 +109,13 @@ const InviteFriend = () => {
               onClick={handleAcceptGuest}
               disabled={acceptLoading || !email}
             >
-              {acceptLoading ? t('loading') : t('inviteFriend.acceptAsGuest', 'Accept as guest')}
+              {acceptLoading ? t('loading') : t('inviteFriend.stayStranger', 'Stay a stranger')}
             </button>
             <button
               className="btn-secondary w-full sm:w-auto"
               onClick={handleSignupRedirect}
             >
-              {t('inviteFriend.signupAndAccept', 'Create account & accept')}
+              {t('inviteFriend.joinFamily', 'Join the family')}
             </button>
           </div>
           {acceptError && <div className="text-red-500 mb-4">{acceptError}</div>}

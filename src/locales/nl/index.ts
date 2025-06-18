@@ -25,7 +25,7 @@ export const nl = {
       error: "Oeps! Melding versturen mislukt: {{error}}",
       success: "Bedankt! We hebben je melding ontvangen.",
     },
-    testimonialsTitle: "Wat anderen zeggen",
+    testimonialsTitle: "Wat onze gebruikers zouden zeggen",
     testimonial1: "Anemi Meets bespaart me zoveel tijd! — Sophie, Rotterdam",
     freeAccountInfo:
       "Met een gratis account kun je direct Meetups plannen en uitnodigingen versturen.",
@@ -115,6 +115,10 @@ export const nl = {
       "Oeps, kopiëren mislukt! Probeer het nog eens of roep de link gewoon door de kamer!",
     description: "Share this link so your friend can confirm.",
     copy: "Copy link",
+    inviteFriend: {
+      stayStranger: "Blijf een onbekende",
+      joinFamily: "Word lid van de familie",
+    },
   },
   respond: {
     title: "Je hebt een koffie-uitnodiging! ☕️🥳",
@@ -419,5 +423,17 @@ export const nl = {
   success: {
     cta: "Wil jij ook terug naar echte connecties?\nRegistreer dan nu!",
     ctaButton: "Account aanmaken",
+  },
+  betaSignup: {
+    title: "Blijf op de hoogte van de Beta!",
+    description: "Wil je als eerste de nieuwe Anemi Meets proberen? Meld je aan voor onze beta en we houden je op de hoogte!",
+    tagline: "Anemi Meets draait om nieuwe vrienden maken met koffie, in het echt. Geen swipen, gewoon slurpen!",
+    emailPlaceholder: "Jouw e-mailadres ☕️",
+    sending: "Versturen...",
+    cta: "Ik doe mee!",
+    invalidEmail: "Vul een geldig e-mailadres in! ☕️",
+    alreadyOnList: "Je staat al op de lijst! ☕️",
+    error: "Oeps! Er ging iets mis. Probeer het later opnieuw.",
+    success: "Je staat op de lijst! We laten het weten als de koffie klaar is. ☕️✨"
   },
 };

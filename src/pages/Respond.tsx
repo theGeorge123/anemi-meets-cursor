@@ -354,7 +354,17 @@ const Respond = () => {
       const data = await res.json();
       if (!res.ok || !data.success) {
         if (res.status === 401) {
-          setErrorMsg(_i18n.language === 'nl' ? 'Je sessie is verlopen of je bent niet ingelogd. Log opnieuw in en probeer het nog eens.' : 'Your session has expired or you are not logged in. Please log in again and try.');
+          setErrorMsg(_i18n.language === 'nl'
+            ? 'Je sessie is verlopen of je bent niet ingelogd. Log opnieuw in en probeer het nog eens.'
+            : 'Your session has expired or you are not logged in. Please log in again and try.');
+        } else if (data.error && typeof data.error === 'string' && data.error.toLowerCase().includes('already accepted')) {
+          setErrorMsg(_i18n.language === 'nl'
+            ? 'Deze uitnodiging is al geaccepteerd.'
+            : 'This invite has already been accepted.');
+        } else if (data.error && typeof data.error === 'string' && (data.error.toLowerCase().includes('expired') || data.error.toLowerCase().includes('not found'))) {
+          setErrorMsg(_i18n.language === 'nl'
+            ? 'Deze uitnodiging is verlopen of ongeldig.'
+            : 'This invitation is expired or invalid.');
         } else {
           setErrorMsg(mapRespondError(t, data, _i18n));
           console.error("Supabase error:", data.error || data);

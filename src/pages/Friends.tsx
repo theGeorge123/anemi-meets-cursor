@@ -119,6 +119,21 @@ const Friends = () => {
     }
   };
 
+  const getFriendlyError = (err: any, t: any) => {
+    if (!err) return t('friends.errorAction', 'Something went wrong.');
+    const msg = err.message || String(err);
+    if (msg.includes('RLS') || msg.includes('row level security')) {
+      return t('friends.errorRLS', 'You do not have permission to perform this action.');
+    }
+    if (msg.includes('already accepted')) {
+      return t('friends.errorAlreadyAccepted', 'This request was already accepted.');
+    }
+    if (msg.includes('network') || msg.includes('Failed to fetch')) {
+      return t('friends.errorNetwork', 'Network error. Please try again.');
+    }
+    return msg;
+  };
+
   const handleRespond = async (id: string, accept: boolean) => {
     try {
       if (accept) {
@@ -130,7 +145,8 @@ const Friends = () => {
       }
       setSendStatus('idle');
     } catch (err: any) {
-      setToast({ message: err.message || t('friends.errorAction', 'Something went wrong.'), type: 'error' });
+      console.error('Friend request action failed:', err);
+      setToast({ message: getFriendlyError(err, t), type: 'error' });
     }
   };
 

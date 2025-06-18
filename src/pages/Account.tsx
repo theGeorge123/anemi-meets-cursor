@@ -32,6 +32,7 @@ interface Profile {
     [key: string]: any;
   };
   lastSeen?: string;
+  preferred_language: string;
 }
 
 interface Invitation {
@@ -67,6 +68,9 @@ const Account = () => {
   const [editName, setEditName] = useState(name);
   const [editEmail, setEditEmail] = useState(email);
   const [editAge, setEditAge] = useState(age);
+
+  // Add state for preferred language
+  const [preferredLanguage, setPreferredLanguage] = useState<string>('en');
 
   const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
 
@@ -115,6 +119,9 @@ const Account = () => {
   const inProgressBadges = badges.filter(b => !earnedKeys.has(b.key) && b.key === 'five_friends'); // Example: only five_friends is progress
   const lockedBadges = badges.filter(b => !earnedKeys.has(b.key) && b.key !== 'five_friends');
 
+  // Add state for prefs toast
+  const [prefsToast, setPrefsToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -151,6 +158,7 @@ const Account = () => {
         setWantsNotifications(!!profileData.wantsNotifications);
         setIsPrivate(!!profileData.isPrivate);
         setPreferences(profileData.preferences || {});
+        setPreferredLanguage(profileData.preferred_language || 'en');
       } else {
         setUser(null);
       }
@@ -232,8 +240,9 @@ const Account = () => {
       preferences,
     }).eq('id', user.id);
     if (error) {
-      console.error('Fout bij opslaan voorkeuren:', error);
+      setPrefsToast({ message: t('account.errorPrefsUpdate', 'Could not save preferences.'), type: 'error' });
     } else {
+      setPrefsToast({ message: t('account.prefsSaved', 'Preferences saved!'), type: 'success' });
       setShowProfileToast(true);
     }
     setPrefsSaving(false);
@@ -284,20 +293,21 @@ const Account = () => {
   const handleProfileSave = async () => {
     if (!user || !user.id) return;
     // Update name and age in profiles table
-    const { error } = await supabase.from('profiles').update({ fullName: editName, age: editAge }).eq('id', user.id);
-    if (!error && editEmail !== email) {
-      // Update email in auth
-      const { error: emailError } = await supabase.auth.updateUser({ email: editEmail });
-      if (emailError) {
-        setShowProfileToast(false);
-        alert(t('account.errorEmailUpdate', 'Could not update email.'));
-        return;
-      }
-      setEmail(editEmail);
-    }
+    const { error } = await supabase.from('profiles').update({
+      fullName: editName,
+      email: editEmail,
+      age: editAge,
+      preferred_language: preferredLanguage,
+      wantsUpdates,
+      wantsReminders,
+      wantsNotifications,
+      isPrivate,
+      preferences,
+    }).eq('id', user.id);
     if (!error) {
       setName(editName);
       setAge(editAge);
+      setEmail(editEmail);
       setShowProfileToast(true);
       setEditingProfile(false);
     } else {
@@ -438,6 +448,23 @@ const Account = () => {
                 />
               ) : (
                 <span className="mobile-text text-lg">{age !== '' ? age : 'immortal'}</span>
+              )}
+            </div>
+            <div className="flex flex-row items-center gap-2">
+              <span className="font-semibold">{t('account.preferredLanguage', 'Preferred language')}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
+              {editingProfile ? (
+                <select
+                  className="input-field"
+                  value={preferredLanguage}
+                  onChange={e => setPreferredLanguage(e.target.value)}
+                >
+                  <option value="en">English</option>
+                  <option value="nl">Nederlands</option>
+                </select>
+              ) : (
+                <span className="mobile-text text-lg">{preferredLanguage === 'nl' ? 'Nederlands' : 'English'}</span>
               )}
             </div>
             <div className="flex gap-2 mt-2">
@@ -715,6 +742,15 @@ const Account = () => {
               message={t('toast.passwordChanged')}
               type="success"
               onClose={() => setShowPasswordToast(false)}
+            />
+          )}
+
+          {prefsToast && (
+            <Toast
+              message={prefsToast.message}
+              type={prefsToast.type}
+              onClose={() => setPrefsToast(null)}
+              position="bottom-right"
             />
           )}
         </div>
