@@ -26,9 +26,10 @@ interface Profile {
   wantsReminders?: boolean;
   wantsNotifications?: boolean;
   isPrivate: boolean;
-  cafe_preferences?: {
+  preferences?: {
     tags?: string[];
-    price_bracket?: string;
+    price?: string;
+    [key: string]: any;
   };
   lastSeen?: string;
 }
@@ -87,8 +88,7 @@ const Account = () => {
   ];
   const PRICE_BRACKET_OPTIONS = ['low', 'mid', 'high'];
 
-  const [cafePrefTags, setCafePrefTags] = useState<string[]>([]);
-  const [cafePrefPrice, setCafePrefPrice] = useState<string>('');
+  const [preferences, setPreferences] = useState<{ tags?: string[]; price?: string }>({});
 
   // Find next upcoming meetup
   const nextMeetup = useMemo(() => {
@@ -150,10 +150,7 @@ const Account = () => {
         setWantsReminders(profileData.wantsReminders !== false);
         setWantsNotifications(!!profileData.wantsNotifications);
         setIsPrivate(!!profileData.isPrivate);
-        if (profileData.cafe_preferences) {
-          setCafePrefTags(profileData.cafe_preferences.tags || []);
-          setCafePrefPrice(profileData.cafe_preferences.price_bracket || '');
-        }
+        setPreferences(profileData.preferences || {});
       } else {
         setUser(null);
       }
@@ -227,16 +224,12 @@ const Account = () => {
     if (wantsNotifications && Notification.permission !== 'granted') {
       await requestBrowserNotificationPermission();
     }
-    const cafe_preferences = {
-      tags: cafePrefTags,
-      price_bracket: cafePrefPrice,
-    };
     const { error } = await supabase.from('profiles').update({
       wantsUpdates,
       wantsReminders,
       wantsNotifications,
       isPrivate,
-      cafe_preferences,
+      preferences,
     }).eq('id', user.id);
     if (error) {
       console.error('Fout bij opslaan voorkeuren:', error);
@@ -312,6 +305,20 @@ const Account = () => {
     }
   };
 
+  const handleTagToggle = async (tag: string) => {
+    if (!user) return;
+    const tags = preferences.tags || [];
+    const newTags = tags.includes(tag) ? tags.filter(t => t !== tag) : [...tags, tag];
+    setPreferences(prev => ({ ...prev, tags: newTags }));
+    await supabase.from('profiles').update({ preferences: { ...preferences, tags: newTags } }).eq('id', user.id);
+  };
+
+  const handlePriceSelect = async (price: string) => {
+    if (!user) return;
+    setPreferences(prev => ({ ...prev, price }));
+    await supabase.from('profiles').update({ preferences: { ...preferences, price } }).eq('id', user.id);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2f1] to-[#b2dfdb]">
       <div className="container mx-auto px-4 sm:px-6 py-8">
@@ -350,16 +357,17 @@ const Account = () => {
 
           {/* Emoji Section */}
           <div className="card mb-6 flex flex-col items-center">
-            <div className="text-6xl mb-4">{selectedEmoji || '👤'}</div>
-            <div className="flex flex-col gap-1">
+            <div className="text-7xl mb-4">{selectedEmoji || '👤'}</div>
+            <div className="flex flex-col gap-2">
               {EMOJI_ROWS.map((row, rowIdx) => (
-                <div key={rowIdx} className="flex gap-1 justify-center">
+                <div key={rowIdx} className="flex gap-2 justify-center">
                   {row.map((emoji) => (
                     <button
                       key={emoji}
                       onClick={() => handleEmojiSelect(emoji)}
-                      className="w-8 h-8 text-xl hover:scale-110 transition-transform p-0"
+                      className={`w-12 h-12 text-3xl rounded-full border-2 transition-transform p-0 ${selectedEmoji === emoji ? 'border-primary-600 scale-110 bg-primary-100' : 'border-gray-200 bg-white hover:border-primary-400'}`}
                       disabled={emojiLoading}
+                      aria-pressed={selectedEmoji === emoji}
                     >
                       {emoji}
                     </button>
@@ -511,9 +519,9 @@ const Account = () => {
                         <button
                           key={tag}
                           type="button"
-                          className={`px-2 py-1 rounded-full border text-xs font-semibold transition ${cafePrefTags.includes(tag) ? 'bg-primary-200 border-primary-500 text-primary-900' : 'bg-gray-100 border-gray-300 text-gray-500'}`}
-                          onClick={() => setCafePrefTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
-                          aria-pressed={cafePrefTags.includes(tag)}
+                          className={`px-2 py-1 rounded-full border text-xs font-semibold transition ${preferences.tags?.includes(tag) ? 'bg-primary-200 border-primary-500 text-primary-900' : 'bg-gray-100 border-gray-300 text-gray-500'}`}
+                          onClick={() => handleTagToggle(tag)}
+                          aria-pressed={preferences.tags?.includes(tag)}
                         >
                           {displayCafeTag(tag, t)}
                         </button>
@@ -527,18 +535,18 @@ const Account = () => {
                         <button
                           key={bracket}
                           type="button"
-                          className={`px-3 py-1 rounded-full border text-xs font-semibold transition ${cafePrefPrice === bracket ? 'bg-primary-200 border-primary-500 text-primary-900' : 'bg-gray-100 border-gray-300 text-gray-500'}`}
-                          onClick={() => setCafePrefPrice(bracket)}
-                          aria-pressed={cafePrefPrice === bracket}
+                          className={`px-3 py-1 rounded-full border text-xs font-semibold transition ${preferences.price === bracket ? 'bg-primary-200 border-primary-500 text-primary-900' : 'bg-gray-100 border-gray-300 text-gray-500'}`}
+                          onClick={() => handlePriceSelect(bracket)}
+                          aria-pressed={preferences.price === bracket}
                         >
                           {displayPriceBracket(bracket, t)}
                         </button>
                       ))}
                       <button
                         type="button"
-                        className={`px-3 py-1 rounded-full border text-xs font-semibold transition ${cafePrefPrice === '' ? 'bg-primary-100 border-primary-300 text-primary-700' : 'bg-gray-100 border-gray-300 text-gray-400'}`}
-                        onClick={() => setCafePrefPrice('')}
-                        aria-pressed={cafePrefPrice === ''}
+                        className={`px-3 py-1 rounded-full border text-xs font-semibold transition ${!preferences.price ? 'bg-primary-100 border-primary-300 text-primary-700' : 'bg-gray-100 border-gray-300 text-gray-400'}`}
+                        onClick={() => handlePriceSelect('')}
+                        aria-pressed={!preferences.price}
                       >
                         {t('account.noPreference', 'No preference')}
                       </button>

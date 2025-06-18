@@ -32,6 +32,7 @@ const Invite = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [canShare, setCanShare] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   useEffect(() => {
     // Check if Web Share API is available
@@ -41,19 +42,18 @@ const Invite = () => {
   useEffect(() => {
     if (token) {
       setInviteLink(`${window.location.origin}/respond/${token}`);
-      (async () => {
-        setLoading(true);
-        setError(null);
-        const cached = localStorage.getItem(`friend_invite_${token}`);
-        if (!navigator.onLine && cached) {
-          try {
-            setInvitation(JSON.parse(cached));
-            setLoading(false);
-            return;
-          } catch (err) {
-            console.error(err);
-          }
+      // Show cached data instantly if available
+      const cached = localStorage.getItem(`friend_invite_${token}`);
+      if (cached) {
+        try {
+          setInvitation(JSON.parse(cached));
+        } catch (err) {
+          // ignore
         }
+      }
+      (async () => {
+        setDetailsLoading(true);
+        setError(null);
         try {
           const { data: inviteData, error: inviteError } = await supabase
             .from("invitations")
@@ -61,19 +61,9 @@ const Invite = () => {
             .eq("token", token)
             .maybeSingle();
           if (inviteError) {
-            setError(
-              t(
-                "invite.errorNotFound",
-                "This invitation link is invalid or expired.",
-              ),
-            );
+            setError(t("invite.errorNotFound", "This invitation link is invalid or expired."));
           } else if (!inviteData) {
-            setError(
-              t(
-                "invite.errorNotFound",
-                "This invitation link is invalid or expired.",
-              ),
-            );
+            setError(t("invite.errorNotFound", "This invitation link is invalid or expired."));
           } else {
             if (inviteData.cafe_id) {
               const { data: cafeData, error: cafeError } = await supabase
@@ -83,25 +73,16 @@ const Invite = () => {
                 .maybeSingle();
               if (!cafeError && cafeData) {
                 (inviteData as InvitationWithCafe).cafe_name = cafeData.name;
-                (inviteData as InvitationWithCafe).cafe_address =
-                  cafeData.address;
+                (inviteData as InvitationWithCafe).cafe_address = cafeData.address;
               }
             }
             setInvitation(inviteData as InvitationWithCafe);
-            localStorage.setItem(
-              `friend_invite_${token}`,
-              JSON.stringify(inviteData),
-            );
+            localStorage.setItem(`friend_invite_${token}`, JSON.stringify(inviteData));
           }
         } catch (err) {
-          setError(
-            t(
-              "invite.errorNotFound",
-              "This invitation link is invalid or expired.",
-            ),
-          );
+          setError(t("invite.errorNotFound", "This invitation link is invalid or expired."));
         } finally {
-          setLoading(false);
+          setDetailsLoading(false);
         }
       })();
     }
@@ -195,24 +176,17 @@ const Invite = () => {
       {invitation && (
         <div className="mb-6 bg-primary-50 rounded-xl p-4 shadow-md">
           <div className="font-semibold text-lg text-primary-700 mb-2">
-            {t(
-              "invite.detailsHeading",
-              "Here are the details for your meetup!",
-            )}
+            {t("invite.detailsHeading", "Here are the details for your meetup!")}
           </div>
-          {invitation.cafe_name ? (
-            <div className="mb-1">
-              ☕ <b>{invitation.cafe_name}</b>{" "}
-              {invitation.cafe_address ? `- ${invitation.cafe_address}` : ""}
-            </div>
-          ) : (
-            <div className="mb-1 text-gray-500">
-              🕵️‍♂️ Café will be revealed soon! Stay tuned!
-            </div>
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-2xl">☕</span>
+            <span className="font-bold text-xl">{invitation.cafe_name || t('invite.cafeInfoPending', 'Café will be revealed soon!')}</span>
+            {invitation.cafe_address && <span className="text-gray-700">{invitation.cafe_address}</span>}
+            <span className="text-primary-700 mt-2">Time: {TIME_SLOT_LABELS[invitation.selected_time] || invitation.selected_time}</span>
+          </div>
+          {detailsLoading && (
+            <SkeletonLoader count={1} height="h-8" className="my-2" ariaLabel={t("common.loading")} />
           )}
-          <div className="mt-2 text-base text-primary-700">
-            {t('invite.timeLabel', 'Time')}: {TIME_SLOT_LABELS[invitation.selected_time] || invitation.selected_time}
-          </div>
         </div>
       )}
 

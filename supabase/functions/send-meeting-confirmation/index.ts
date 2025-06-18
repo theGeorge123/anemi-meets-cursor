@@ -270,9 +270,11 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       isEnglish ? "Add to Google Calendar" : "Voeg toe aan Google Calendar"
     }</a></p>`;
 
+    // Always send to both parties, regardless of wantsReminders
     const recipients: string[] = [];
-    if (await wantsReminders(supabase, email_a)) recipients.push(email_a);
-    if (await wantsReminders(supabase, email_b)) recipients.push(email_b);
+    if (email_a) recipients.push(email_a);
+    if (email_b && email_b !== email_a) recipients.push(email_b);
+    console.log('Sending confirmation email to:', recipients);
 
     if (recipients.length > 0) {
       const emailRes = await fetch("https://api.resend.com/emails", {
@@ -298,6 +300,9 @@ export async function handleConfirmation(req: Request): Promise<Response> {
         throw new Error("Email not sent: " + (await emailRes.text()));
       }
     }
+
+    // TODO: Auto-friendship creation if a new user signs up via invite
+    // This could be handled here or in a signup trigger/edge function
 
     // @ts-expect-error Deno globals are available in Edge Functions
     const inviteLink = `${Deno.env.get("PUBLIC_SITE_URL") || "https://anemimeets.com"}/invite-friend/${token}`;

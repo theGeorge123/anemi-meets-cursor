@@ -14,6 +14,7 @@ interface Invitation {
   cafe_name?: string;
   cafe_address?: string;
   date_time_options?: { date: string; times: string[] }[];
+  email_a?: string;
 }
 interface Cafe {
   name: string;
@@ -324,6 +325,7 @@ const Respond = () => {
         token: string;
         email: string;
         email_b: string;
+        email_a?: string;
         selected_date: string;
         selected_time: string;
         cafe_id: string;
@@ -333,6 +335,7 @@ const Respond = () => {
         token: invitation.token,
         email: formData.email,
         email_b: formData.email,
+        email_a: invitation?.email_a || '',
         selected_date: datePart,
         selected_time: timePart,
         cafe_id: cafeId!,
@@ -350,8 +353,12 @@ const Respond = () => {
       );
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setErrorMsg(mapRespondError(t, data, _i18n));
-        console.error("Supabase error:", data.error || data);
+        if (res.status === 401) {
+          setErrorMsg(_i18n.language === 'nl' ? 'Je sessie is verlopen of je bent niet ingelogd. Log opnieuw in en probeer het nog eens.' : 'Your session has expired or you are not logged in. Please log in again and try.');
+        } else {
+          setErrorMsg(mapRespondError(t, data, _i18n));
+          console.error("Supabase error:", data.error || data);
+        }
       } else {
         setSubmitted(true);
         // Log en bewaar de response data (development only)
@@ -395,24 +402,37 @@ const Respond = () => {
               ? "Je ontvangt een bevestiging per e-mail. Veel plezier!"
               : "You will receive a confirmation by email. Enjoy your meetup!"}
           </p>
-          {confirmationInfo && (
+          {submitted && confirmationInfo && (
             <div className="bg-white rounded-lg shadow p-4 mb-4 w-full text-center">
               <div className="font-semibold text-primary-700 mb-1">
-                {_i18n.language === "nl" ? "Café" : "Cafe"}:{" "}
-                {confirmationInfo.cafe_name}
+                {_i18n.language === "nl" ? "Café" : "Cafe"}: {confirmationInfo.cafe_name}
               </div>
               <div className="text-gray-600 mb-1">
-                {_i18n.language === "nl" ? "Adres" : "Address"}:{" "}
-                {confirmationInfo.cafe_address}
+                {_i18n.language === "nl" ? "Adres" : "Address"}: {confirmationInfo.cafe_address}
               </div>
               <div className="text-gray-600 mb-1">
-                {_i18n.language === "nl" ? "Datum" : "Date"}:{" "}
-                {confirmationInfo.selected_date}
+                {_i18n.language === "nl" ? "Datum" : "Date"}: {confirmationInfo.selected_date}
               </div>
-              <div className="text-gray-600">
-                {_i18n.language === "nl" ? "Tijd" : "Time"}:{" "}
-                {TIME_SLOT_LABELS[confirmationInfo.selected_time] || confirmationInfo.selected_time}
+              <div className="text-gray-600 mb-1">
+                {_i18n.language === "nl" ? "Tijd" : "Time"}: {TIME_SLOT_LABELS[confirmationInfo.selected_time] || confirmationInfo.selected_time}
               </div>
+              {/* Show all available times */}
+              {invitation?.date_time_options && (
+                <div className="mt-2">
+                  <div className="font-semibold text-primary-700 mb-1">
+                    {_i18n.language === "nl" ? "Alle voorgestelde tijden:" : "All suggested times:"}
+                  </div>
+                  <ul className="flex flex-wrap gap-2 justify-center">
+                    {invitation.date_time_options.map(opt =>
+                      opt.times.map(time => (
+                        <li key={opt.date + time} className="bg-primary-50 px-3 py-1 rounded-full border border-primary-200 text-primary-800 text-sm">
+                          {new Date(opt.date).toLocaleDateString(_i18n.language === 'nl' ? 'nl-NL' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' })} – {TIME_SLOT_LABELS[time] || time}
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              )}
               {confirmationInfo.ics_base64 && (
                 <a
                   href={`data:text/calendar;base64,${confirmationInfo.ics_base64}`}
