@@ -1,15 +1,14 @@
-import { useState, useContext, useEffect, Fragment, useRef } from 'react';
+import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { NavigationContext } from '../context/NavigationContext';
 import ErrorBoundary from './ErrorBoundary';
-import { Transition } from '@headlessui/react';
 
 export interface NavigationBarProps {
   profileEmoji?: string;
 }
 const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { activePath, isAuthenticated } = useContext(NavigationContext);
 
