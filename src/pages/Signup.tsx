@@ -77,6 +77,18 @@ const Signup = () => {
     e.preventDefault();
     if (!validateForm()) return;
     setLoading(true);
+    // === BETA CHECK: Remove this block after beta ===
+    const { data: betaData, error: betaError } = await supabase
+      .from('beta_signups')
+      .select('status')
+      .eq('email', form.email)
+      .maybeSingle();
+    if (betaError || !betaData || betaData.status !== 'accepted') {
+      setErrors(errs => ({ ...errs, email: t('signup.betaNotAccepted', 'You are not (yet) accepted for the beta.') }));
+      setLoading(false);
+      return;
+    }
+    // === END BETA CHECK ===
     // Probeer altijd te registreren, maar geef altijd dezelfde feedback
     const { error: signUpError } = await supabase.auth.signUp({
       email: form.email,
