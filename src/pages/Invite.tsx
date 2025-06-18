@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 import Confetti from "react-confetti";
-import LoadingIndicator from "../components/LoadingIndicator";
 import SkeletonLoader from "../components/SkeletonLoader";
 
 type InvitationWithCafe = {
