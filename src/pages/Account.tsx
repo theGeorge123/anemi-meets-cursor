@@ -135,8 +135,11 @@ const Account = () => {
       }
       // --- NEW: Sync Google profile info to Supabase profiles table ---
       const user = session.user;
-      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+      let fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
       const email = user.email;
+      if (!fullName && email) {
+        fullName = email.split('@')[0];
+      }
       // Upsert profile info (id, fullName, email)
       await supabase.from('profiles').upsert({
         id: user.id,
@@ -292,26 +295,38 @@ const Account = () => {
 
   const handleProfileSave = async () => {
     if (!user || !user.id) return;
-    // Update name and age in profiles table
-    const { error } = await supabase.from('profiles').update({
+    // Validate required fields
+    if (!editName.trim() || !editEmail.trim()) {
+      alert(t('account.errorRequiredFields', 'Name and email are required.'));
+      return;
+    }
+    // Sanitize age
+    const sanitizedAge = editAge === '' ? null : Number(editAge);
+    // Prepare update object
+    const updateObj: any = {
       fullName: editName,
       email: editEmail,
-      age: editAge,
+      age: sanitizedAge,
       preferred_language: preferredLanguage,
       wantsUpdates,
       wantsReminders,
       wantsNotifications,
       isPrivate,
       preferences,
-    }).eq('id', user.id);
+    };
+    const { error } = await supabase.from('profiles').update(updateObj).eq('id', user.id);
     if (!error) {
       setName(editName);
-      setAge(editAge);
+      setAge(sanitizedAge === null ? '' : sanitizedAge);
       setEmail(editEmail);
       setShowProfileToast(true);
       setEditingProfile(false);
     } else {
-      alert(t('account.errorProfileUpdate', 'Could not update profile.'));
+      if (error.code === '23505' || (error.message && error.message.toLowerCase().includes('duplicate'))) {
+        alert(t('account.errorDuplicateEmail', 'This email is already in use.'));
+      } else {
+        alert(t('account.errorProfileUpdate', 'Could not update profile.'));
+      }
     }
   };
 

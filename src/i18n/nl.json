@@ -18,5 +18,18 @@
   },
   "signup": {
     "betaNotAccepted": "Hey! Je zit (nog) niet in de beta. Geen zorgen, we laten het je weten zodra je mee kan doen! ☕"
+  },
+  "account": {
+    "preferredLanguageFun": "Taal van je koffiegesprekken ☕️",
+    "name": "Naam",
+    "email": "E-mail",
+    "notSpecified": "Niet opgegeven",
+    "nameEditHint": "Wil je een coolere naam? Pas hem hier aan!",
+    "emailEditHint": "Verkeerd e-mailadres? Pas het aan!",
+    "age": "Hoe oud ben je?",
+    "ageEditHint": "Hoe jong voel je je? Typ het in!",
+    "edit": "Bewerken",
+    "save": "Opslaan",
+    "cancel": "Annuleren"
   }
 } 

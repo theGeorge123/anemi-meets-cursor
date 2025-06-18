@@ -139,10 +139,37 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
+    setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
     });
-    if (error) setError(normalizeAuthError(t, error));
+    if (error) {
+      setError(normalizeAuthError(t, error));
+      setLoading(false);
+      return;
+    }
+    // Wait for the user to be logged in (OAuth redirect)
+    setTimeout(async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        const { data } = await supabase
+          .from('beta_signups')
+          .select('status')
+          .eq('email', user.email)
+          .maybeSingle();
+        if (data?.status !== 'accepted') {
+          setBetaToast({ message: t('beta.notAccepted'), type: 'info' });
+          setTimeout(() => {
+            supabase.auth.signOut();
+            setBetaToast(null);
+          }, 3500);
+          setLoading(false);
+          return;
+        }
+      }
+      setLoading(false);
+      navigate("/dashboard");
+    }, 1000); // Wait a moment for OAuth session
   };
 
   return (

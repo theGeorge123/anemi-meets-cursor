@@ -44,5 +44,18 @@
   },
   "signup": {
     "betaNotAccepted": "Hey! You're not in the beta (yet). Hang tight, we'll let you know when you can join! ☕"
+  },
+  "account": {
+    "preferredLanguageFun": "Language for your coffee chats ☕️",
+    "name": "Name",
+    "email": "Email",
+    "notSpecified": "Not specified",
+    "nameEditHint": "Want a cooler name? Change it here!",
+    "emailEditHint": "Wrong email? Fix it!",
+    "age": "How old are you?",
+    "ageEditHint": "How young do you feel? Type it in!",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel"
   }
 }
