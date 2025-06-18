@@ -24,5 +24,10 @@
   },
   "common": {
     "date": "Date"
+  },
+  "beta": {
+    "notAccepted": "Oops! You're not in the beta (yet). Stay tuned, coffee friend!",
+    "acceptedEmailSubject": "You're in! Welcome to the Anemi Meets Beta ☕️",
+    "acceptedEmailBody": "Hey coffee friend! You've been accepted to the Anemi Meets beta. Log in and start sipping! ☕️✨"
   }
 }

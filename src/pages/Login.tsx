@@ -6,6 +6,7 @@ import { supabase } from "../supabaseClient";
 import LoadingIndicator from "../components/LoadingIndicator";
 import FormStatus from "../components/FormStatus";
 import ErrorBoundary from "../components/ErrorBoundary";
+import Toast from '../components/Toast';
 
 const UPDATES_EMAIL_KEY = "anemi-updates-email";
 
@@ -22,6 +23,7 @@ const Login = () => {
   const [resetMsg, setResetMsg] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [betaToast, setBetaToast] = useState<{ message: string; type: 'info' | 'error' } | null>(null);
 
   useEffect(() => {
     // Prefill email if saved
@@ -99,6 +101,24 @@ const Login = () => {
     if (error) {
       setError(normalizeAuthError(t, error));
     } else {
+      // Beta check after successful login
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        const { data } = await supabase
+          .from('beta_signups')
+          .select('status')
+          .eq('email', user.email)
+          .maybeSingle();
+        if (data?.status !== 'accepted') {
+          setBetaToast({ message: t('beta.notAccepted'), type: 'info' });
+          setTimeout(() => {
+            supabase.auth.signOut();
+            setBetaToast(null);
+          }, 3500);
+          setLoading(false);
+          return;
+        }
+      }
       navigate("/dashboard");
     }
     setLoading(false);
@@ -259,6 +279,15 @@ const Login = () => {
         <div className="text-red-600 text-sm mt-2" aria-live="assertive">
           {error}
         </div>
+      )}
+
+      {betaToast && (
+        <Toast
+          message={betaToast.message}
+          type={betaToast.type}
+          onClose={() => setBetaToast(null)}
+          position="top-right"
+        />
       )}
     </main>
   );

@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import BetaSignup from '../components/BetaSignup';
 
 const Home = () => {
   const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-white flex flex-col items-center">
+      {/* Beta Signup Section */}
+      <BetaSignup />
       {/* Main Hero */}
       <section className="w-full flex flex-col-reverse md:flex-row items-center justify-between max-w-4xl mx-auto px-4 py-8 md:py-16">
         {/* Left: Text */}
@@ -90,7 +93,7 @@ const Home = () => {
               <span className="text-2xl">☕️</span>
             </div>
             <blockquote className="text-base text-gray-700 font-medium italic text-center mt-2">
-              “I love how easy it is to pick a café!”
+              "I love how easy it is to pick a café!"
             </blockquote>
           </div>
           <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center justify-center border-2 border-orange-200" style={{ width: 180, height: 180 }}>
@@ -98,7 +101,7 @@ const Home = () => {
               <span className="text-2xl">🎉</span>
             </div>
             <blockquote className="text-base text-gray-700 font-medium italic text-center mt-2">
-              “No more endless group chats. Just coffee!”
+              "No more endless group chats. Just coffee!"
             </blockquote>
           </div>
           <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center justify-center border-2 border-orange-200" style={{ width: 180, height: 180 }}>
@@ -106,7 +109,7 @@ const Home = () => {
               <span className="text-2xl">💬</span>
             </div>
             <blockquote className="text-base text-gray-700 font-medium italic text-center mt-2">
-              “Finally found a way to actually meet up with friends!”
+              "Finally found a way to actually meet up with friends!"
             </blockquote>
           </div>
         </div>
