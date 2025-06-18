@@ -152,6 +152,31 @@ const Signup = () => {
     setTimeout(() => navigate('/check-email'), 2000);
   };
 
+  // Add a function to handle the email step next button
+  const handleEmailStepNext = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validate email
+    const emailError = validateEmail(form.email);
+    if (emailError) {
+      setErrors(errs => ({ ...errs, email: emailError }));
+      return;
+    }
+    setLoading(true);
+    // === BETA CHECK: Remove this block after beta ===
+    const { data: betaData, error: betaError } = await supabase
+      .from('beta_signups')
+      .select('status')
+      .eq('email', form.email)
+      .maybeSingle();
+    if (betaError || !betaData || betaData.status !== 'accepted') {
+      setErrors(errs => ({ ...errs, email: t('signup.betaNotAccepted') }));
+      setLoading(false);
+      return;
+    }
+    setLoading(false);
+    setStep(2); // Move to password step
+  };
+
   // Prevent iOS auto-zoom on input focus
   useEffect(() => {
     const viewport = document.querySelector('meta[name=viewport]');
@@ -182,7 +207,14 @@ const Signup = () => {
             </div>
           ))}
         </div>
-        <form onSubmit={step === steps.length - 1 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }}
+        <form onSubmit={step === steps.length - 1 ? handleSubmit : (e) => {
+          if (step === 1) {
+            handleEmailStepNext(e);
+          } else {
+            e.preventDefault();
+            nextStep();
+          }
+        }}
           className="space-y-4 flex flex-col justify-between mt-2">
           {step === 0 && (
             <div>
