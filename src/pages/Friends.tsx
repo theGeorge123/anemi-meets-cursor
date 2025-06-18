@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import Toast from '../components/Toast';
 import { getFriends, acceptFriendRequest, rejectFriendRequest, removeFriend } from '../services/supabaseService';
+import type { Profile } from '../types/supabase';
 
 interface User {
   id: string;
@@ -26,6 +27,8 @@ const Friends = () => {
   const [sendError, setSendError] = useState('');
   const [pendingSent, setPendingSent] = useState<FriendRequest[]>([]);
   const [pendingReceived, setPendingReceived] = useState<FriendRequest[]>([]);
+  const [sentProfiles, setSentProfiles] = useState<Record<string, Profile>>({});
+  const [receivedProfiles, setReceivedProfiles] = useState<Record<string, Profile>>({});
   const [friends, setFriends] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -48,13 +51,37 @@ const Friends = () => {
       .select('*')
       .eq('requester_id', user.id)
       .eq('status', 'pending')
-      .then(({ data }) => setPendingSent((data as FriendRequest[]) || []));
+      .then(async ({ data }) => {
+        setPendingSent((data as FriendRequest[]) || []);
+        // Fetch addressee profiles
+        if (data && data.length > 0) {
+          const ids = data.map((r: FriendRequest) => r.addressee_id);
+          const { data: profiles } = await supabase.from('profiles').select('*').in('id', ids);
+          const map: Record<string, Profile> = {};
+          (profiles || []).forEach((p: Profile) => { map[p.id] = p; });
+          setSentProfiles(map);
+        } else {
+          setSentProfiles({});
+        }
+      });
     // Fetch pending received requests
     supabase.from('friend_requests')
       .select('*')
       .eq('addressee_id', user.id)
       .eq('status', 'pending')
-      .then(({ data }) => setPendingReceived((data as FriendRequest[]) || []));
+      .then(async ({ data }) => {
+        setPendingReceived((data as FriendRequest[]) || []);
+        // Fetch requester profiles
+        if (data && data.length > 0) {
+          const ids = data.map((r: FriendRequest) => r.requester_id);
+          const { data: profiles } = await supabase.from('profiles').select('*').in('id', ids);
+          const map: Record<string, Profile> = {};
+          (profiles || []).forEach((p: Profile) => { map[p.id] = p; });
+          setReceivedProfiles(map);
+        } else {
+          setReceivedProfiles({});
+        }
+      });
     // Fetch friends (accepted requests)
     getFriends(user.id).then(setFriends);
     setLoading(false);
@@ -149,12 +176,15 @@ const Friends = () => {
               <div className="text-gray-500 mb-2 italic">😶 {t('friends.none')}</div>
             ) : (
               <ul className="mb-4">
-                {pendingSent.map(req => (
-                  <li key={req.id} className="mb-1 flex items-center gap-2">
-                    <span className="font-mono text-primary-700">{req.addressee_id}</span>
-                    <span className="text-yellow-600 text-xs">⏳</span>
-                  </li>
-                ))}
+                {pendingSent.map(req => {
+                  const profile = sentProfiles[req.addressee_id];
+                  return (
+                    <li key={req.id} className="mb-1 flex items-center gap-2">
+                      <span className="font-mono text-primary-700">{profile ? (profile.fullName || profile.email) : req.addressee_id}</span>
+                      <span className="text-yellow-600 text-xs">⏳</span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
             <div className="mb-2 font-medium">{t('friends.received')}:</div>
@@ -162,13 +192,16 @@ const Friends = () => {
               <div className="text-gray-500 italic">🕵️‍♂️ {t('friends.none')}</div>
             ) : (
               <ul>
-                {pendingReceived.map(req => (
-                  <li key={req.id} className="mb-2 flex items-center gap-2">
-                    <span className="font-mono text-primary-700">{req.requester_id}</span>
-                    <button className="btn-primary btn-xs" onClick={() => handleRespond(req.id, true)}>{t('friends.accept')}</button>
-                    <button className="btn-secondary btn-xs" onClick={() => handleRespond(req.id, false)}>{t('friends.reject')}</button>
-                  </li>
-                ))}
+                {pendingReceived.map(req => {
+                  const profile = receivedProfiles[req.requester_id];
+                  return (
+                    <li key={req.id} className="mb-2 flex items-center gap-2">
+                      <span className="font-mono text-primary-700">{profile ? (profile.fullName || profile.email) : req.requester_id}</span>
+                      <button className="btn-primary btn-xs" onClick={() => handleRespond(req.id, true)}>{t('friends.accept')}</button>
+                      <button className="btn-secondary btn-xs" onClick={() => handleRespond(req.id, false)}>{t('friends.reject')}</button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </>
