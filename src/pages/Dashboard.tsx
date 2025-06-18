@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import LoadingIndicator from "../components/LoadingIndicator";
 import SkeletonLoader from "../components/SkeletonLoader";
 import OnboardingModal from "../features/dashboard/components/OnboardingModal";
+import NavigationBarWithBoundary from '../components/NavigationBar';
 
 interface Invitation {
   id: string;
@@ -240,156 +241,159 @@ const Dashboard = () => {
     sortedMeetups.length > 0 ? sortedMeetups[sortedMeetups.length - 1] : null;
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
-      {showOnboarding && (
-        <OnboardingModal
-          onFinish={() => {
-            setShowOnboarding(false);
-            localStorage.removeItem("anemi-show-onboarding");
-            localStorage.setItem("anemi-onboarded", "1");
-          }}
-        />
-      )}
-      {/* Welcome message at the top */}
-      <div className="flex items-center gap-3 mb-6">
-        {profile?.emoji && (
-          <span className="text-4xl" title={profile.fullName}>
-            {profile.emoji}
-          </span>
+    <>
+      <NavigationBarWithBoundary profileEmoji={profile?.emoji} />
+      <div className="max-w-2xl mx-auto py-8 px-4">
+        {showOnboarding && (
+          <OnboardingModal
+            onFinish={() => {
+              setShowOnboarding(false);
+              localStorage.removeItem("anemi-show-onboarding");
+              localStorage.setItem("anemi-onboarded", "1");
+            }}
+          />
         )}
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
-            {t("dashboard.welcome")}, {profile?.fullName || t("dashboard.user")}!
-          </h1>
-          {profile && (
-            <div className="text-gray-600 text-sm">
-              {t("dashboard.lastLogin", {
-                date: profile.lastSeen
-                  ? new Date(profile.lastSeen).toLocaleDateString()
-                  : "",
-              })}
+        {/* Welcome message at the top */}
+        <div className="flex items-center gap-3 mb-6">
+          {profile?.emoji && (
+            <span className="text-4xl" title={profile.fullName}>
+              {profile.emoji}
+            </span>
+          )}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
+              {t("dashboard.welcome")}, {profile?.fullName || t("dashboard.user")}!
+            </h1>
+            {profile && (
+              <div className="text-gray-600 text-sm">
+                {t("dashboard.lastLogin", {
+                  date: profile.lastSeen
+                    ? new Date(profile.lastSeen).toLocaleDateString()
+                    : "",
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+        {/* Next Meetup Section (just below welcome) */}
+        {nextMeetup && (
+          <div className="card mb-6 bg-primary-50 border-l-4 border-primary-400 p-4 flex flex-col sm:flex-row items-center justify-between">
+            <div>
+              <div className="text-lg font-semibold text-primary-700 mb-1">
+                {t("dashboard.nextMeetup", "Your next meetup")}
+              </div>
+              <div className="text-base text-primary-800">
+                {nextMeetup.selected_date}{" "}
+                {nextMeetup.selected_time && `, ${nextMeetup.selected_time}`}
+                {nextMeetup.cafe_name && <span> @ {nextMeetup.cafe_name}</span>}
+              </div>
+            </div>
+            <button className="btn-primary mt-3 sm:mt-0">
+              {t("dashboard.viewMeetup", "View details")}
+            </button>
+          </div>
+        )}
+
+        {/* Welkomstbericht */}
+        {lastActivity && (
+          <div className="mb-6">
+            <div className="text-gray-700 text-base">
+              {t("dashboard.lastActivity")}:{" "}
+              <span className="font-semibold">
+                {lastActivity.selected_date}
+                {lastActivity.selected_time && `, ${lastActivity.selected_time}`}
+              </span>
+              {lastActivity.cafe_name && <span> @ {lastActivity.cafe_name}</span>}
+            </div>
+          </div>
+        )}
+
+        {/* Samenvatting aankomende meetups */}
+        <div className="mb-8">
+          <h2 className="text-lg font-bold text-primary-700 mb-2">
+            {t("dashboard.upcomingMeetups")}
+          </h2>
+          {loading && (
+            <>
+              <LoadingIndicator
+                label={t("common.loading")}
+                size="md"
+                className="my-4"
+              />
+              <SkeletonLoader
+                count={2}
+                height="h-16"
+                className="my-2"
+                ariaLabel={t("common.loading")}
+              />
+            </>
+          )}
+          {error && <div className="text-red-500 mb-4">{error}</div>}
+          {!loading && !error && upcoming.length === 0 && (
+            <div className="text-gray-600 text-center">
+              {t("dashboard.noMeetups")}
             </div>
           )}
+          {!loading && !error && upcoming.length > 0 && (
+            <ul className="space-y-4">
+              {upcoming.slice(0, 3).map((m) => (
+                <li
+                  key={m.id}
+                  className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100"
+                >
+                  <div>
+                    <span className="font-semibold text-primary-700">
+                      {m.selected_date}
+                    </span>
+                    {m.selected_time && <span> &bull; {m.selected_time}</span>}
+                    {m.cafe_name && <span> &bull; {m.cafe_name}</span>}
+                    {!m.cafe_name && m.cafe_id && (
+                      <span>
+                        {" "}
+                        &bull; {t("cafe")} {m.cafe_id}
+                      </span>
+                    )}
+                  </div>
+                  <span
+                    className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === "confirmed" ? "bg-green-100 text-green-700" : m.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-200 text-gray-700"}`}
+                  >
+                    {t(`account.status.${m.status}`)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      </div>
-      {/* Next Meetup Section (just below welcome) */}
-      {nextMeetup && (
-        <div className="card mb-6 bg-primary-50 border-l-4 border-primary-400 p-4 flex flex-col sm:flex-row items-center justify-between">
-          <div>
-            <div className="text-lg font-semibold text-primary-700 mb-1">
-              {t("dashboard.nextMeetup", "Your next meetup")}
-            </div>
-            <div className="text-base text-primary-800">
-              {nextMeetup.selected_date}{" "}
-              {nextMeetup.selected_time && `, ${nextMeetup.selected_time}`}
-              {nextMeetup.cafe_name && <span> @ {nextMeetup.cafe_name}</span>}
-            </div>
-          </div>
-          <button className="btn-primary mt-3 sm:mt-0">
-            {t("dashboard.viewMeetup", "View details")}
+
+        {/* Call-to-action knoppen */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <button
+            className="btn-primary flex-1 text-center active:scale-95 active:bg-primary-100"
+            onClick={() => navigate("/create-meetup")}
+            aria-label={t("dashboard.ctaNewMeetup")}
+          >
+            {t("dashboard.ctaNewMeetup")}
+          </button>
+          <button
+            className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
+            onClick={() => navigate("/account")}
+            aria-label={t("dashboard.ctaProfile")}
+          >
+            {t("dashboard.ctaProfile")}
+          </button>
+          <button
+            className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate("/login");
+            }}
+            aria-label={t("dashboard.ctaLogout")}
+          >
+            {t("dashboard.ctaLogout")}
           </button>
         </div>
-      )}
-
-      {/* Welkomstbericht */}
-      {lastActivity && (
-        <div className="mb-6">
-          <div className="text-gray-700 text-base">
-            {t("dashboard.lastActivity")}:{" "}
-            <span className="font-semibold">
-              {lastActivity.selected_date}
-              {lastActivity.selected_time && `, ${lastActivity.selected_time}`}
-            </span>
-            {lastActivity.cafe_name && <span> @ {lastActivity.cafe_name}</span>}
-          </div>
-        </div>
-      )}
-
-      {/* Samenvatting aankomende meetups */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold text-primary-700 mb-2">
-          {t("dashboard.upcomingMeetups")}
-        </h2>
-        {loading && (
-          <>
-            <LoadingIndicator
-              label={t("common.loading")}
-              size="md"
-              className="my-4"
-            />
-            <SkeletonLoader
-              count={2}
-              height="h-16"
-              className="my-2"
-              ariaLabel={t("common.loading")}
-            />
-          </>
-        )}
-        {error && <div className="text-red-500 mb-4">{error}</div>}
-        {!loading && !error && upcoming.length === 0 && (
-          <div className="text-gray-600 text-center">
-            {t("dashboard.noMeetups")}
-          </div>
-        )}
-        {!loading && !error && upcoming.length > 0 && (
-          <ul className="space-y-4">
-            {upcoming.slice(0, 3).map((m) => (
-              <li
-                key={m.id}
-                className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100"
-              >
-                <div>
-                  <span className="font-semibold text-primary-700">
-                    {m.selected_date}
-                  </span>
-                  {m.selected_time && <span> &bull; {m.selected_time}</span>}
-                  {m.cafe_name && <span> &bull; {m.cafe_name}</span>}
-                  {!m.cafe_name && m.cafe_id && (
-                    <span>
-                      {" "}
-                      &bull; {t("cafe")} {m.cafe_id}
-                    </span>
-                  )}
-                </div>
-                <span
-                  className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === "confirmed" ? "bg-green-100 text-green-700" : m.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-200 text-gray-700"}`}
-                >
-                  {t(`account.status.${m.status}`)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
-
-      {/* Call-to-action knoppen */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <button
-          className="btn-primary flex-1 text-center active:scale-95 active:bg-primary-100"
-          onClick={() => navigate("/create-meetup")}
-          aria-label={t("dashboard.ctaNewMeetup")}
-        >
-          {t("dashboard.ctaNewMeetup")}
-        </button>
-        <button
-          className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
-          onClick={() => navigate("/account")}
-          aria-label={t("dashboard.ctaProfile")}
-        >
-          {t("dashboard.ctaProfile")}
-        </button>
-        <button
-          className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
-          onClick={async () => {
-            await supabase.auth.signOut();
-            navigate("/login");
-          }}
-          aria-label={t("dashboard.ctaLogout")}
-        >
-          {t("dashboard.ctaLogout")}
-        </button>
-      </div>
-    </div>
+    </>
   );
 };
 

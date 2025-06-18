@@ -8,7 +8,7 @@ export interface NavigationBarProps {
   profileEmoji?: string;
 }
 const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { activePath, isAuthenticated } = useContext(NavigationContext);
 
@@ -22,6 +22,12 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
 
   // Filter links op authenticatie
   const filteredLinks = NAV_LINKS.filter(link => !link.auth || isAuthenticated);
+
+  // Language selector handler
+  const LANGUAGES = [
+    { code: 'en', label: 'EN' },
+    { code: 'nl', label: 'NL' },
+  ];
 
   return (
     <nav className="w-full bg-white/90 border-b border-primary-100 shadow-sm fixed top-0 left-0 z-40" role="navigation">
@@ -52,22 +58,39 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
             </span>
           )}
         </div>
-        {/* Mobile hamburger menu */}
-        <div className="md:hidden flex items-center gap-2">
-          <button
-            className="flex items-center justify-center w-11 h-11 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 hover:bg-primary-50 transition-colors active:scale-95 active:bg-primary-100 min-h-[44px] min-w-[44px]"
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="Menu"
-            aria-expanded={menuOpen}
-          >
-            <svg className="w-6 h-6 text-primary-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              {menuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+        {/* Language selector and burger menu always together on the right */}
+        <div className="flex items-center gap-2 md:gap-1">
+          {/* Language selector: always visible */}
+          <div className="flex gap-1 items-center" aria-label="Language selector">
+            {LANGUAGES.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => i18n.changeLanguage(lang.code)}
+                className={`px-2 py-1 rounded text-sm font-semibold border transition-colors ${i18n.language === lang.code ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-primary-700 border-primary-200 hover:bg-primary-50'}`}
+                aria-pressed={i18n.language === lang.code}
+                aria-label={lang.label}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+          {/* Mobile hamburger menu */}
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              className="flex items-center justify-center w-11 h-11 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 hover:bg-primary-50 transition-colors active:scale-95 active:bg-primary-100 min-h-[44px] min-w-[44px]"
+              onClick={() => setMenuOpen(v => !v)}
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+            >
+              <svg className="w-6 h-6 text-primary-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                {menuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
       {/* Mobile menu */}
