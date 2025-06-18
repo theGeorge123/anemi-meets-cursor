@@ -15,5 +15,8 @@
     "signupAndAccept": "Maak een account & accepteer",
     "success": "Jullie zijn nu vrienden! Je wordt doorgestuurd...",
     "errorAccept": "Uitnodiging kon niet worden geaccepteerd."
+  },
+  "signup": {
+    "betaNotAccepted": "Hey! Je zit (nog) niet in de beta. Geen zorgen, we laten het je weten zodra je mee kan doen! ☕"
   }
 } 

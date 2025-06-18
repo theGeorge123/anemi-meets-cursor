@@ -41,5 +41,8 @@
     "signupAndAccept": "Create account & accept",
     "success": "You are now friends! Redirecting...",
     "errorAccept": "Could not accept invite."
+  },
+  "signup": {
+    "betaNotAccepted": "Hey! You're not in the beta (yet). Hang tight, we'll let you know when you can join! ☕"
   }
 }

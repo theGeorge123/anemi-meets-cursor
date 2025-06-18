@@ -84,7 +84,7 @@ const Signup = () => {
       .eq('email', form.email)
       .maybeSingle();
     if (betaError || !betaData || betaData.status !== 'accepted') {
-      setErrors(errs => ({ ...errs, email: t('signup.betaNotAccepted', 'You are not (yet) accepted for the beta.') }));
+      setErrors(errs => ({ ...errs, email: t('signup.betaNotAccepted') }));
       setLoading(false);
       return;
     }
