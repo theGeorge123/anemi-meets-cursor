@@ -279,6 +279,7 @@ export const en = {
     overviewTitle: "Overview of your details",
     submit: "Sign up",
     steps: ["Name", "Email", "Password", "Overview"],
+    betaNotAccepted: "Hey! You're not in the beta (yet). Hang tight, we'll let you know when you can join! ☕"
   },
   onboarding: {
     welcome: {

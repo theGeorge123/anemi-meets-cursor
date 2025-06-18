@@ -306,6 +306,7 @@ export const nl = {
     overviewTitle: "Overzicht van je gegevens",
     submit: "Registreren",
     steps: ["Naam", "E-mail", "Wachtwoord", "Overzicht"],
+    betaNotAccepted: "Hey! Je zit (nog) niet in de beta. Geen zorgen, we laten het je weten zodra je mee kan doen! ☕"
   },
   onboarding: {
     welcome: {
