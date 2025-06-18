@@ -54,6 +54,7 @@ export const en = {
     namePlaceholder: "Your name",
     emailPlaceholder: "Enter your email address",
     messagePlaceholder: "Type your message here...",
+    preferredLanguageFun: "Language for your coffee chats ☕️",
   },
   navigation: {
     home: "Home",

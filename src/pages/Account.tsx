@@ -450,8 +450,8 @@ const Account = () => {
                 <span className="mobile-text text-lg">{age !== '' ? age : 'immortal'}</span>
               )}
             </div>
-            <div className="flex flex-row items-center gap-2">
-              <span className="font-semibold">{t('account.preferredLanguage', 'Preferred language')}</span>
+            <div className="flex flex-row items-center gap-2 mt-4">
+              <span className="font-semibold">{t('account.preferredLanguageFun')}</span>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 items-center">
               {editingProfile ? (

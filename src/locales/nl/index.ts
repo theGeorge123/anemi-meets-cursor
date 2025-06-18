@@ -54,6 +54,7 @@ export const nl = {
     namePlaceholder: "Jouw naam",
     emailPlaceholder: "Voer je e-mailadres in",
     messagePlaceholder: "Typ hier je bericht...",
+    preferredLanguageFun: "Taal van je koffiegesprekken ☕️",
   },
   navigation: {
     home: "Home",
