@@ -29,7 +29,6 @@ const Invite = () => {
   const { token } = useParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const [invitation, setInvitation] = useState<InvitationWithCafe | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [canShare, setCanShare] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -155,21 +154,17 @@ const Invite = () => {
           : t("invite.titleStepCloser", "You're almost there! 🎉")}
       </h1>
       {/* <img src={happyGif} alt="Happy connect" className="mx-auto mb-6 w-40 sm:w-56 rounded-xl shadow-lg" style={{maxWidth:'100%'}} /> */}
-      {loading && (
-        <>
-          <LoadingIndicator
-            label={t("common.loading")}
-            size="md"
-            className="my-4"
-          />
-          <SkeletonLoader
-            count={1}
-            height="h-24"
-            className="my-2"
-            ariaLabel={t("common.loading")}
-          />
-        </>
-      )}
+      {/* <LoadingIndicator
+        label={t("common.loading")}
+        size="md"
+        className="my-4"
+      /> */}
+      {/* <SkeletonLoader
+        count={1}
+        height="h-24"
+        className="my-2"
+        ariaLabel={t("common.loading")}
+      /> */}
       {error && (
         <div className="text-red-600 font-semibold text-lg mb-4">{error}</div>
       )}
@@ -190,7 +185,7 @@ const Invite = () => {
         </div>
       )}
 
-      {invitation && !loading && !error && (
+      {invitation && !error && (
         <>
           <div className="card bg-primary-50 mb-8 p-4 rounded-xl shadow-md">
             <p className="text-gray-700 mb-4 text-base sm:text-lg">
