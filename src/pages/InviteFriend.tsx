@@ -6,11 +6,10 @@ import { useTranslation } from 'react-i18next';
 
 const InviteFriend = () => {
   const { token } = useParams();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [inviter, setInviter] = useState<{ fullName: string; emoji?: string } | null>(null);
   const [email, setEmail] = useState('');
   const [acceptLoading, setAcceptLoading] = useState(false);

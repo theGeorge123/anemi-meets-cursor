@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ReportIssueModal from './ReportIssueModal';
 
 const Footer = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [showReportModal, setShowReportModal] = useState(false);
   return (
     <footer aria-label="Site footer" className="w-full border-t border-primary-100 py-8 px-4 flex flex-col sm:flex-row justify-center items-center gap-6 text-sm text-gray-600 font-medium bg-white/90 mt-auto">
