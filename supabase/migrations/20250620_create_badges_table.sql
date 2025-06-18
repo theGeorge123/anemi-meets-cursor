@@ -1,3 +1,5 @@
+-- NOTE: Badge triggers for profile creation are added in a later migration for maintainability.
+
 -- Create table for badge definitions
 CREATE TABLE IF NOT EXISTS badges (
   id SERIAL PRIMARY KEY,
