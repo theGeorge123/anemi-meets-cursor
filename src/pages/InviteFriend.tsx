@@ -6,12 +6,16 @@ import { useTranslation } from 'react-i18next';
 
 const InviteFriend = () => {
   const { token } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [inviter, setInviter] = useState<{ fullName: string; emoji?: string } | null>(null);
+  const [email, setEmail] = useState('');
+  const [acceptLoading, setAcceptLoading] = useState(false);
+  const [acceptSuccess, setAcceptSuccess] = useState(false);
+  const [acceptError, setAcceptError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkInvite = async () => {
@@ -25,7 +29,7 @@ const InviteFriend = () => {
       // Get invite
       const { data: invite, error: inviteError } = await supabase
         .from('friend_invites')
-        .select('id, inviter_id, accepted')
+        .select('id, inviter_id, accepted, invitee_email')
         .eq('token', token)
         .maybeSingle();
       if (inviteError || !invite) {
@@ -41,45 +45,39 @@ const InviteFriend = () => {
       // Get inviter profile
       const { data: inviterProfile } = await getProfile(invite.inviter_id);
       setInviter(inviterProfile);
+      setEmail(invite.invitee_email || '');
       setLoading(false);
     };
     checkInvite();
   }, [token, t]);
 
-  const handleAccept = async () => {
-    setLoading(true);
-    setError(null);
-    // Get current user
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      setError(t('inviteFriend.loginFirst', 'Please log in to accept the invite.'));
-      setLoading(false);
-      return;
+  // Accept as guest (no login)
+  const handleAcceptGuest = async () => {
+    setAcceptLoading(true);
+    setAcceptError(null);
+    try {
+      // Accept invite by updating friend_invites (RLS policy allows by email)
+      const { error } = await supabase
+        .from('friend_invites')
+        .update({ accepted: true, accepted_at: new Date().toISOString() })
+        .eq('token', token)
+        .eq('invitee_email', email);
+      if (error) {
+        setAcceptError(t('inviteFriend.errorAccept', 'Could not accept invite.')); 
+        setAcceptLoading(false);
+        return;
+      }
+      setAcceptSuccess(true);
+      setTimeout(() => navigate('/login'), 2000);
+    } catch (err: any) {
+      setAcceptError(err.message || t('inviteFriend.errorAccept', 'Could not accept invite.'));
     }
-    // Get invite
-    const { data: invite } = await supabase
-      .from('friend_invites')
-      .select('id, inviter_id, accepted')
-      .eq('token', token)
-      .maybeSingle();
-    if (!invite || invite.accepted) {
-      setError(t('inviteFriend.invalid', 'Invalid or expired invite link.'));
-      setLoading(false);
-      return;
-    }
-    // Accept friendship: ensure both directions are 'accepted'
-    const userId = session.user.id;
-    const inviterId = invite.inviter_id;
-    // Update both rows if they exist, otherwise insert
-    await supabase.from('friendships').upsert([
-      { user_id: inviterId, friend_id: userId, status: 'accepted' },
-      { user_id: userId, friend_id: inviterId, status: 'accepted' }
-    ], { onConflict: 'user_id,friend_id' });
-    // Mark invite as accepted
-    await supabase.from('friend_invites').update({ accepted: true, accepted_at: new Date().toISOString(), invitee_email: session.user.email }).eq('token', token);
-    setSuccess(true);
-    setLoading(false);
-    setTimeout(() => navigate('/dashboard'), 2000);
+    setAcceptLoading(false);
+  };
+
+  // Redirect to signup with token (auto-friendship after signup)
+  const handleSignupRedirect = () => {
+    navigate(`/signup?invite_token=${token}`);
   };
 
   return (
@@ -87,14 +85,41 @@ const InviteFriend = () => {
       <h1 className="text-2xl font-bold mb-4">{t('inviteFriend.title', 'Accept Friend Invite')}</h1>
       {loading && <div>{t('loading')}</div>}
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      {success && <div className="text-green-600 font-semibold mb-4">{t('inviteFriend.success', 'You are now friends! Redirecting...')}</div>}
-      {!loading && !error && !success && inviter && (
+      {acceptSuccess && <div className="text-green-600 font-semibold mb-4">{t('inviteFriend.success', 'You are now friends! Redirecting...')}</div>}
+      {!loading && !error && !acceptSuccess && inviter && (
         <>
           <div className="mb-6">
             <span className="text-4xl">{inviter.emoji || '👤'}</span>
             <div className="mt-2 text-lg">{t('inviteFriend.inviteFrom', 'You have been invited by')} <b>{inviter.fullName}</b></div>
           </div>
-          <button className="btn-primary" onClick={handleAccept}>{t('inviteFriend.accept', 'Accept invite')}</button>
+          <div className="mb-6">
+            <label className="block mb-2 font-semibold" htmlFor="email">{t('inviteFriend.yourEmail', 'Your email')}</label>
+            <input
+              id="email"
+              type="email"
+              className="input-field max-w-xs mx-auto"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder={t('inviteFriend.emailPlaceholder', 'Enter your email')}
+              required
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
+            <button
+              className="btn-primary w-full sm:w-auto"
+              onClick={handleAcceptGuest}
+              disabled={acceptLoading || !email}
+            >
+              {acceptLoading ? t('loading') : t('inviteFriend.acceptAsGuest', 'Accept as guest')}
+            </button>
+            <button
+              className="btn-secondary w-full sm:w-auto"
+              onClick={handleSignupRedirect}
+            >
+              {t('inviteFriend.signupAndAccept', 'Create account & accept')}
+            </button>
+          </div>
+          {acceptError && <div className="text-red-500 mb-4">{acceptError}</div>}
         </>
       )}
     </div>

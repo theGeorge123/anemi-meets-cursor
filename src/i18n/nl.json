@@ -3,5 +3,17 @@
     "notAccepted": "Oeps! Je bent (nog) niet toegelaten tot de beta. Blijf op de hoogte, koffie-vriend!",
     "acceptedEmailSubject": "Je bent erbij! Welkom bij de Anemi Meets Beta ☕️",
     "acceptedEmailBody": "Hey koffie-vriend! Je bent toegelaten tot de Anemi Meets beta. Log in en ga lekker koffiedrinken! ☕️✨"
+  },
+  "inviteFriend": {
+    "title": "Vriendschapsuitnodiging accepteren",
+    "invalid": "Ongeldige of verlopen uitnodigingslink.",
+    "alreadyAccepted": "Deze uitnodiging is al gebruikt.",
+    "inviteFrom": "Je bent uitgenodigd door",
+    "yourEmail": "Jouw e-mailadres",
+    "emailPlaceholder": "Vul je e-mailadres in",
+    "acceptAsGuest": "Accepteer als gast",
+    "signupAndAccept": "Maak een account & accepteer",
+    "success": "Jullie zijn nu vrienden! Je wordt doorgestuurd...",
+    "errorAccept": "Uitnodiging kon niet worden geaccepteerd."
   }
 } 

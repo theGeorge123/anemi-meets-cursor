@@ -18,6 +18,9 @@ import ChangeEmailConfirm from './pages/ChangeEmailConfirm';
 import ResetPassword from './pages/ResetPassword';
 import CheckEmail from './pages/CheckEmail';
 import Friends from './pages/Friends';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import CookiePolicy from './pages/CookiePolicy';
+import Terms from './pages/Terms';
 
 const AppRoutes = () => {
   const { t } = useTranslation();
@@ -41,6 +44,12 @@ const AppRoutes = () => {
           <Route path="/check-email" element={<CheckEmail />} />
           <Route path="/invite-friend" element={<InviteFriend />} />
           <Route path="/friends" element={<Friends />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/cookies" element={<CookiePolicy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/terms-and-conditions" element={<Terms />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

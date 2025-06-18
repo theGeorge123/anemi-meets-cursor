@@ -113,7 +113,6 @@ const CreateMeetup = () => {
         if (error) {
           console.error('Error fetching cities:', error);
           setCityError(t('common.errorLoadingCities'));
-          setToast({ message: t('common.errorLoadingCities'), type: 'error' });
           // Provide default cities if the query fails
           setCities([
             { id: 'default-rotterdam', name: 'Rotterdam' },
@@ -122,7 +121,6 @@ const CreateMeetup = () => {
           ]);
         } else if (data && data.length > 0) {
           setCities(data as City[]);
-          setToast({ message: t('meetup.citiesLoaded', 'Cities loaded!'), type: 'success' });
         } else {
           // If no cities found in the database, create default ones
           setCities([
@@ -130,12 +128,10 @@ const CreateMeetup = () => {
             { id: 'default-amsterdam', name: 'Amsterdam' },
             { id: 'default-utrecht', name: 'Utrecht' }
           ]);
-          setToast({ message: t('meetup.noCitiesAvailable', 'No cities available. Using Rotterdam as default.'), type: 'info' });
         }
       } catch (err) {
         console.error('Exception fetching cities:', err);
         setCityError(t('common.errorLoadingCities'));
-        setToast({ message: t('common.errorLoadingCities'), type: 'error' });
         // Fallback to default cities
         setCities([
           { id: 'default-rotterdam', name: 'Rotterdam' },

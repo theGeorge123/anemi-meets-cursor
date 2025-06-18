@@ -29,5 +29,17 @@
     "notAccepted": "Oops! You're not in the beta (yet). Stay tuned, coffee friend!",
     "acceptedEmailSubject": "You're in! Welcome to the Anemi Meets Beta ☕️",
     "acceptedEmailBody": "Hey coffee friend! You've been accepted to the Anemi Meets beta. Log in and start sipping! ☕️✨"
+  },
+  "inviteFriend": {
+    "title": "Accept Friend Invite",
+    "invalid": "Invalid or expired invite link.",
+    "alreadyAccepted": "This invite has already been used.",
+    "inviteFrom": "You have been invited by",
+    "yourEmail": "Your email",
+    "emailPlaceholder": "Enter your email",
+    "acceptAsGuest": "Accept as guest",
+    "signupAndAccept": "Create account & accept",
+    "success": "You are now friends! Redirecting...",
+    "errorAccept": "Could not accept invite."
   }
 }
