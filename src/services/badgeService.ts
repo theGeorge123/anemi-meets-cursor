@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import type { Database, Badge, UserBadge } from '../types/supabase';
+import type { Badge, UserBadge } from '../types/supabase';
 
 export async function getAllBadges(): Promise<Badge[]> {
   const { data } = await supabase.from('badges').select();

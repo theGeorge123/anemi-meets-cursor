@@ -442,7 +442,6 @@ select:focus {
 }
 
 /*
-  Design Tokens (CSS Variables)
   ----------------------------
   Example:
     :root {
@@ -453,7 +452,6 @@ select:focus {
       --shadow-card: 0 4px 8px rgba(0,0,0,.05);
       /* Add new tokens here */
     }
-
   Usage:
     background: var(--color-accent-50);
     border-radius: var(--radius-lg);
