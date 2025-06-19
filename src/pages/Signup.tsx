@@ -61,15 +61,14 @@ const Signup = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: keyof SignupForm) => (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
+  const handleInputChange =
+    (field: keyof SignupForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,9 +123,13 @@ const Signup = () => {
 
         navigate('/check-email');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Signup error:', err);
-      setError(err.message || t('signup.errorGeneric'));
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(t('signup.errorGeneric'));
+      }
     } finally {
       setLoading(false);
     }
@@ -135,15 +138,10 @@ const Signup = () => {
   return (
     <main className="max-w-md mx-auto px-4 py-8">
       <div className="bg-white rounded-xl shadow-xl p-6">
-        <h1 className="text-2xl font-bold text-center mb-6">
-          {t('signup.title')}
-        </h1>
+        <h1 className="text-2xl font-bold text-center mb-6">{t('signup.title')}</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label
-              htmlFor="signup-email"
-              className="block text-lg font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">📧</span> {t('signup.emailPrompt')}
             </label>
             <input
@@ -168,10 +166,7 @@ const Signup = () => {
           </div>
 
           <div>
-            <label
-              htmlFor="signup-name"
-              className="block text-lg font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">👋</span> {t('signup.namePrompt')}
             </label>
             <input
@@ -226,8 +221,7 @@ const Signup = () => {
               htmlFor="signup-confirm-password"
               className="block text-lg font-medium text-gray-700 mb-2"
             >
-              <span className="text-2xl">🔒</span>{' '}
-              {t('signup.confirmPasswordPrompt')}
+              <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
             </label>
             <input
               type="password"
@@ -264,10 +258,7 @@ const Signup = () => {
         </form>
 
         <div className="mt-6 text-center">
-          <a
-            href="/login"
-            className="text-primary-600 underline hover:text-primary-800 text-sm"
-          >
+          <a href="/login" className="text-primary-600 underline hover:text-primary-800 text-sm">
             {t('signup.alreadyHaveAccount')}
           </a>
         </div>
