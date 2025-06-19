@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { getProfile, getAllBadges, getUserBadges } from '../services/supabaseService';
+import { getProfile } from '../services/profileService';
+import { getAllBadges, getUserBadges } from '../services/badgeService';
 import { useTranslation } from 'react-i18next';
 import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
@@ -29,7 +30,7 @@ interface Profile {
   preferences?: {
     tags?: string[];
     price?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   lastSeen?: string;
   preferred_language: string;
@@ -44,8 +45,10 @@ interface Invitation {
   email_b?: string;
 }
 
-function isProfile(obj: any): obj is Profile {
-  return obj && typeof obj.id === 'string' && typeof obj.fullName === 'string' && typeof obj.email === 'string';
+function isProfile(obj: unknown): obj is Profile {
+  return (
+    typeof obj === 'object' && obj !== null && 'id' in obj && 'fullName' in obj && 'email' in obj
+  );
 }
 
 const Account = () => {
@@ -76,7 +79,7 @@ const Account = () => {
   // Add state for preferred language
   const [preferredLanguage, setPreferredLanguage] = useState<string>('en');
 
-  const EMOJI_OPTIONS = ['😃','😎','🧑‍🎤','🦄','🐱','🐶','☕️','🌈','💡','❤️'];
+  const EMOJI_OPTIONS = ['😃', '😎', '🧑‍🎤', '🦄', '🐱', '🐶', '☕️', '🌈', '💡', '❤️'];
 
   // Split emoji options into rows of 4 for better layout
   const EMOJI_ROWS = [];
@@ -92,7 +95,27 @@ const Account = () => {
   const [emojiError, setEmojiError] = useState<string | null>(null);
 
   const CAFE_TAG_OPTIONS = [
-    'cozy', 'laptop_friendly', 'vegan', 'outdoor', 'quiet', 'trendy', 'local', 'breakfast', 'lunch', 'specialty_coffee', 'pastries', 'dog_friendly', 'plant_based', 'wifi', 'kids', 'board_games', 'art', 'music', 'book_corner', 'sustainable', 'student_discount'
+    'cozy',
+    'laptop_friendly',
+    'vegan',
+    'outdoor',
+    'quiet',
+    'trendy',
+    'local',
+    'breakfast',
+    'lunch',
+    'specialty_coffee',
+    'pastries',
+    'dog_friendly',
+    'plant_based',
+    'wifi',
+    'kids',
+    'board_games',
+    'art',
+    'music',
+    'book_corner',
+    'sustainable',
+    'student_discount',
   ];
   const PRICE_BRACKET_OPTIONS = ['low', 'mid', 'high'];
 
@@ -102,9 +125,13 @@ const Account = () => {
   const nextMeetup = useMemo(() => {
     if (!myMeetups || myMeetups.length === 0) return null;
     const now = new Date();
-    return myMeetups
-      .filter(m => new Date(m.selected_date) >= now)
-      .sort((a, b) => new Date(a.selected_date).getTime() - new Date(b.selected_date).getTime())[0] || null;
+    return (
+      myMeetups
+        .filter((m) => new Date(m.selected_date) >= now)
+        .sort(
+          (a, b) => new Date(a.selected_date).getTime() - new Date(b.selected_date).getTime(),
+        )[0] || null
+    );
   }, [myMeetups]);
 
   // Add state for badge notification and sharing
@@ -118,17 +145,23 @@ const Account = () => {
     { key: 'locked', label: 'Locked' },
   ];
   const [activeBadgeTab, setActiveBadgeTab] = useState('unlocked');
-  const earnedKeys = new Set(userBadges.map(b => b.badge_key));
-  const unlockedBadges = badges.filter(b => earnedKeys.has(b.key));
-  const inProgressBadges = badges.filter(b => !earnedKeys.has(b.key) && b.key === 'five_friends'); // Example: only five_friends is progress
-  const lockedBadges = badges.filter(b => !earnedKeys.has(b.key) && b.key !== 'five_friends');
+  const earnedKeys = new Set(userBadges.map((b) => b.badge_key));
+  const unlockedBadges = badges.filter((b) => earnedKeys.has(b.key));
+  const inProgressBadges = badges.filter((b) => !earnedKeys.has(b.key) && b.key === 'five_friends'); // Example: only five_friends is progress
+  const lockedBadges = badges.filter((b) => !earnedKeys.has(b.key) && b.key !== 'five_friends');
 
   // Add state for prefs toast
-  const [prefsToast, setPrefsToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [prefsToast, setPrefsToast] = useState<{
+    message: string;
+    type: 'success' | 'error';
+  } | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
       if (sessionError) {
         console.error('Fout bij ophalen sessie:', sessionError);
         return;
@@ -190,7 +223,7 @@ const Account = () => {
       if (session?.user) {
         const [allBadges, myBadges] = await Promise.all([
           getAllBadges(),
-          getUserBadges(session.user.id)
+          getUserBadges(session.user.id),
         ]);
         setBadges(allBadges);
         setUserBadges(myBadges);
@@ -239,15 +272,21 @@ const Account = () => {
     if (wantsNotifications && Notification.permission !== 'granted') {
       await requestBrowserNotificationPermission();
     }
-    const { error } = await supabase.from('profiles').update({
-      wantsUpdates,
-      wantsReminders,
-      wantsNotifications,
-      isPrivate,
-      preferences,
-    }).eq('id', user.id);
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        wantsUpdates,
+        wantsReminders,
+        wantsNotifications,
+        isPrivate,
+        preferences,
+      })
+      .eq('id', user.id);
     if (error) {
-      setPrefsToast({ message: t('account.errorPrefsUpdate', 'Could not save preferences.'), type: 'error' });
+      setPrefsToast({
+        message: t('account.errorPrefsUpdate', 'Could not save preferences.'),
+        type: 'error',
+      });
     } else {
       setPrefsToast({ message: t('account.prefsSaved', 'Preferences saved!'), type: 'success' });
       setShowProfileToast(true);
@@ -268,8 +307,8 @@ const Account = () => {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${sessionData.session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-        }
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.success) {
@@ -307,7 +346,7 @@ const Account = () => {
     // Sanitize age
     const sanitizedAge = editAge === '' ? null : Number(editAge);
     // Prepare update object
-    const updateObj: any = {
+    const updateObj: Record<string, unknown> = {
       fullName: editName,
       email: editEmail,
       age: sanitizedAge,
@@ -326,7 +365,10 @@ const Account = () => {
       setShowProfileToast(true);
       setEditingProfile(false);
     } else {
-      if (error.code === '23505' || (error.message && error.message.toLowerCase().includes('duplicate'))) {
+      if (
+        error.code === '23505' ||
+        (error.message && error.message.toLowerCase().includes('duplicate'))
+      ) {
         alert(t('account.errorDuplicateEmail', 'This email is already in use.'));
       } else {
         alert(t('account.errorProfileUpdate', 'Could not update profile.'));
@@ -337,15 +379,21 @@ const Account = () => {
   const handleTagToggle = async (tag: string) => {
     if (!user) return;
     const tags = preferences.tags || [];
-    const newTags = tags.includes(tag) ? tags.filter(t => t !== tag) : [...tags, tag];
-    setPreferences(prev => ({ ...prev, tags: newTags }));
-    await supabase.from('profiles').update({ preferences: { ...preferences, tags: newTags } }).eq('id', user.id);
+    const newTags = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
+    setPreferences((prev) => ({ ...prev, tags: newTags }));
+    await supabase
+      .from('profiles')
+      .update({ preferences: { ...preferences, tags: newTags } })
+      .eq('id', user.id);
   };
 
   const handlePriceSelect = async (price: string) => {
     if (!user) return;
-    setPreferences(prev => ({ ...prev, price }));
-    await supabase.from('profiles').update({ preferences: { ...preferences, price } }).eq('id', user.id);
+    setPreferences((prev) => ({ ...prev, price }));
+    await supabase
+      .from('profiles')
+      .update({ preferences: { ...preferences, price } })
+      .eq('id', user.id);
   };
 
   return (
@@ -374,13 +422,18 @@ const Account = () => {
           {nextMeetup && (
             <div className="card mb-6 bg-primary-50 border-l-4 border-primary-400 p-4 flex flex-col sm:flex-row items-center justify-between">
               <div>
-                <div className="text-lg font-semibold text-primary-700 mb-1">{t('account.nextMeetup', 'Your next meetup')}</div>
+                <div className="text-lg font-semibold text-primary-700 mb-1">
+                  {t('account.nextMeetup', 'Your next meetup')}
+                </div>
                 <div className="text-base text-primary-800">
-                  {nextMeetup.selected_date} {nextMeetup.selected_time && `, ${nextMeetup.selected_time}`}
+                  {nextMeetup.selected_date}{' '}
+                  {nextMeetup.selected_time && `, ${nextMeetup.selected_time}`}
                   {nextMeetup.cafe_id && <span> @ {nextMeetup.cafe_id}</span>}
                 </div>
               </div>
-              <button className="btn-primary mt-3 sm:mt-0">{t('account.viewMeetup', 'View details')}</button>
+              <button className="btn-primary mt-3 sm:mt-0">
+                {t('account.viewMeetup', 'View details')}
+              </button>
             </div>
           )}
 
@@ -404,12 +457,18 @@ const Account = () => {
                 </div>
               ))}
             </div>
-            {emojiLoading && <div className="text-xs text-primary-600 mt-2">{t('account.saving', 'Saving...')}</div>}
+            {emojiLoading && (
+              <div className="text-xs text-primary-600 mt-2">
+                {t('account.saving', 'Saving...')}
+              </div>
+            )}
             {emojiError && <div className="text-xs text-red-500 mt-2">{emojiError}</div>}
           </div>
 
           {/* Emoji Section Label */}
-          <div className="w-full text-center text-lg font-semibold mb-2 text-primary-700">{t('account.emoji')}</div>
+          <div className="w-full text-center text-lg font-semibold mb-2 text-primary-700">
+            {t('account.emoji')}
+          </div>
 
           {/* Editable Name, Email, Age Section (restyled) */}
           <div className="card mb-8 px-4 py-3 flex flex-col gap-4 bg-white/80 rounded-xl shadow-md">
@@ -424,7 +483,7 @@ const Account = () => {
                   type="text"
                   className="input-field"
                   value={editName}
-                  onChange={e => setEditName(e.target.value)}
+                  onChange={(e) => setEditName(e.target.value)}
                   placeholder={t('account.name')}
                 />
               ) : (
@@ -434,7 +493,9 @@ const Account = () => {
             <div className="flex flex-row items-center gap-2">
               <Settings className="w-5 h-5 text-accent-500 mr-2 inline" />
               <span className="font-semibold">{t('account.email')}</span>
-              <span className="text-xs text-gray-400 italic ml-2">{t('account.emailEditHint')}</span>
+              <span className="text-xs text-gray-400 italic ml-2">
+                {t('account.emailEditHint')}
+              </span>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 items-center">
               {editingProfile ? (
@@ -442,7 +503,7 @@ const Account = () => {
                   type="email"
                   className="input-field"
                   value={editEmail}
-                  onChange={e => setEditEmail(e.target.value)}
+                  onChange={(e) => setEditEmail(e.target.value)}
                   placeholder={t('account.email')}
                 />
               ) : (
@@ -460,7 +521,7 @@ const Account = () => {
                   type="number"
                   className="input-field"
                   value={editAge}
-                  onChange={e => setEditAge(e.target.value === '' ? '' : Number(e.target.value))}
+                  onChange={(e) => setEditAge(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder={t('account.age')}
                   min={0}
                   max={120}
@@ -477,23 +538,31 @@ const Account = () => {
                 <select
                   className="input-field"
                   value={preferredLanguage}
-                  onChange={e => setPreferredLanguage(e.target.value)}
+                  onChange={(e) => setPreferredLanguage(e.target.value)}
                 >
                   <option value="en">English</option>
                   <option value="nl">Nederlands</option>
                 </select>
               ) : (
-                <span className="mobile-text text-lg">{preferredLanguage === 'nl' ? 'Nederlands' : 'English'}</span>
+                <span className="mobile-text text-lg">
+                  {preferredLanguage === 'nl' ? 'Nederlands' : 'English'}
+                </span>
               )}
             </div>
             <div className="flex gap-2 mt-2">
               {editingProfile ? (
                 <>
-                  <button className="btn-primary" onClick={handleProfileSave}>{t('account.save')}</button>
-                  <button className="btn-secondary" onClick={handleProfileCancel}>{t('account.cancel')}</button>
+                  <button className="btn-primary" onClick={handleProfileSave}>
+                    {t('account.save')}
+                  </button>
+                  <button className="btn-secondary" onClick={handleProfileCancel}>
+                    {t('account.cancel')}
+                  </button>
                 </>
               ) : (
-                <button className="btn-secondary" onClick={handleProfileEdit}>{t('account.edit')}</button>
+                <button className="btn-secondary" onClick={handleProfileEdit}>
+                  {t('account.edit')}
+                </button>
               )}
             </div>
           </div>
@@ -517,7 +586,9 @@ const Account = () => {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="w-full sm:w-32 font-semibold">{t('account.wantsReminders')}</label>
+                <label className="w-full sm:w-32 font-semibold">
+                  {t('account.wantsReminders')}
+                </label>
                 <div className="flex-1 flex flex-col gap-2">
                   <label className="flex items-center gap-2">
                     <input
@@ -530,7 +601,9 @@ const Account = () => {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="w-full sm:w-32 font-semibold">{t('account.wantsNotifications')}</label>
+                <label className="w-full sm:w-32 font-semibold">
+                  {t('account.wantsNotifications')}
+                </label>
                 <div className="flex-1 flex flex-col gap-2">
                   <label className="flex items-center gap-2">
                     <input
@@ -556,12 +629,16 @@ const Account = () => {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="w-full sm:w-32 font-semibold">{t('account.cafePreferences', 'Café preferences')}</label>
+                <label className="w-full sm:w-32 font-semibold">
+                  {t('account.cafePreferences', 'Café preferences')}
+                </label>
                 <div className="flex-1 flex flex-col gap-2">
                   <div className="mb-2">
-                    <div className="font-medium text-sm mb-1">{t('account.cafeTags', 'Preferred tags')}</div>
+                    <div className="font-medium text-sm mb-1">
+                      {t('account.cafeTags', 'Preferred tags')}
+                    </div>
                     <div className="flex flex-wrap gap-2">
-                      {CAFE_TAG_OPTIONS.map(tag => (
+                      {CAFE_TAG_OPTIONS.map((tag) => (
                         <button
                           key={tag}
                           type="button"
@@ -575,9 +652,11 @@ const Account = () => {
                     </div>
                   </div>
                   <div>
-                    <div className="font-medium text-sm mb-1">{t('account.cafePriceBracket', 'Preferred price bracket')}</div>
+                    <div className="font-medium text-sm mb-1">
+                      {t('account.cafePriceBracket', 'Preferred price bracket')}
+                    </div>
                     <div className="flex gap-2">
-                      {PRICE_BRACKET_OPTIONS.map(bracket => (
+                      {PRICE_BRACKET_OPTIONS.map((bracket) => (
                         <button
                           key={bracket}
                           type="button"
@@ -618,9 +697,12 @@ const Account = () => {
 
           {/* Password Section */}
           <div className="card mb-8">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6"><Settings className="w-5 h-5 text-accent-500 mr-2 inline" />{t('account.password')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">
+              <Settings className="w-5 h-5 text-accent-500 mr-2 inline" />
+              {t('account.password')}
+            </h2>
             {showPwForm ? (
-              <form onSubmit={e => e.preventDefault()} className="space-y-6">
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <div className="flex flex-col gap-4">
                   <input
                     type="password"
@@ -664,11 +746,10 @@ const Account = () => {
               </form>
             ) : (
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="w-full sm:w-32 font-semibold">{t('account.changePassword')}</label>
-                <button
-                  onClick={() => setShowPwForm(true)}
-                  className="btn-secondary"
-                >
+                <label className="w-full sm:w-32 font-semibold">
+                  {t('account.changePassword')}
+                </label>
+                <button onClick={() => setShowPwForm(true)} className="btn-secondary">
                   {t('account.changePassword')}
                 </button>
               </div>
@@ -677,9 +758,12 @@ const Account = () => {
 
           {/* Badges Section */}
           <div className="card mb-8 bg-white/90 rounded-xl shadow p-6 border border-primary-100">
-            <h2 className="text-2xl font-bold text-primary-700 mb-6"><Award className="w-5 h-5 text-accent-500 mr-2 inline" />{t('account.yourBadges')}</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">
+              <Award className="w-5 h-5 text-accent-500 mr-2 inline" />
+              {t('account.yourBadges')}
+            </h2>
             <div className="flex gap-4 mb-6">
-              {badgeStatusTabs.map(tab => (
+              {badgeStatusTabs.map((tab) => (
                 <button
                   key={tab.key}
                   className={`px-4 py-2 rounded-full font-semibold transition-colors text-base flex items-center gap-2 ${activeBadgeTab === tab.key ? 'bg-accent-500 text-white' : 'bg-accent-50 text-accent-500'}`}
@@ -687,18 +771,34 @@ const Account = () => {
                 >
                   {tab.label}
                   <span className="ml-1 bg-white/30 text-xs px-2 py-0.5 rounded-full font-bold">
-                    {tab.key === 'unlocked' ? unlockedBadges.length : tab.key === 'inprogress' ? inProgressBadges.length : lockedBadges.length}
+                    {tab.key === 'unlocked'
+                      ? unlockedBadges.length
+                      : tab.key === 'inprogress'
+                        ? inProgressBadges.length
+                        : lockedBadges.length}
                   </span>
                 </button>
               ))}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {(activeBadgeTab === 'unlocked' ? unlockedBadges : activeBadgeTab === 'inprogress' ? inProgressBadges : lockedBadges).map(badge => {
+              {(activeBadgeTab === 'unlocked'
+                ? unlockedBadges
+                : activeBadgeTab === 'inprogress'
+                  ? inProgressBadges
+                  : lockedBadges
+              ).map((badge) => {
                 const earned = earnedKeys.has(badge.key);
                 let progress = null;
                 if (badge.key === 'five_friends') {
-                  const friendCount = userBadges.filter(b => b.badge_key === 'add_friend').length + 1; // Example logic
-                  progress = <BadgeProgress badge={badge} currentProgress={friendCount} requiredProgress={5} />;
+                  const friendCount =
+                    userBadges.filter((b) => b.badge_key === 'add_friend').length + 1; // Example logic
+                  progress = (
+                    <BadgeProgress
+                      badge={badge}
+                      currentProgress={friendCount}
+                      requiredProgress={5}
+                    />
+                  );
                 }
                 return (
                   <div
@@ -710,9 +810,13 @@ const Account = () => {
                     <span className="text-sm text-gray-600 text-center">{badge.description}</span>
                     {progress}
                     {earned && (
-                      <button className="btn-secondary mt-2" onClick={() => setShareBadge(badge)}>Share</button>
+                      <button className="btn-secondary mt-2" onClick={() => setShareBadge(badge)}>
+                        Share
+                      </button>
                     )}
-                    {!earned && badge.key !== 'five_friends' && <span className="mt-2 text-xs text-gray-400">{t('account.locked')}</span>}
+                    {!earned && badge.key !== 'five_friends' && (
+                      <span className="mt-2 text-xs text-gray-400">{t('account.locked')}</span>
+                    )}
                   </div>
                 );
               })}
@@ -720,21 +824,25 @@ const Account = () => {
           </div>
 
           {badgeNotification && (
-            <BadgeNotification badge={badgeNotification} onClose={() => setBadgeNotification(null)} />
+            <BadgeNotification
+              badge={badgeNotification}
+              onClose={() => setBadgeNotification(null)}
+            />
           )}
-          {shareBadge && (
-            <BadgeShareModal badge={shareBadge} onClose={() => setShareBadge(null)} />
-          )}
+          {shareBadge && <BadgeShareModal badge={shareBadge} onClose={() => setShareBadge(null)} />}
 
           {/* Danger Zone */}
           <div className="card border-2 border-red-500">
-            <h2 className="text-2xl font-bold text-red-500 mb-6"><Trash2 className="w-5 h-5 text-red-500 mr-2 inline" />Delete account</h2>
-              <button
-                onClick={handleDeleteAccount}
-                className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
-              >
+            <h2 className="text-2xl font-bold text-red-500 mb-6">
+              <Trash2 className="w-5 h-5 text-red-500 mr-2 inline" />
+              Delete account
+            </h2>
+            <button
+              onClick={handleDeleteAccount}
+              className="btn-secondary text-red-500 border-red-500 hover:bg-red-50 active:scale-95 active:bg-primary-100"
+            >
               {t('account.deleteAccount')}
-              </button>
+            </button>
           </div>
 
           {/* Logout Button */}

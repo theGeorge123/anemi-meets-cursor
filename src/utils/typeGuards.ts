@@ -29,12 +29,18 @@ export function isEvent(value: unknown): value is TableRow<'events'> {
   return (
     typeof event.id === 'string' &&
     typeof event.name === 'string' &&
-    (event.description === undefined || event.description === null || typeof event.description === 'string') &&
+    (event.description === undefined ||
+      event.description === null ||
+      typeof event.description === 'string') &&
     typeof event.date === 'string' &&
-    (event.location === undefined || event.location === null || typeof event.location === 'string') &&
+    (event.location === undefined ||
+      event.location === null ||
+      typeof event.location === 'string') &&
     typeof event.created_by === 'string' &&
     typeof event.created_at === 'string' &&
-    (event.community_id === undefined || event.community_id === null || typeof event.community_id === 'string')
+    (event.community_id === undefined ||
+      event.community_id === null ||
+      typeof event.community_id === 'string')
   );
 }
 
@@ -62,7 +68,9 @@ export function isCommunity(value: unknown): value is TableRow<'communities'> {
   return (
     typeof community.id === 'string' &&
     typeof community.name === 'string' &&
-    (community.description === undefined || community.description === null || typeof community.description === 'string') &&
+    (community.description === undefined ||
+      community.description === null ||
+      typeof community.description === 'string') &&
     typeof community.created_by === 'string' &&
     typeof community.created_at === 'string'
   );
@@ -83,29 +91,12 @@ export function isCommunityMember(value: unknown): value is TableRow<'community_
   );
 }
 
-// TODO: The Notification type guard is commented out because the 'notifications' table is missing from src/types/supabase.ts.
-// This is likely due to the table not being introspected or generated in the types. To re-enable, add the table to your Supabase types.
-// export function isNotification(value: unknown): value is TableRow<'notifications'> {
-//   if (!value || typeof value !== 'object') return false;
-//   const notification = value as TableRow<'notifications'>;
-//   return (
-//     typeof notification.id === 'string' &&
-//     typeof notification.user_id === 'string' &&
-//     ['event_invite', 'message', 'community_invite', 'system'].includes(notification.type) &&
-//     typeof notification.content === 'string' &&
-//     typeof notification.created_at === 'string' &&
-//     typeof notification.is_read === 'boolean' &&
-//     (notification.read_at === undefined || typeof notification.read_at === 'string') &&
-//     (notification.related_id === undefined || typeof notification.related_id === 'string')
-//   );
-// }
-
 /**
  * Type guard for array of a specific type
  */
 export function isArrayOf<T extends TableName>(
   value: unknown,
-  typeGuard: (value: unknown) => value is TableRow<T>
+  typeGuard: (value: unknown) => value is TableRow<T>,
 ): value is TableRow<T>[] {
   return Array.isArray(value) && value.every(typeGuard);
 }
@@ -115,7 +106,7 @@ export function isArrayOf<T extends TableName>(
  */
 export function isPaginatedResponse<T extends TableName>(
   value: unknown,
-  typeGuard: (value: unknown) => value is TableRow<T>
+  typeGuard: (value: unknown) => value is TableRow<T>,
 ): value is {
   data: TableRow<T>[];
   count: number;
@@ -152,7 +143,7 @@ export function isFilterOptions(value: unknown): value is Record<string, unknown
  */
 export function safeParseJSON<T extends TableName>(
   json: string,
-  typeGuard: (value: unknown) => value is TableRow<T>
+  typeGuard: (value: unknown) => value is TableRow<T>,
 ): TableRow<T> | null {
   try {
     const parsed = JSON.parse(json);
@@ -168,7 +159,7 @@ export function safeParseJSON<T extends TableName>(
 export function validateResponse<T extends TableName>(
   value: unknown,
   typeGuard: (value: unknown) => value is TableRow<T>,
-  fallback: TableRow<T> | null
+  fallback: TableRow<T> | null,
 ): TableRow<T> | null {
   return typeGuard(value) ? value : fallback;
 }

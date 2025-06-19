@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { getProfile } from '../services/supabaseService';
+import { getProfile } from '../services/profileService';
 import { useTranslation } from 'react-i18next';
 
 const InviteFriend = () => {
@@ -62,14 +62,18 @@ const InviteFriend = () => {
         .eq('token', token)
         .eq('invitee_email', email);
       if (error) {
-        setAcceptError(t('inviteFriend.errorAccept', 'Could not accept invite.')); 
+        setAcceptError(t('inviteFriend.errorAccept', 'Could not accept invite.'));
         setAcceptLoading(false);
         return;
       }
       setAcceptSuccess(true);
       setTimeout(() => navigate('/login'), 2000);
-    } catch (err: any) {
-      setAcceptError(err.message || t('inviteFriend.errorAccept', 'Could not accept invite.'));
+    } catch (err: unknown) {
+      setAcceptError(
+        err instanceof Error
+          ? err.message
+          : t('inviteFriend.errorAccept', 'Could not accept invite.'),
+      );
     }
     setAcceptLoading(false);
   };
@@ -84,21 +88,29 @@ const InviteFriend = () => {
       <h1 className="text-2xl font-bold mb-4">{t('inviteFriend.title', 'Accept Friend Invite')}</h1>
       {loading && <div>{t('loading')}</div>}
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      {acceptSuccess && <div className="text-green-600 font-semibold mb-4">{t('inviteFriend.success', 'You are now friends! Redirecting...')}</div>}
+      {acceptSuccess && (
+        <div className="text-green-600 font-semibold mb-4">
+          {t('inviteFriend.success', 'You are now friends! Redirecting...')}
+        </div>
+      )}
       {!loading && !error && !acceptSuccess && inviter && (
         <>
           <div className="mb-6">
             <span className="text-4xl">{inviter.emoji || '👤'}</span>
-            <div className="mt-2 text-lg">{t('inviteFriend.inviteFrom', 'You have been invited by')} <b>{inviter.fullName}</b></div>
+            <div className="mt-2 text-lg">
+              {t('inviteFriend.inviteFrom', 'You have been invited by')} <b>{inviter.fullName}</b>
+            </div>
           </div>
           <div className="mb-6">
-            <label className="block mb-2 font-semibold" htmlFor="email">{t('inviteFriend.yourEmail', 'Your email')}</label>
+            <label className="block mb-2 font-semibold" htmlFor="email">
+              {t('inviteFriend.yourEmail', 'Your email')}
+            </label>
             <input
               id="email"
               type="email"
               className="input-field max-w-xs mx-auto"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder={t('inviteFriend.emailPlaceholder', 'Enter your email')}
               required
             />
@@ -111,10 +123,7 @@ const InviteFriend = () => {
             >
               {acceptLoading ? t('loading') : t('inviteFriend.stayStranger', 'Stay a stranger')}
             </button>
-            <button
-              className="btn-secondary w-full sm:w-auto"
-              onClick={handleSignupRedirect}
-            >
+            <button className="btn-secondary w-full sm:w-auto" onClick={handleSignupRedirect}>
               {t('inviteFriend.joinFamily', 'Join the family')}
             </button>
           </div>

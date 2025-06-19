@@ -3,8 +3,10 @@ import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import Toast from '../components/Toast';
-import { getFriends, acceptFriendRequest, rejectFriendRequest, removeFriend } from '../services/supabaseService';
+import { getFriends, removeFriend } from '../services/friendshipService';
+import { acceptFriendRequest, rejectFriendRequest } from '../services/friendRequestService';
 import type { Tables } from '../types/supabase';
+import { TFunction } from 'i18next';
 type Profile = Tables<'profiles'>;
 
 interface User {
@@ -24,19 +26,24 @@ const Friends = () => {
   const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
-  const [sendStatus, setSendStatus] = useState<'idle'|'loading'|'success'|'error'>('idle');
+  const [sendStatus, setSendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [sendError, setSendError] = useState('');
   const [pendingSent, setPendingSent] = useState<FriendRequest[]>([]);
   const [pendingReceived, setPendingReceived] = useState<FriendRequest[]>([]);
   const [sentProfiles, setSentProfiles] = useState<Record<string, Profile>>({});
   const [receivedProfiles, setReceivedProfiles] = useState<Record<string, Profile>>({});
-  const [friends, setFriends] = useState<any[]>([]);
+  const [friends, setFriends] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+  } | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUser({ id: user.id, email: user.email ?? '' });
       }
@@ -48,7 +55,8 @@ const Friends = () => {
     if (!user) return;
     setLoading(true);
     // Fetch pending sent requests
-    supabase.from('friend_requests')
+    supabase
+      .from('friend_requests')
       .select('*')
       .eq('requester_id', user.id)
       .eq('status', 'pending')
@@ -59,14 +67,17 @@ const Friends = () => {
           const ids = data.map((r: FriendRequest) => r.addressee_id);
           const { data: profiles } = await supabase.from('profiles').select('*').in('id', ids);
           const map: Record<string, Profile> = {};
-          (profiles || []).forEach((p: Profile) => { map[p.id] = p; });
+          (profiles || []).forEach((p: Profile) => {
+            map[p.id] = p;
+          });
           setSentProfiles(map);
         } else {
           setSentProfiles({});
         }
       });
     // Fetch pending received requests
-    supabase.from('friend_requests')
+    supabase
+      .from('friend_requests')
       .select('*')
       .eq('addressee_id', user.id)
       .eq('status', 'pending')
@@ -77,7 +88,9 @@ const Friends = () => {
           const ids = data.map((r: FriendRequest) => r.requester_id);
           const { data: profiles } = await supabase.from('profiles').select('*').in('id', ids);
           const map: Record<string, Profile> = {};
-          (profiles || []).forEach((p: Profile) => { map[p.id] = p; });
+          (profiles || []).forEach((p: Profile) => {
+            map[p.id] = p;
+          });
           setReceivedProfiles(map);
         } else {
           setReceivedProfiles({});
@@ -102,7 +115,10 @@ const Friends = () => {
     if (error || !profile) {
       setSendStatus('error');
       setSendError(t('friends.errorNoUser', 'No user found with that email.'));
-      setToast({ message: t('friends.errorNoUser', 'No user found with that email.'), type: 'error' });
+      setToast({
+        message: t('friends.errorNoUser', 'No user found with that email.'),
+        type: 'error',
+      });
       return;
     }
     // Send request
@@ -120,9 +136,9 @@ const Friends = () => {
     }
   };
 
-  const getFriendlyError = (err: any, t: any) => {
+  const getFriendlyError = (err: unknown, t: TFunction) => {
     if (!err) return t('friends.errorAction', 'Something went wrong.');
-    const msg = err.message || String(err);
+    const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes('RLS') || msg.includes('row level security')) {
       return t('friends.errorRLS', 'You do not have permission to perform this action.');
     }
@@ -145,7 +161,7 @@ const Friends = () => {
         setToast({ message: t('friends.rejected', 'Friend request rejected.'), type: 'info' });
       }
       setSendStatus('idle');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Friend request action failed:', err);
       setToast({ message: getFriendlyError(err, t), type: 'error' });
     }
@@ -156,9 +172,13 @@ const Friends = () => {
     try {
       await removeFriend(user.id, friendId);
       setToast({ message: t('friends.removed', 'Friend removed.'), type: 'success' });
-      setFriends(friends.filter(f => f.id !== friendId));
-    } catch (err: any) {
-      setToast({ message: err.message || t('friends.errorRemove', 'Could not remove friend.'), type: 'error' });
+      setFriends(friends.filter((f) => f.id !== friendId));
+    } catch (err: unknown) {
+      setToast({
+        message:
+          err instanceof Error ? err.message : t('friends.errorRemove', 'Could not remove friend.'),
+        type: 'error',
+      });
     }
   };
 
@@ -168,36 +188,53 @@ const Friends = () => {
         ☕️ {t('friends.title')}
       </h1>
       {/* Send Friend Request */}
-      <form onSubmit={handleSendRequest} className="mb-6 flex flex-col sm:flex-row gap-2 items-center bg-yellow-50 rounded-xl p-4 shadow">
+      <form
+        onSubmit={handleSendRequest}
+        className="mb-6 flex flex-col sm:flex-row gap-2 items-center bg-yellow-50 rounded-xl p-4 shadow"
+      >
         <input
           type="email"
           className="input-field flex-1"
           placeholder={t('friends.emailPlaceholder')}
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <button type="submit" className="btn-primary min-w-[120px]" disabled={sendStatus==='loading'}>
-          {sendStatus==='loading' ? <LoadingIndicator size="sm" /> : t('friends.sendRequest')}
+        <button
+          type="submit"
+          className="btn-primary min-w-[120px]"
+          disabled={sendStatus === 'loading'}
+        >
+          {sendStatus === 'loading' ? <LoadingIndicator size="sm" /> : t('friends.sendRequest')}
         </button>
       </form>
-      {sendStatus==='error' && <div className="text-red-600 mb-4">{sendError}</div>}
-      {sendStatus==='success' && <div className="text-green-600 mb-4 animate-bounce">{t('friends.requestSent')}</div>}
+      {sendStatus === 'error' && <div className="text-red-600 mb-4">{sendError}</div>}
+      {sendStatus === 'success' && (
+        <div className="text-green-600 mb-4 animate-bounce">{t('friends.requestSent')}</div>
+      )}
       {/* Pending Requests */}
       <section className="mb-8">
-        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">⏳ {t('friends.pending')}</h2>
-        {loading ? <LoadingIndicator /> : (
+        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+          ⏳ {t('friends.pending')}
+        </h2>
+        {loading ? (
+          <LoadingIndicator />
+        ) : (
           <>
             <div className="mb-2 font-medium">{t('friends.sent')}:</div>
             {pendingSent.length === 0 ? (
               <div className="text-gray-500 mb-2 italic">😶 {t('friends.none')}</div>
             ) : (
               <ul className="mb-4">
-                {pendingSent.map(req => {
+                {pendingSent.map((req) => {
                   const profile = sentProfiles[req.addressee_id];
                   return (
                     <li key={req.id} className="mb-1 flex items-center gap-2">
-                      <span className="font-mono text-primary-700">{profile ? (profile.fullname ?? profile.email ?? req.addressee_id) : req.addressee_id}</span>
+                      <span className="font-mono text-primary-700">
+                        {profile
+                          ? (profile.fullname ?? profile.email ?? req.addressee_id)
+                          : req.addressee_id}
+                      </span>
                       <span className="text-yellow-600 text-xs">⏳</span>
                     </li>
                   );
@@ -209,13 +246,27 @@ const Friends = () => {
               <div className="text-gray-500 italic">🕵️‍♂️ {t('friends.none')}</div>
             ) : (
               <ul>
-                {pendingReceived.map(req => {
+                {pendingReceived.map((req) => {
                   const profile = receivedProfiles[req.requester_id];
                   return (
                     <li key={req.id} className="mb-2 flex items-center gap-2">
-                      <span className="font-mono text-primary-700">{profile ? (profile.fullname ?? profile.email ?? req.requester_id) : req.requester_id}</span>
-                      <button className="btn-primary btn-xs" onClick={() => handleRespond(req.id, true)}>{t('friends.accept')}</button>
-                      <button className="btn-secondary btn-xs" onClick={() => handleRespond(req.id, false)}>{t('friends.reject')}</button>
+                      <span className="font-mono text-primary-700">
+                        {profile
+                          ? (profile.fullname ?? profile.email ?? req.requester_id)
+                          : req.requester_id}
+                      </span>
+                      <button
+                        className="btn-primary btn-xs"
+                        onClick={() => handleRespond(req.id, true)}
+                      >
+                        {t('friends.accept')}
+                      </button>
+                      <button
+                        className="btn-secondary btn-xs"
+                        onClick={() => handleRespond(req.id, false)}
+                      >
+                        {t('friends.reject')}
+                      </button>
                     </li>
                   );
                 })}
@@ -227,20 +278,30 @@ const Friends = () => {
       {/* Friends List */}
       <section className="mb-8">
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">🎉 {t('friends.list')}</h2>
-        {loading ? <LoadingIndicator /> : (
-          friends.length === 0 ? (
-            <div className="text-gray-500 italic">🥲 {t('friends.none')}</div>
-          ) : (
-            <ul>
-              {friends.map(f => (
-                <li key={f.id} className="mb-1 flex items-center gap-2">
-                  <span className="text-2xl">{f.emoji || '👤'}</span>
-                  <span className="font-bold text-primary-700">{f.fullname ?? f.email}</span>
-                  <button className="btn-secondary btn-xs ml-2" onClick={() => handleRemoveFriend(f.id)}>{t('friends.remove', 'Remove')}</button>
+        {loading ? (
+          <LoadingIndicator />
+        ) : friends.length === 0 ? (
+          <div className="text-gray-500 italic">🥲 {t('friends.none')}</div>
+        ) : (
+          <ul>
+            {friends.map((f) => {
+              const friend = f as Profile;
+              return (
+                <li key={friend.id} className="mb-1 flex items-center gap-2">
+                  <span className="text-2xl">{friend.emoji || '👤'}</span>
+                  <span className="font-bold text-primary-700">
+                    {friend.fullname ?? friend.email}
+                  </span>
+                  <button
+                    className="btn-secondary btn-xs ml-2"
+                    onClick={() => handleRemoveFriend(friend.id)}
+                  >
+                    {t('friends.remove', 'Remove')}
+                  </button>
                 </li>
-              ))}
-            </ul>
-          )
+              );
+            })}
+          </ul>
         )}
       </section>
       {/* Block/Privacy UI (optional, not functional) */}
@@ -260,4 +321,4 @@ const Friends = () => {
   );
 };
 
-export default Friends; 
+export default Friends;
