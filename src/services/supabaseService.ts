@@ -9,7 +9,7 @@ export type InvitationRow = Database['public']['Tables']['invitations']['Row'];
 export async function getProfile(userId: string) {
   return supabase
     .from('profiles')
-    .select<ProfileRow>()
+    .select()
     .eq('id', userId)
     .maybeSingle();
 }
@@ -18,48 +18,48 @@ export async function createInvitation(payload: InvitationInsert) {
   return supabase
     .from('invitations')
     .insert(payload)
-    .select<InvitationRow>()
+    .select()
     .single();
 }
 
 export async function getFriends(userId: string): Promise<ProfileRow[]> {
   const { data: friendshipRows } = await supabase
     .from('friendships')
-    .select<{ friend_id: string, status: string }>('friend_id, status')
+    .select('friend_id, status')
     .eq('user_id', userId);
   if (!friendshipRows) return [];
   const acceptedIds = friendshipRows.filter(f => f.status === 'accepted').map(f => f.friend_id);
   if (acceptedIds.length === 0) return [];
   const { data: friendProfiles } = await supabase
     .from('profiles')
-    .select<ProfileRow>()
+    .select()
     .in('id', acceptedIds);
-  return friendProfiles || [];
+  return (friendProfiles as ProfileRow[]) || [];
 }
 
 export async function getPendingFriends(userId: string): Promise<ProfileRow[]> {
   const { data: friendshipRows } = await supabase
     .from('friendships')
-    .select<{ friend_id: string, status: string }>('friend_id, status')
+    .select('friend_id, status')
     .eq('user_id', userId);
   if (!friendshipRows) return [];
   const pendingIds = friendshipRows.filter(f => f.status === 'pending').map(f => f.friend_id);
   if (pendingIds.length === 0) return [];
   const { data: pendingProfiles } = await supabase
     .from('profiles')
-    .select<ProfileRow>()
+    .select()
     .in('id', pendingIds);
-  return pendingProfiles || [];
+  return (pendingProfiles as ProfileRow[]) || [];
 }
 
 export async function getAllBadges(): Promise<Badge[]> {
-  const { data } = await supabase.from('badges').select<Badge>();
-  return data || [];
+  const { data } = await supabase.from('badges').select();
+  return (data as Badge[]) || [];
 }
 
 export async function getUserBadges(userId: string): Promise<UserBadge[]> {
-  const { data } = await supabase.from('user_badges').select<UserBadge>().eq('user_id', userId);
-  return data || [];
+  const { data } = await supabase.from('user_badges').select().eq('user_id', userId);
+  return (data as UserBadge[]) || [];
 }
 
 export async function awardBadge(userId: string, badgeKey: string): Promise<void> {
@@ -67,7 +67,7 @@ export async function awardBadge(userId: string, badgeKey: string): Promise<void
 }
 
 export async function hasBadge(userId: string, badgeKey: string): Promise<boolean> {
-  const { data } = await supabase.from('user_badges').select<{ id: number }>('id').eq('user_id', userId).eq('badge_key', badgeKey).maybeSingle();
+  const { data } = await supabase.from('user_badges').select('id').eq('user_id', userId).eq('badge_key', badgeKey).maybeSingle();
   return !!data;
 }
 
@@ -96,29 +96,29 @@ export async function getMeetupCount(userId: string): Promise<number> {
 }
 
 export async function sendFriendRequest(addresseeId: string) {
-  const { data, error } = await supabase.from('friend_requests').insert({ addressee_id: addresseeId }).select<Database['public']['Tables']['friend_requests']['Row']>().single();
+  const { data, error } = await supabase.from('friend_requests').insert({ addressee_id: addresseeId }).select().single();
   if (error) throw new Error("Oeps! Je verzoek kon niet worden verstuurd. Probeer het straks nog eens ☕️");
-  return data;
+  return data as Database['public']['Tables']['friend_requests']['Row'];
 }
 
 export async function getOutgoingFriendRequests(userId: string) {
   const { data, error } = await supabase
     .from('friend_requests')
-    .select<Database['public']['Tables']['friend_requests']['Row']>()
+    .select()
     .eq('requester_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw new Error("Kon je verzonden verzoeken niet ophalen. Even opnieuw proberen?");
-  return data || [];
+  return (data as Database['public']['Tables']['friend_requests']['Row'][]) || [];
 }
 
 export async function getIncomingFriendRequests(userId: string) {
   const { data, error } = await supabase
     .from('friend_requests')
-    .select<Database['public']['Tables']['friend_requests']['Row']>()
+    .select()
     .eq('addressee_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw new Error("Kon je ontvangen verzoeken niet ophalen. Even opnieuw proberen?");
-  return data || [];
+  return (data as Database['public']['Tables']['friend_requests']['Row'][]) || [];
 }
 
 export async function acceptFriendRequest(requestId: string) {
@@ -126,10 +126,10 @@ export async function acceptFriendRequest(requestId: string) {
     .from('friend_requests')
     .update({ status: 'accepted' })
     .eq('id', requestId)
-    .select<Database['public']['Tables']['friend_requests']['Row']>()
+    .select()
     .single();
   if (error) throw new Error("Kon het verzoek niet accepteren. Probeer het straks nog eens!");
-  const { requester_id, addressee_id } = data;
+  const { requester_id, addressee_id } = data as Database['public']['Tables']['friend_requests']['Row'];
   await supabase.from('friendships').upsert([
     { user_id: requester_id, friend_id: addressee_id, status: 'accepted' },
     { user_id: addressee_id, friend_id: requester_id, status: 'accepted' },
@@ -142,10 +142,10 @@ export async function rejectFriendRequest(requestId: string) {
     .from('friend_requests')
     .update({ status: 'rejected' })
     .eq('id', requestId)
-    .select<Database['public']['Tables']['friend_requests']['Row']>()
+    .select()
     .single();
   if (error) throw new Error("Kon het verzoek niet weigeren. Probeer het straks nog eens!");
-  return data;
+  return data as Database['public']['Tables']['friend_requests']['Row'];
 }
 
 export async function callAwardBadges(userId: string, action: string, metadata?: any) {
