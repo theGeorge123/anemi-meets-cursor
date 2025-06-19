@@ -53,18 +53,19 @@ Deno.serve(async (req: Request) => {
     }
     const userId = data.user.id;
 
-    // Delete from Auth
+    // Delete from Auth using the admin API
     const adminRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
       method: 'DELETE',
       headers: {
         'apikey': serviceRoleKey,
-        'Authorization': `Bearer ${serviceRoleKey}`,
+        'Authorization': `Bearer ${jwt}`, // Use the user's JWT
         'Content-Type': 'application/json',
       },
     });
 
     if (!adminRes.ok) {
       const err = await adminRes.text();
+      console.error('Admin API Error:', err);
       throw new AppError(
         'Failed to delete user from auth system',
         ERROR_CODES.DATABASE_ERROR,
@@ -73,24 +74,18 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Delete profile
-    const dbRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
-      method: 'DELETE',
-      headers: {
-        'apikey': serviceRoleKey,
-        'Authorization': `Bearer ${serviceRoleKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
-    });
+    // Delete profile using RLS policies
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
 
-    if (!dbRes.ok) {
-      const err = await dbRes.text();
+    if (profileError) {
       throw new AppError(
         'Failed to delete user profile',
         ERROR_CODES.DATABASE_ERROR,
         500,
-        err
+        profileError
       );
     }
 
