@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import { awardBadge, hasBadge } from '../services/badgeService';
@@ -14,6 +14,9 @@ interface SignupForm {
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('invite_token');
+  const prefilledEmail = searchParams.get('email');
   const { t, i18n } = useTranslation();
   const steps = [
     t('signup.nameStep', 'Name'),
@@ -23,27 +26,43 @@ const Signup = () => {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<SignupForm>({
     name: '',
-    email: '',
+    email: prefilledEmail || '',
     password: '',
     confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; confirmPassword?: string }>({});
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
 
   const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
 
   // Helper voor sterke wachtwoordvalidatie
   const validatePassword = (pw: string) => {
-    if (pw.length < 8) return i18n.language === 'nl' ? 'Wachtwoord moet minstens 8 tekens zijn!' : 'Password must be at least 8 characters!';
-    if (!/[A-Z]/.test(pw)) return i18n.language === 'nl' ? 'Gebruik minstens één hoofdletter!' : 'Use at least one capital letter!';
-    if (!/[a-z]/.test(pw)) return i18n.language === 'nl' ? 'Gebruik minstens één kleine letter!' : 'Use at least one lowercase letter!';
+    if (pw.length < 8)
+      return i18n.language === 'nl'
+        ? 'Wachtwoord moet minstens 8 tekens zijn!'
+        : 'Password must be at least 8 characters!';
+    if (!/[A-Z]/.test(pw))
+      return i18n.language === 'nl'
+        ? 'Gebruik minstens één hoofdletter!'
+        : 'Use at least one capital letter!';
+    if (!/[a-z]/.test(pw))
+      return i18n.language === 'nl'
+        ? 'Gebruik minstens één kleine letter!'
+        : 'Use at least one lowercase letter!';
     if (!/[0-9]/.test(pw)) return i18n.language === 'nl' ? 'Voeg een cijfer toe!' : 'Add a number!';
-    if (!/[!@#$%^&*(),.?":{}|<>\[\]\\/;'+=_-]/.test(pw)) return i18n.language === 'nl' ? 'Voeg een speciaal teken toe!' : 'Add a special character!';
+    if (!/[!@#$%^&*(),.?":{}|<>\[\]\\/;'+=_-]/.test(pw))
+      return i18n.language === 'nl' ? 'Voeg een speciaal teken toe!' : 'Add a special character!';
     return null;
   };
 
   const validateEmail = (email: string) => {
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return t('signup.emailInvalid', 'Invalid email address');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+      return t('signup.emailInvalid', 'Invalid email address');
     return null;
   };
 
@@ -54,17 +73,21 @@ const Signup = () => {
     if (emailError) newErrors.email = emailError;
     const pwError = validatePassword(form.password);
     if (pwError) newErrors.password = pwError;
-    if (form.password !== form.confirmPassword) newErrors.confirmPassword = t('signup.passwordMismatch', 'Passwords do not match');
+    if (form.password !== form.confirmPassword)
+      newErrors.confirmPassword = t('signup.passwordMismatch', 'Passwords do not match');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: keyof SignupForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm(f => ({ ...f, [field]: e.target.value }));
-    setErrors(errs => ({ ...errs, [field]: undefined }));
-  };
+  const handleInputChange =
+    (field: keyof SignupForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((f) => ({ ...f, [field]: e.target.value }));
+      setErrors((errs) => ({ ...errs, [field]: undefined }));
+    };
 
-  interface SignupError { message?: string }
+  interface SignupError {
+    message?: string;
+  }
   const getErrorMessage = (key: string, error: SignupError | null) => {
     const translated = t(key);
     if (translated === key) {
@@ -84,18 +107,18 @@ const Signup = () => {
       .eq('email', form.email)
       .maybeSingle();
     if (betaError || !betaData || betaData.status !== 'accepted') {
-      setErrors(errs => ({ ...errs, email: t('signup.betaNotAccepted') }));
+      setErrors((errs) => ({ ...errs, email: t('signup.betaNotAccepted') }));
       setLoading(false);
       return;
     }
     // === END BETA CHECK ===
     // Probeer altijd te registreren, maar geef altijd dezelfde feedback
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
-        data: { fullName: form.name }
-      }
+        data: { fullName: form.name },
+      },
     });
     if (signUpError) {
       // Gebruik error.code als die er is
@@ -103,52 +126,88 @@ const Signup = () => {
       switch (code) {
         case 'user_already_exists':
         case 'email_exists':
-          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.userAlreadyExists', signUpError) }));
+          setErrors((errs) => ({
+            ...errs,
+            email: getErrorMessage('signup.userAlreadyExists', signUpError),
+          }));
           setLoading(false);
           return;
         case 'email_address_invalid':
         case 'invalid_email':
-          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.invalidEmail', signUpError) }));
+          setErrors((errs) => ({
+            ...errs,
+            email: getErrorMessage('signup.invalidEmail', signUpError),
+          }));
           setLoading(false);
           return;
         case 'weak_password':
-          setErrors(errs => ({ ...errs, password: getErrorMessage('signup.weakPassword', signUpError) }));
+          setErrors((errs) => ({
+            ...errs,
+            password: getErrorMessage('signup.weakPassword', signUpError),
+          }));
           setLoading(false);
           return;
         case 'over_email_send_rate_limit':
         case 'over_request_rate_limit':
-          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.rateLimit', signUpError) }));
+          setErrors((errs) => ({
+            ...errs,
+            email: getErrorMessage('signup.rateLimit', signUpError),
+          }));
           setLoading(false);
           return;
         case 'signup_disabled':
-          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.disabled', signUpError) }));
+          setErrors((errs) => ({
+            ...errs,
+            email: getErrorMessage('signup.disabled', signUpError),
+          }));
           setLoading(false);
           return;
         case 'validation_failed':
-          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.validationFailed', signUpError) }));
+          setErrors((errs) => ({
+            ...errs,
+            email: getErrorMessage('signup.validationFailed', signUpError),
+          }));
           setLoading(false);
           return;
         case 'unexpected_failure':
         case 'internal_server_error':
-          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.internalError', signUpError) }));
+          setErrors((errs) => ({
+            ...errs,
+            email: getErrorMessage('signup.internalError', signUpError),
+          }));
           setLoading(false);
           return;
         default:
-          setErrors(errs => ({ ...errs, email: getErrorMessage('signup.unknownError', signUpError) }));
-            setLoading(false);
-            return;
+          setErrors((errs) => ({
+            ...errs,
+            email: getErrorMessage('signup.unknownError', signUpError),
+          }));
+          setLoading(false);
+          return;
       }
     }
     setLoading(false);
     // Set onboarding flag for new accounts
     localStorage.setItem('anemi-show-onboarding', '1');
     // Award badge for account creation
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (session?.user && !(await hasBadge(session.user.id, 'account'))) {
       await awardBadge(session.user.id, 'account');
       // Show fun toast
       alert('🚀 Welcome Aboard! You just earned your first badge for joining Anemi Meets!');
     }
+
+    // If there's an invite token, the auto_friendship_on_signup trigger will handle it
+    if (inviteToken) {
+      // Update the invite with the email to ensure the trigger finds it
+      await supabase
+        .from('friend_invites')
+        .update({ invitee_email: form.email })
+        .eq('token', inviteToken);
+    }
+
     setTimeout(() => navigate('/check-email'), 2000);
   };
 
@@ -158,7 +217,7 @@ const Signup = () => {
     // Validate email
     const emailError = validateEmail(form.email);
     if (emailError) {
-      setErrors(errs => ({ ...errs, email: emailError }));
+      setErrors((errs) => ({ ...errs, email: emailError }));
       return;
     }
     setLoading(true);
@@ -169,7 +228,7 @@ const Signup = () => {
       .eq('email', form.email)
       .maybeSingle();
     if (betaError || !betaData || betaData.status !== 'accepted') {
-      setErrors(errs => ({ ...errs, email: t('signup.betaNotAccepted') }));
+      setErrors((errs) => ({ ...errs, email: t('signup.betaNotAccepted') }));
       setLoading(false);
       return;
     }
@@ -194,32 +253,47 @@ const Signup = () => {
         {t('freeAccountInfo', 'Create a free account to get started!')}
       </div>
       <div className="card bg-white rounded-xl shadow-md p-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-6">{t('createAccount', 'Create Account')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-6">
+          {t('createAccount', 'Create Account')}
+        </h1>
         {/* Stepper */}
         <div className="flex justify-center gap-4 mb-8">
           {steps.map((label, idx) => (
             <div key={label} className="flex flex-col items-center">
-              <div className={`w-9 h-9 flex items-center justify-center rounded-full font-bold text-base border-2
-                ${step === idx ? 'bg-primary-600 text-white border-primary-700 shadow-md' : 'bg-white text-gray-400 border-gray-300'}`}>
+              <div
+                className={`w-9 h-9 flex items-center justify-center rounded-full font-bold text-base border-2
+                ${step === idx ? 'bg-primary-600 text-white border-primary-700 shadow-md' : 'bg-white text-gray-400 border-gray-300'}`}
+              >
                 {idx + 1}
               </div>
-              <span className={`mt-1 text-xs ${step === idx ? 'text-primary-700 font-semibold' : 'text-gray-400'}`}>{label}</span>
+              <span
+                className={`mt-1 text-xs ${step === idx ? 'text-primary-700 font-semibold' : 'text-gray-400'}`}
+              >
+                {label}
+              </span>
             </div>
           ))}
         </div>
-        <form onSubmit={step === steps.length - 1 ? handleSubmit : (e) => {
-          if (step === 1) {
-            handleEmailStepNext(e);
-          } else {
-            e.preventDefault();
-            nextStep();
+        <form
+          onSubmit={
+            step === steps.length - 1
+              ? handleSubmit
+              : (e) => {
+                  if (step === 1) {
+                    handleEmailStepNext(e);
+                  } else {
+                    e.preventDefault();
+                    nextStep();
+                  }
+                }
           }
-        }}
-          className="space-y-4 flex flex-col justify-between mt-2">
+          className="space-y-4 flex flex-col justify-between mt-2"
+        >
           {step === 0 && (
             <div>
               <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
-                <span className="text-2xl">😊</span> {t('signup.namePrompt', "Let's get started! What's your name?")}
+                <span className="text-2xl">😊</span>{' '}
+                {t('signup.namePrompt', "Let's get started! What's your name?")}
               </label>
               <input
                 type="text"
@@ -233,12 +307,19 @@ const Signup = () => {
                 inputMode="text"
                 autoComplete="name"
               />
-              {errors.name && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-red-600 text-sm mt-1" aria-live="assertive">
+                  {errors.name}
+                </p>
+              )}
             </div>
           )}
           {step === 1 && (
             <div>
-              <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="signup-email"
+                className="block text-lg font-medium text-gray-700 mb-2"
+              >
                 <span className="text-2xl">📧</span> {t('signup.emailPrompt')}
               </label>
               <input
@@ -252,13 +333,20 @@ const Signup = () => {
                 inputMode="email"
                 autoComplete="email"
               />
-              {errors.email && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-red-600 text-sm mt-1" aria-live="assertive">
+                  {errors.email}
+                </p>
+              )}
             </div>
           )}
           {step === 2 && (
             <>
               <div>
-                <label htmlFor="signup-password" className="block text-lg font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="signup-password"
+                  className="block text-lg font-medium text-gray-700 mb-2"
+                >
                   <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
                 </label>
                 <input
@@ -272,10 +360,17 @@ const Signup = () => {
                   inputMode="text"
                   autoComplete="new-password"
                 />
-                {errors.password && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.password}</p>}
+                {errors.password && (
+                  <p className="text-red-600 text-sm mt-1" aria-live="assertive">
+                    {errors.password}
+                  </p>
+                )}
               </div>
               <div>
-                <label htmlFor="signup-confirm-password" className="block text-lg font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="signup-confirm-password"
+                  className="block text-lg font-medium text-gray-700 mb-2"
+                >
                   <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
                 </label>
                 <input
@@ -289,7 +384,11 @@ const Signup = () => {
                   inputMode="text"
                   autoComplete="new-password"
                 />
-                {errors.confirmPassword && <p className="text-red-600 text-sm mt-1" aria-live="assertive">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && (
+                  <p className="text-red-600 text-sm mt-1" aria-live="assertive">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
             </>
           )}

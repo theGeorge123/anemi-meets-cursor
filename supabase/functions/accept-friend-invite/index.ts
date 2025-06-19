@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 import {
   AppError,
   ERROR_CODES,
@@ -36,9 +36,9 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { token } = await req.json();
-    if (!token) {
-      throw new AppError('Missing invite token', ERROR_CODES.VALIDATION_ERROR, 400);
+    const { token, email } = await req.json();
+    if (!token || !email) {
+      throw new AppError('Missing invite token or email', ERROR_CODES.VALIDATION_ERROR, 400);
     }
 
     // Require Authorization header
@@ -55,21 +55,21 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
     }
     const user = userData.user;
 
+    // Verify the email matches the authenticated user
+    if (user.email !== email) {
+      throw new AppError('Email mismatch', ERROR_CODES.UNAUTHORIZED, 403);
+    }
+
     // Look up the invite
     const { data: invite, error: inviteError } = await supabase
       .from('friend_invites')
-      .select('id, inviter_id, invitee_email, status, expires_at')
+      .select('id, inviter_id, status, expires_at')
       .eq('token', token)
       .eq('status', 'pending')
       .gt('expires_at', new Date().toISOString())
       .maybeSingle();
     if (inviteError || !invite) {
       throw new AppError('Invalid or expired invite token', ERROR_CODES.NOT_FOUND, 404);
-    }
-
-    // Ensure the authenticated user's email matches invitee_email
-    if (user.email !== invite.invitee_email) {
-      throw new AppError('Unauthorized to accept this invitation', ERROR_CODES.UNAUTHORIZED, 403);
     }
 
     // Call the atomic Postgres function via RPC

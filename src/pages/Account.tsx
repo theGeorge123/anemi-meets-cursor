@@ -531,7 +531,9 @@ const Account = () => {
               )}
             </div>
             <div className="flex flex-row items-center gap-2 mt-4">
-              <span className="font-semibold">{t('account.preferredLanguageFun')}</span>
+              <span className="font-semibold">
+                {t('account.preferredLanguageFun', 'What language do you vibe with?')}
+              </span>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 items-center">
               {editingProfile ? (
