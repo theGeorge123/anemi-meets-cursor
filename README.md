@@ -56,14 +56,31 @@ A modern, calming web application for coordinating coffee meetups with friends. 
 
 ## Environment Variables
 
-| Variable                   | Required | Description                                      |
-|---------------------------|----------|--------------------------------------------------|
-| VITE_SUPABASE_URL         | Yes      | Your Supabase project URL                        |
+| Variable                  | Required | Description                                       |
+| ------------------------- | -------- | ------------------------------------------------- |
+| VITE_SUPABASE_URL         | Yes      | Your Supabase project URL                         |
 | VITE_SUPABASE_ANON_KEY    | Yes      | Supabase anon public key (frontend)               |
 | SUPABASE_SERVICE_ROLE_KEY | Yes      | Supabase service role key (server-side/functions) |
 | RESEND_API_KEY            | Yes      | API key for Resend (email delivery)               |
 | MEETING_REMINDERS_SECRET  | Yes      | Secret for meeting reminders function             |
 | PUBLIC_SITE_URL           | No       | Public site URL for links in emails               |
+
+## Environment Setup
+
+To run this project locally, you need to set up your environment variables:
+
+1. Create a `.env` file in the project root
+2. Add the following variables with your Supabase project values:
+   ```
+   VITE_SUPABASE_URL=your-project-url.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
+3. Get these values from your Supabase project settings:
+   - Go to Project Settings > API
+   - Copy the "Project URL" for VITE_SUPABASE_URL
+   - Copy the "anon" key for VITE_SUPABASE_ANON_KEY
+
+Note: The `.env` file is intentionally gitignored for security. Never commit your API keys to version control!
 
 ## Typical Workflows
 
@@ -116,6 +133,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 ### Function Reference
 
 #### award-badges
+
 - **Purpose:** Awards badges to users based on actions (e.g., first meetup, five meetups).
 - **Env:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 - **Usage:**
@@ -130,6 +148,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 - **Errors:** Returns 200 with `{ success: true }` or error details in JSON.
 
 #### beta-accept-email
+
 - **Purpose:** Sends a welcome email when a user is accepted to the beta.
 - **Env:** `RESEND_API_KEY`
 - **Usage:**
@@ -145,6 +164,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 - **Errors:** Returns 200 on success, 500 on error.
 
 #### send-meeting-reminders
+
 - **Purpose:** Sends email reminders for upcoming meetups (24h/1h before).
 - **Env:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `MEETING_REMINDERS_SECRET`
 - **Usage:**
@@ -160,6 +180,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 - **Errors:** 401 if secret is missing/invalid, 500 if env vars are missing.
 
 #### send-friend-invite
+
 - **Purpose:** Sends a friend invite email and creates a friend_invite record.
 - **Env:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `PUBLIC_SITE_URL`
 - **Usage:**
@@ -176,6 +197,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 - **Errors:** 401 if JWT is missing/invalid, 500 on server error.
 
 #### send-meeting-confirmation
+
 - **Purpose:** Confirms a meetup, updates invitation, and sends confirmation email with calendar invite.
 - **Env:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`
 - **Usage:**
@@ -190,6 +212,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 - **Errors:** 400/404/500 with error message in JSON.
 
 #### create-notification
+
 - **Purpose:** Creates a notification for a user in the database.
 - **Env:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 - **Usage:**
@@ -206,6 +229,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 - **Errors:** 401 if JWT is missing/invalid, 400/500 on error.
 
 #### contact
+
 - **Purpose:** Receives contact/support form submissions.
 - **Env:** None required
 - **Usage:**
@@ -220,6 +244,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 - **Errors:** 400 if fields are missing, 200 on success.
 
 #### report-issue
+
 - **Purpose:** Receives bug reports or feedback from users.
 - **Env:** None required
 - **Usage:**
@@ -234,6 +259,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 - **Errors:** 400 if description is missing, 200 on success.
 
 #### delete-account
+
 - **Purpose:** Deletes a user from Auth and their profile from the database.
 - **Env:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 - **Usage:**
@@ -254,6 +280,7 @@ The application uses a comprehensive error handling and logging system across bo
 ### Frontend Error Handling
 
 - **Error Boundary**: A React Error Boundary component (`src/components/ErrorBoundary.tsx`) catches and handles rendering errors:
+
   - Displays user-friendly error messages
   - Provides reload and error reporting options
   - Integrates with Sentry for error tracking
@@ -292,6 +319,7 @@ All API endpoints return errors in a consistent format:
 ### Error Codes
 
 Common error codes include:
+
 - `INVALID_REQUEST`: Invalid request format or parameters
 - `UNAUTHORIZED`: Authentication required or failed
 - `NOT_FOUND`: Requested resource not found
@@ -303,6 +331,7 @@ Common error codes include:
 ### Logging Best Practices
 
 1. **Frontend**:
+
    ```typescript
    import { logger } from '@/utils/logger';
 
@@ -318,6 +347,7 @@ Common error codes include:
    ```
 
 2. **Backend**:
+
    ```typescript
    import { AppError, ERROR_CODES } from '../utils';
 
@@ -326,7 +356,7 @@ Common error codes include:
      if (!isValid) {
        throw new AppError('Invalid input', ERROR_CODES.VALIDATION_ERROR, 400);
      }
-     
+
      // Handle known errors
    } catch (error) {
      // Error will be automatically formatted and logged
@@ -337,6 +367,7 @@ Common error codes include:
 ### Monitoring & Debugging
 
 - All errors are tracked in Sentry with:
+
   - Stack traces
   - User context
   - Browser/OS information
@@ -394,10 +425,10 @@ supabase functions deploy send-meeting-reminders --project-ref <your-project-id>
 ```
 
 Configure the schedule for this function in `supabase/config.toml`. See the [Supabase docs](https://supabase.com/docs/guides/functions/schedule-functions) for details.
+
 ## Invitation Security
 
 Row level security is enabled on the `invitations` table. A signed-in user can read or modify a row when their user ID matches `invitee_id` or their email matches `email_a` or `email_b`. Inserts require `email_a` to equal the authenticated user's email.
-
 
 ## Database Migrations
 
