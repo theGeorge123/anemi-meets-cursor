@@ -258,7 +258,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <NavigationBarWithBoundary profileEmoji={profile?.emoji} />
+      <NavigationBarWithBoundary profileEmoji={safeTime(profile?.emoji)} />
       <div className="max-w-2xl mx-auto py-8 px-4">
         {showOnboarding && (
           <OnboardingModal
