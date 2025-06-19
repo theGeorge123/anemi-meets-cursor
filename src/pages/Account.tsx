@@ -44,6 +44,10 @@ interface Invitation {
   email_b?: string;
 }
 
+function isProfile(obj: any): obj is Profile {
+  return obj && typeof obj.id === 'string' && typeof obj.fullName === 'string' && typeof obj.email === 'string';
+}
+
 const Account = () => {
   const [user, setUser] = useState<Profile | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
@@ -152,8 +156,8 @@ const Account = () => {
       if (profileError) {
         console.error('Fout bij ophalen profiel:', profileError);
       }
-      if (profileData) {
-        setUser(profileData as Profile);
+      if (profileData && isProfile(profileData)) {
+        setUser(profileData);
         if (profileData.emoji) setSelectedEmoji(profileData.emoji);
         if (profileData.age !== undefined && profileData.age !== null) setAge(profileData.age);
         setWantsUpdates(!!profileData.wantsUpdates);

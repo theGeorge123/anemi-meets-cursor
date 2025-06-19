@@ -14,4 +14,24 @@ This directory is for grouping major features and domains of the Anemi Meets app
 - **Clarity:** Reduces cognitive load—developers know where to look for related code.
 
 ## Example Structure
+
 ```
+features/
+  meetups/
+    components/
+      DateSelector.tsx
+      DateSelector.test.tsx
+    hooks/
+      useMeetups.ts
+    meetupsSlice.ts
+    index.ts
+  users/
+    components/
+      UserProfile.tsx
+    hooks/
+      useUser.ts
+    usersSlice.ts
+    index.ts
+```
+
+Each feature should be self-contained and export its main functionality via an `index.ts` file.

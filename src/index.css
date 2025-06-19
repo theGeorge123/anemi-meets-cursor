@@ -440,3 +440,29 @@ select:focus {
   --shadow-card:      0 4px 8px rgba(0,0,0,.05);
   --font-sans:        'Inter', system-ui, sans-serif;
 }
+
+/*
+  Design Tokens (CSS Variables)
+  ----------------------------
+  Example:
+    :root {
+      --color-accent-50: #E4FBF1;
+      --color-accent-200: #B2DFDB;
+      --color-accent-500: #03B475;
+      --radius-lg: 16px;
+      --shadow-card: 0 4px 8px rgba(0,0,0,.05);
+      /* Add new tokens here */
+    }
+
+  Usage:
+    background: var(--color-accent-50);
+    border-radius: var(--radius-lg);
+
+  To add a new token:
+    1. Add it to :root.
+    2. Reference it in your CSS or Tailwind config.
+
+  To avoid repeated utility classes:
+    - Use the provided CSS classes (e.g., .btn-primary, .input-field) instead of repeating utility classes in your components.
+    - If you see repeated utility classes, extract them into a named class in this file and use that class in your JSX.
+*/

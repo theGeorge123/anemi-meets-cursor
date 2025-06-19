@@ -20,7 +20,8 @@ vi.mock('react-i18next', () => ({
         'common.evening': 'Evening'
       };
       return translations[key] || key;
-    }
+    },
+    i18n: { language: 'en' }
   })
 }));
 

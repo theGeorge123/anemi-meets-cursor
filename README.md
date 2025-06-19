@@ -423,3 +423,23 @@ constraints linking invitations to cafes and various user tables.
 ## License
 
 MIT
+
+## Running Tests
+
+Before running tests, make sure you have installed all dependencies, including dev dependencies:
+
+```
+npm install
+```
+
+or, for CI environments:
+
+```
+npm ci
+```
+
+This ensures tools like `vitest` are available. Then you can run:
+
+```
+npm run test:components
+```
