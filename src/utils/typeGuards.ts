@@ -12,12 +12,11 @@ export function isProfile(value: unknown): value is TableRow<'profiles'> {
   return (
     typeof profile.id === 'string' &&
     typeof profile.email === 'string' &&
-    typeof profile.fullName === 'string' &&
+    typeof profile.fullname === 'string' &&
     (profile.avatar_url === undefined || typeof profile.avatar_url === 'string') &&
     typeof profile.created_at === 'string' &&
     typeof profile.updated_at === 'string' &&
-    (profile.preferred_language === 'en' || profile.preferred_language === 'nl') &&
-    typeof profile.timezone === 'string'
+    (profile.preferred_language === undefined || typeof profile.preferred_language === 'string')
   );
 }
 
@@ -29,18 +28,13 @@ export function isEvent(value: unknown): value is TableRow<'events'> {
   const event = value as TableRow<'events'>;
   return (
     typeof event.id === 'string' &&
-    typeof event.title === 'string' &&
-    typeof event.description === 'string' &&
-    typeof event.start_time === 'string' &&
-    typeof event.end_time === 'string' &&
-    typeof event.location === 'string' &&
-    typeof event.max_participants === 'number' &&
+    typeof event.name === 'string' &&
+    (event.description === undefined || event.description === null || typeof event.description === 'string') &&
+    typeof event.date === 'string' &&
+    (event.location === undefined || event.location === null || typeof event.location === 'string') &&
     typeof event.created_by === 'string' &&
     typeof event.created_at === 'string' &&
-    typeof event.updated_at === 'string' &&
-    ['draft', 'published', 'cancelled'].includes(event.status) &&
-    typeof event.is_online === 'boolean' &&
-    (event.meeting_url === undefined || typeof event.meeting_url === 'string')
+    (event.community_id === undefined || event.community_id === null || typeof event.community_id === 'string')
   );
 }
 
@@ -54,10 +48,8 @@ export function isEventParticipant(value: unknown): value is TableRow<'event_par
     typeof participant.id === 'string' &&
     typeof participant.event_id === 'string' &&
     typeof participant.user_id === 'string' &&
-    ['registered', 'attended', 'cancelled'].includes(participant.status) &&
-    typeof participant.registered_at === 'string' &&
-    (participant.attended_at === undefined || typeof participant.attended_at === 'string') &&
-    (participant.cancelled_at === undefined || typeof participant.cancelled_at === 'string')
+    typeof participant.joined_at === 'string' &&
+    typeof participant.role === 'string'
   );
 }
 
@@ -70,13 +62,9 @@ export function isCommunity(value: unknown): value is TableRow<'communities'> {
   return (
     typeof community.id === 'string' &&
     typeof community.name === 'string' &&
-    typeof community.description === 'string' &&
+    (community.description === undefined || community.description === null || typeof community.description === 'string') &&
     typeof community.created_by === 'string' &&
-    typeof community.created_at === 'string' &&
-    typeof community.updated_at === 'string' &&
-    typeof community.isPrivate === 'boolean' &&
-    (community.avatar_url === undefined || typeof community.avatar_url === 'string') &&
-    (community.banner_url === undefined || typeof community.banner_url === 'string')
+    typeof community.created_at === 'string'
   );
 }
 
@@ -90,47 +78,27 @@ export function isCommunityMember(value: unknown): value is TableRow<'community_
     typeof member.id === 'string' &&
     typeof member.community_id === 'string' &&
     typeof member.user_id === 'string' &&
-    ['member', 'moderator', 'admin'].includes(member.role) &&
-    typeof member.joined_at === 'string' &&
-    ['active', 'inactive', 'banned'].includes(member.status)
+    typeof member.role === 'string' &&
+    typeof member.joined_at === 'string'
   );
 }
 
-/**
- * Type guard for Message
- */
-export function isMessage(value: unknown): value is TableRow<'messages'> {
-  if (!value || typeof value !== 'object') return false;
-  const message = value as TableRow<'messages'>;
-  return (
-    typeof message.id === 'string' &&
-    typeof message.sender_id === 'string' &&
-    typeof message.receiver_id === 'string' &&
-    typeof message.content === 'string' &&
-    typeof message.created_at === 'string' &&
-    typeof message.updated_at === 'string' &&
-    typeof message.is_read === 'boolean' &&
-    (message.read_at === undefined || typeof message.read_at === 'string')
-  );
-}
-
-/**
- * Type guard for Notification
- */
-export function isNotification(value: unknown): value is TableRow<'notifications'> {
-  if (!value || typeof value !== 'object') return false;
-  const notification = value as TableRow<'notifications'>;
-  return (
-    typeof notification.id === 'string' &&
-    typeof notification.user_id === 'string' &&
-    ['event_invite', 'message', 'community_invite', 'system'].includes(notification.type) &&
-    typeof notification.content === 'string' &&
-    typeof notification.created_at === 'string' &&
-    typeof notification.is_read === 'boolean' &&
-    (notification.read_at === undefined || typeof notification.read_at === 'string') &&
-    (notification.related_id === undefined || typeof notification.related_id === 'string')
-  );
-}
+// TODO: The Notification type guard is commented out because the 'notifications' table is missing from src/types/supabase.ts.
+// This is likely due to the table not being introspected or generated in the types. To re-enable, add the table to your Supabase types.
+// export function isNotification(value: unknown): value is TableRow<'notifications'> {
+//   if (!value || typeof value !== 'object') return false;
+//   const notification = value as TableRow<'notifications'>;
+//   return (
+//     typeof notification.id === 'string' &&
+//     typeof notification.user_id === 'string' &&
+//     ['event_invite', 'message', 'community_invite', 'system'].includes(notification.type) &&
+//     typeof notification.content === 'string' &&
+//     typeof notification.created_at === 'string' &&
+//     typeof notification.is_read === 'boolean' &&
+//     (notification.read_at === undefined || typeof notification.read_at === 'string') &&
+//     (notification.related_id === undefined || typeof notification.related_id === 'string')
+//   );
+// }
 
 /**
  * Type guard for array of a specific type
