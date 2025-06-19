@@ -138,40 +138,6 @@ const Login = () => {
     setResetLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-    });
-    if (error) {
-      setError(normalizeAuthError(t, error));
-      setLoading(false);
-      return;
-    }
-    // Wait for the user to be logged in (OAuth redirect)
-    setTimeout(async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) {
-        const { data } = await supabase
-          .from('beta_signups')
-          .select('status')
-          .eq('email', user.email)
-          .maybeSingle();
-        if (data?.status !== 'accepted') {
-          setBetaToast({ message: t('beta.notAccepted'), type: 'info' });
-          setTimeout(() => {
-            supabase.auth.signOut();
-            setBetaToast(null);
-          }, 3500);
-          setLoading(false);
-          return;
-        }
-      }
-      setLoading(false);
-      navigate("/dashboard");
-    }, 1000); // Wait a moment for OAuth session
-  };
-
   return (
     <main className="max-w-md mx-auto px-2 sm:px-0 py-6">
       <h1 className="mobile-heading text-primary-600 mb-6 text-center">
@@ -284,14 +250,6 @@ const Login = () => {
           {t("login.loginButton")}
         </button>
       </form>
-
-      <button
-        type="button"
-        onClick={handleGoogleLogin}
-        className="btn-secondary w-full mt-4 py-3 px-6 text-lg rounded-lg flex justify-center"
-      >
-        {t("login.googleButton")}
-      </button>
 
       <div className="text-center mt-4">
         <button

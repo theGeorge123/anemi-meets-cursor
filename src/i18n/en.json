@@ -42,8 +42,51 @@
     "success": "You are now friends! Redirecting...",
     "errorAccept": "Could not accept invite."
   },
+  "login": {
+    "title": "Ready to log in? 👋",
+    "subtitle": "Ready for more coffee adventures? Log in below!",
+    "welcomeBack": "You're in! ☕️",
+    "welcomeDesc": "Pop in your details and let's get you back to your meetups.",
+    "forgotPassword": "Forgot your password? Oops!",
+    "noAccountCta": "No account yet? Join the fun in seconds!",
+    "error_generic": "Hmm, that didn't work. Try again?",
+    "error_user_not_found": "Can't find that email. Did you type it right?",
+    "error_invalid_password": "That combo doesn't look right. Try again!",
+    "error_invalid_email": "That email looks a bit off. Double-check it!",
+    "error_user_banned": "This account is blocked. Need help? Contact us!",
+    "error_email_not_confirmed": "Check your inbox to confirm your email first!",
+    "errorRateLimit": "Whoa, slow down! Too many tries. Wait a sec and try again.",
+    "reset_error_generic": "Couldn't send the reset email. Try again?",
+    "reset_success": "Reset email sent! Time for a new password and a fresh cup of coffee ☕️. Check your inbox!",
+    "toast": {
+      "loginSuccess": "Woohoo, you're in! 🎉"
+    },
+    "emailPlaceholder": "Your email address",
+    "emailLabel": "Your email address",
+    "passwordLabel": "Your password",
+    "passwordPlaceholder": "Your super secret password",
+    "loginButton": "Let me in!"
+  },
   "signup": {
-    "betaNotAccepted": "Hey! You're not in the beta (yet). Hang tight, we'll let you know when you can join! ☕"
+    "title": "Join Anemi Meets! 👋",
+    "emailPrompt": "What's your email address?",
+    "emailPlaceholder": "Your email address",
+    "namePrompt": "What's your name?",
+    "namePlaceholder": "Your name",
+    "passwordPrompt": "Choose a strong password",
+    "passwordPlaceholder": "Your password (min. 8 characters)",
+    "confirmPasswordPrompt": "Confirm your password",
+    "confirmPasswordPlaceholder": "Type your password again",
+    "submitButton": "Create Account",
+    "alreadyHaveAccount": "Already have an account? Log in!",
+    "errorEmailRequired": "Please enter your email address",
+    "errorEmailInvalid": "That email doesn't look quite right",
+    "errorNameRequired": "Please tell us your name",
+    "errorPasswordRequired": "Please choose a password",
+    "errorPasswordLength": "Password must be at least 8 characters",
+    "errorConfirmRequired": "Please confirm your password",
+    "errorPasswordMatch": "Passwords don't match",
+    "errorGeneric": "Something went wrong. Please try again."
   },
   "account": {
     "preferredLanguageFun": "Language for your coffee chats ☕️",

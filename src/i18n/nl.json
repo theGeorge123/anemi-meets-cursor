@@ -28,8 +28,51 @@
     "success": "Jullie zijn nu vrienden! Je wordt doorgestuurd...",
     "errorAccept": "Uitnodiging kon niet worden geaccepteerd."
   },
+  "login": {
+    "title": "Welkom terug! 👋",
+    "subtitle": "Klaar voor meer koffie-avonturen? Log hieronder in!",
+    "welcomeBack": "Welkom terug",
+    "welcomeDesc": "Fijn je weer te zien! Log in om verder te gaan.",
+    "forgotPassword": "Wachtwoord vergeten? Oeps!",
+    "noAccountCta": "Nog geen account? Doe gezellig mee!",
+    "error_generic": "Hmm, dat ging niet goed. Probeer het nog eens?",
+    "error_user_not_found": "We kunnen dat e-mailadres niet vinden. Klopt het wel?",
+    "error_invalid_password": "Die combinatie klopt niet helemaal. Nog een keer proberen!",
+    "error_invalid_email": "Dat e-mailadres lijkt niet te kloppen. Even checken?",
+    "error_user_banned": "Dit account is geblokkeerd. Hulp nodig? Neem contact op!",
+    "error_email_not_confirmed": "Check je inbox om je e-mail te bevestigen!",
+    "errorRateLimit": "Wow, even rustig aan! Je hebt te vaak geprobeerd. Wacht een momentje.",
+    "reset_error_generic": "Kon de resetmail niet sturen. Probeer het nog eens?",
+    "reset_success": "Resetmail verstuurd! Tijd voor een nieuw wachtwoord en verse koffie ☕️. Check je inbox!",
+    "toast": {
+      "loginSuccess": "Yes, je bent binnen! 🎉"
+    },
+    "emailPlaceholder": "Jouw e-mailadres",
+    "emailLabel": "Jouw e-mailadres",
+    "passwordLabel": "Jouw wachtwoord",
+    "passwordPlaceholder": "Je geheime wachtwoord",
+    "loginButton": "Laat me binnen!"
+  },
   "signup": {
-    "betaNotAccepted": "Hey! Je zit (nog) niet in de beta. Geen zorgen, we laten het je weten zodra je mee kan doen! ☕"
+    "title": "Doe mee met Anemi Meets! 👋",
+    "emailPrompt": "Wat is je e-mailadres?",
+    "emailPlaceholder": "Jouw e-mailadres",
+    "namePrompt": "Hoe heet je?",
+    "namePlaceholder": "Jouw naam",
+    "passwordPrompt": "Kies een sterk wachtwoord",
+    "passwordPlaceholder": "Je wachtwoord (min. 8 tekens)",
+    "confirmPasswordPrompt": "Bevestig je wachtwoord",
+    "confirmPasswordPlaceholder": "Type je wachtwoord opnieuw",
+    "submitButton": "Account aanmaken",
+    "alreadyHaveAccount": "Al een account? Log in!",
+    "errorEmailRequired": "Vul je e-mailadres in",
+    "errorEmailInvalid": "Dit e-mailadres lijkt niet te kloppen",
+    "errorNameRequired": "Vul je naam in",
+    "errorPasswordRequired": "Kies een wachtwoord",
+    "errorPasswordLength": "Wachtwoord moet minstens 8 tekens zijn",
+    "errorConfirmRequired": "Bevestig je wachtwoord",
+    "errorPasswordMatch": "Wachtwoorden komen niet overeen",
+    "errorGeneric": "Er ging iets mis. Probeer het opnieuw."
   },
   "account": {
     "preferredLanguageFun": "Taal van je koffiegesprekken ☕️",
