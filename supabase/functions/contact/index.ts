@@ -7,7 +7,18 @@ interface ContactBody {
   message: string;
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 Deno.serve(async (req: Request) => {
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   try {
     if (req.method !== 'POST') {
       throw new AppError(
@@ -69,7 +80,8 @@ Deno.serve(async (req: Request) => {
       { 
         status: 200,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...corsHeaders
         }
       }
     );
