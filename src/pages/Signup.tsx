@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
-import { awardBadge, hasBadge } from '../services/supabaseService';
+import { awardBadge, hasBadge } from '../services/badgeService';
 
 // TypeScript interface voor typeveiligheid
 interface SignupForm {

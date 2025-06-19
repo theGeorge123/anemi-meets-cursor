@@ -6,8 +6,8 @@ import Toast from "../components/Toast";
 import {
   awardBadge,
   hasBadge,
-  getMeetupCount,
-} from "../services/supabaseService";
+} from "../services/badgeService";
+import { getMeetupCount } from '../services/invitationService';
 
 interface Meetup {
   id: string;

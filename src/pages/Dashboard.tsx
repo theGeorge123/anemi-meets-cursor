@@ -2,32 +2,49 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import {
-  getProfile,
-  getFriends,
-  getOutgoingFriendRequests,
-  getIncomingFriendRequests,
-} from "../services/supabaseService";
+import { getProfile } from '../services/profileService';
+import { getFriends } from '../services/friendshipService';
+import { getOutgoingFriendRequests, getIncomingFriendRequests } from '../services/friendRequestService';
 import { useTranslation } from "react-i18next";
 import LoadingIndicator from "../components/LoadingIndicator";
 import SkeletonLoader from "../components/SkeletonLoader";
 import OnboardingModal from "../features/dashboard/components/OnboardingModal";
 import NavigationBarWithBoundary from '../components/NavigationBar';
-import type { Tables } from '../types/supabase';
+import type { Tables, Database } from '../types/supabase';
 
 interface Invitation {
   id: string;
   selected_date: string;
-  selected_time: string;
-  cafe_id?: string;
-  cafe_name?: string;
-  status: string;
-  email_b?: string;
-  invitee_id?: string;
-  email_a?: string;
+  selected_time?: string | undefined;
+  cafe_id?: string | undefined;
+  cafe_name?: string | undefined;
+  status?: string | undefined;
+  email_b?: string | undefined;
+  invitee_id?: string | undefined;
+  email_a?: string | undefined;
+}
+
+// Helper to normalize selected_time to undefined if null
+function normalizeMeetups(data: any[]): Invitation[] {
+  return data.map((m) => ({
+    id: m.id,
+    selected_date: m.selected_date,
+    selected_time: safeTime(m.selected_time),
+    cafe_id: safeTime(m.cafe_id),
+    cafe_name: safeTime(m.cafe_name),
+    status: safeTime(m.status) ?? 'unknown',
+    email_b: safeTime(m.email_b),
+    invitee_id: safeTime(m.invitee_id),
+    email_a: safeTime(m.email_a),
+  }));
 }
 
 type Profile = Tables<'profiles'>;
+
+// Helper to safely display selected_time
+function safeTime(val: string | null | undefined): string | undefined {
+  return typeof val === 'string' ? val : undefined;
+}
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -38,8 +55,8 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [friends, setFriends] = useState<Profile[]>([]);
-  const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
-  const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<Database['public']['Tables']['friend_requests']['Row'][]>([]);
+  const [incomingRequests, setIncomingRequests] = useState<Database['public']['Tables']['friend_requests']['Row'][]>([]);
   const navigate = useNavigate();
   const channelRef = useRef<RealtimeChannel | null>(null);
 
@@ -47,15 +64,16 @@ const Dashboard = () => {
   const nextMeetup = useMemo(() => {
     if (!meetups || meetups.length === 0) return null;
     const now = new Date();
-    return (
+    const result =
       meetups
         .filter((m) => new Date(m.selected_date) >= now)
         .sort(
           (a, b) =>
             new Date(a.selected_date).getTime() -
             new Date(b.selected_date).getTime(),
-        )[0] || null
-    );
+        )[0] || null;
+    // Normalize selected_time
+    return result ? { ...result, selected_time: safeTime(result.selected_time) } : null;
   }, [meetups]);
 
   useEffect(() => {
@@ -129,7 +147,8 @@ const Dashboard = () => {
         }
         setError(t("dashboard.errorLoadingMeetups"));
       } else {
-        setMeetups((data || []) as Invitation[]);
+        const normalizedMeetups = normalizeMeetups(data || []);
+        setMeetups(normalizedMeetups);
         localStorage.setItem(
           DASHBOARD_CACHE_KEY,
           JSON.stringify({
@@ -137,7 +156,7 @@ const Dashboard = () => {
             friends: friendsList,
             outgoingRequests: outgoing,
             incomingRequests: incoming,
-            meetups: data || [],
+            meetups: normalizedMeetups,
           }),
         );
       }
@@ -233,7 +252,9 @@ const Dashboard = () => {
     (m) => new Date(m.selected_date) >= new Date(),
   );
   const lastActivity =
-    sortedMeetups.length > 0 ? sortedMeetups[sortedMeetups.length - 1] : null;
+    sortedMeetups.length > 0
+      ? ({ ...sortedMeetups[sortedMeetups.length - 1], selected_time: safeTime(sortedMeetups[sortedMeetups.length - 1].selected_time) } as Invitation)
+      : null;
 
   return (
     <>
@@ -282,8 +303,8 @@ const Dashboard = () => {
               </div>
               <div className="text-base text-primary-800">
                 {nextMeetup.selected_date}{" "}
-                {nextMeetup.selected_time && `, ${nextMeetup.selected_time}`}
-                {nextMeetup.cafe_name && <span> @ {nextMeetup.cafe_name}</span>}
+                {safeTime(nextMeetup.selected_time) ? `, ${safeTime(nextMeetup.selected_time)}` : ''}
+                {safeTime(nextMeetup.cafe_name) && <span> @ {safeTime(nextMeetup.cafe_name)}</span>}
               </div>
             </div>
             <button className="btn-primary mt-3 sm:mt-0">
@@ -299,9 +320,9 @@ const Dashboard = () => {
               {t("dashboard.lastActivity")}:{" "}
               <span className="font-semibold">
                 {lastActivity.selected_date}
-                {lastActivity.selected_time && `, ${lastActivity.selected_time}`}
+                {safeTime(lastActivity.selected_time) ? `, ${safeTime(lastActivity.selected_time)}` : ''}
               </span>
-              {lastActivity.cafe_name && <span> @ {lastActivity.cafe_name}</span>}
+              {safeTime(lastActivity.cafe_name) && <span> @ {safeTime(lastActivity.cafe_name)}</span>}
             </div>
           </div>
         )}
@@ -334,31 +355,24 @@ const Dashboard = () => {
           )}
           {!loading && !error && upcoming.length > 0 && (
             <ul className="space-y-4">
-              {upcoming.slice(0, 3).map((m) => (
-                <li
-                  key={m.id}
-                  className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100"
-                >
-                  <div>
-                    <span className="font-semibold text-primary-700">
-                      {m.selected_date}
+              {upcoming.slice(0, 3).map((m) => {
+                const time = safeTime(m.selected_time);
+                return (
+                  <li key={m.id} className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100">
+                    <div>
+                      <span className="font-semibold text-primary-700">{m.selected_date}</span>
+                      {time && <span> &bull; {time}</span>}
+                      {safeTime(m.cafe_name) && <span> &bull; {m.cafe_name}</span>}
+                      {!m.cafe_name && m.cafe_id && (
+                        <span> &bull; {t("cafe")} {m.cafe_id}</span>
+                      )}
+                    </div>
+                    <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === "confirmed" ? "bg-green-100 text-green-700" : m.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-200 text-gray-700"}`}>
+                      {t(`account.status.${m.status}`)}
                     </span>
-                    {m.selected_time && <span> &bull; {m.selected_time}</span>}
-                    {m.cafe_name && <span> &bull; {m.cafe_name}</span>}
-                    {!m.cafe_name && m.cafe_id && (
-                      <span>
-                        {" "}
-                        &bull; {t("cafe")} {m.cafe_id}
-                      </span>
-                    )}
-                  </div>
-                  <span
-                    className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === "confirmed" ? "bg-green-100 text-green-700" : m.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-200 text-gray-700"}`}
-                  >
-                    {t(`account.status.${m.status}`)}
-                  </span>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
