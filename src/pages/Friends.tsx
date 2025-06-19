@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
 import Toast from '../components/Toast';
 import { getFriends, acceptFriendRequest, rejectFriendRequest, removeFriend } from '../services/supabaseService';
-import type { Profile } from '../types/supabase';
+import type { Tables } from '../types/supabase';
+type Profile = Tables<'profiles'>;
 
 interface User {
   id: string;
@@ -196,7 +197,7 @@ const Friends = () => {
                   const profile = sentProfiles[req.addressee_id];
                   return (
                     <li key={req.id} className="mb-1 flex items-center gap-2">
-                      <span className="font-mono text-primary-700">{profile ? (profile.fullName || profile.email) : req.addressee_id}</span>
+                      <span className="font-mono text-primary-700">{profile ? (profile.fullname ?? profile.email ?? req.addressee_id) : req.addressee_id}</span>
                       <span className="text-yellow-600 text-xs">⏳</span>
                     </li>
                   );
@@ -212,7 +213,7 @@ const Friends = () => {
                   const profile = receivedProfiles[req.requester_id];
                   return (
                     <li key={req.id} className="mb-2 flex items-center gap-2">
-                      <span className="font-mono text-primary-700">{profile ? (profile.fullName || profile.email) : req.requester_id}</span>
+                      <span className="font-mono text-primary-700">{profile ? (profile.fullname ?? profile.email ?? req.requester_id) : req.requester_id}</span>
                       <button className="btn-primary btn-xs" onClick={() => handleRespond(req.id, true)}>{t('friends.accept')}</button>
                       <button className="btn-secondary btn-xs" onClick={() => handleRespond(req.id, false)}>{t('friends.reject')}</button>
                     </li>
@@ -234,7 +235,7 @@ const Friends = () => {
               {friends.map(f => (
                 <li key={f.id} className="mb-1 flex items-center gap-2">
                   <span className="text-2xl">{f.emoji || '👤'}</span>
-                  <span className="font-bold text-primary-700">{f.fullName || f.email}</span>
+                  <span className="font-bold text-primary-700">{f.fullname ?? f.email}</span>
                   <button className="btn-secondary btn-xs ml-2" onClick={() => handleRemoveFriend(f.id)}>{t('friends.remove', 'Remove')}</button>
                 </li>
               ))}

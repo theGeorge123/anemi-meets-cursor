@@ -13,6 +13,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import SkeletonLoader from "../components/SkeletonLoader";
 import OnboardingModal from "../features/dashboard/components/OnboardingModal";
 import NavigationBarWithBoundary from '../components/NavigationBar';
+import type { Tables } from '../types/supabase';
 
 interface Invitation {
   id: string;
@@ -26,13 +27,7 @@ interface Invitation {
   email_a?: string;
 }
 
-interface Profile {
-  id: string;
-  fullName: string;
-  emoji?: string;
-  lastSeen?: string;
-  email?: string;
-}
+type Profile = Tables<'profiles'>;
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -92,7 +87,7 @@ const Dashboard = () => {
       // Update lastSeen on dashboard visit
       await supabase
         .from("profiles")
-        .update({ lastSeen: new Date().toISOString() })
+        .update({ last_seen: new Date().toISOString() })
         .eq("id", session.user.id);
       // Onboarding check: only show for new signups
       if (localStorage.getItem("anemi-show-onboarding")) {
@@ -256,20 +251,23 @@ const Dashboard = () => {
         {/* Welcome message at the top */}
         <div className="flex items-center gap-3 mb-6">
           {profile?.emoji && (
-            <span className="text-4xl" title={profile.fullName}>
-              {profile.emoji}
-            </span>
+            (() => {
+              const profileTitle: string | undefined = profile.fullname ?? undefined;
+              return (
+                <span className="text-4xl" title={profileTitle}>
+                  {profile.emoji}
+                </span>
+              );
+            })()
           )}
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
-              {t("dashboard.welcome")}, {profile?.fullName || t("dashboard.user")}!
+              {t("dashboard.welcome")}, {profile?.fullname ?? t("dashboard.user")}!
             </h1>
             {profile && (
               <div className="text-gray-600 text-sm">
                 {t("dashboard.lastLogin", {
-                  date: profile.lastSeen
-                    ? new Date(profile.lastSeen).toLocaleDateString()
-                    : "",
+                  date: profile.last_seen ? new Date(profile.last_seen).toLocaleDateString() : "",
                 })}
               </div>
             )}
