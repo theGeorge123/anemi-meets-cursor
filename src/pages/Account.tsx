@@ -297,28 +297,51 @@ const Account = () => {
   const handleDeleteAccount = async () => {
     const confirmMsg = t('account.deleteConfirm', 'Are you sure? This cannot be undone!');
     if (!window.confirm(confirmMsg)) return;
-    const { data: sessionData, error } = await supabase.auth.getSession();
-    if (error || !sessionData.session?.access_token) {
-      console.error('Failed to get session for deletion', error);
-      return;
-    }
+    
     try {
+      // Get the current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('Failed to get session for deletion', sessionError);
+        return;
+      }
+
+      // Get a fresh access token
+      const { data: { session: refreshedSession }, error: refreshError } = 
+        await supabase.auth.refreshSession();
+      if (refreshError || !refreshedSession) {
+        console.error('Failed to refresh session', refreshError);
+        return;
+      }
+
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
+          'Authorization': `Bearer ${refreshedSession.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        }
       });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok || !body.success) {
-        console.error('Delete account failed', body);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Delete account failed:', errorText);
+        alert(t('account.deleteError', 'Failed to delete account. Please try again.'));
         return;
       }
+
+      const body = await res.json();
+      if (!body.success) {
+        console.error('Delete account failed:', body);
+        alert(t('account.deleteError', 'Failed to delete account. Please try again.'));
+        return;
+      }
+
       await supabase.auth.signOut();
       navigate('/login');
     } catch (err) {
-      console.error('Unexpected delete error', err);
+      console.error('Unexpected delete error:', err);
+      alert(t('account.deleteError', 'Failed to delete account. Please try again.'));
     }
   };
 

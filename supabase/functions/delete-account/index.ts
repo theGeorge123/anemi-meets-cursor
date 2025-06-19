@@ -40,10 +40,17 @@ Deno.serve(async (req: Request) => {
     }
     const jwt = authHeader.replace('Bearer ', '');
 
-    // Verify JWT via Supabase
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
-    const { data, error: verifyError } = await supabase.auth.getUser(jwt);
-    if (verifyError || !data?.user) {
+    // Create admin client with service role
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+
+    // Verify JWT and get user
+    const { data: { user }, error: verifyError } = await adminClient.auth.getUser(jwt);
+    if (verifyError || !user) {
       throw new AppError(
         'Invalid authentication token',
         ERROR_CODES.UNAUTHORIZED,
@@ -51,15 +58,13 @@ Deno.serve(async (req: Request) => {
         verifyError
       );
     }
-    const userId = data.user.id;
 
-    // Delete from Auth using the admin API
-    const adminRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
+    // Delete the user using admin API
+    const adminRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${user.id}`, {
       method: 'DELETE',
       headers: {
         'apikey': serviceRoleKey,
-        'Authorization': `Bearer ${jwt}`, // Use the user's JWT
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceRoleKey}`,
       },
     });
 
@@ -74,11 +79,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Delete profile using RLS policies
-    const { error: profileError } = await supabase
+    // Delete profile using admin client
+    const { error: profileError } = await adminClient
       .from('profiles')
       .delete()
-      .eq('id', userId);
+      .eq('id', user.id);
 
     if (profileError) {
       throw new AppError(
@@ -103,6 +108,7 @@ Deno.serve(async (req: Request) => {
       }
     );
   } catch (error) {
+    console.error('Delete account error:', error);
     return createErrorResponse(handleError(error));
   }
 });
