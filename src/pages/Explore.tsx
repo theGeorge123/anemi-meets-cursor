@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
+import type { Database } from '../types/supabase';
+
+type Cafe = Database['public']['Tables']['cafes']['Row'];
 
 const Explore: React.FC = () => {
   const { t } = useTranslation();
-  const [cafes, setCafes] = useState<any[]>([]);
+  const [cafes, setCafes] = useState<Cafe[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,7 +15,7 @@ const Explore: React.FC = () => {
       setLoading(true);
       const { data, error } = await supabase.from('cafes').select('*');
       if (!error && data) {
-        setCafes(data);
+        setCafes(data as Cafe[]);
       } else {
         setCafes([]);
       }

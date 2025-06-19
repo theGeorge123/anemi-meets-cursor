@@ -1,4 +1,3 @@
-// import { useTranslation } from 'react-i18next'; // Verwijderd, niet gebruikt
 import { useState, useEffect } from 'react';
 import Footer from './components/Footer';
 import AppRoutes from './AppRoutes';
@@ -8,9 +7,7 @@ import { NavigationProvider } from './context/NavigationContext';
 import * as Sentry from '@sentry/react';
 
 function useSentryTracking() {
-  // const location = useLocation();
   useEffect(() => {
-    // Route change breadcrumb
     Sentry.addBreadcrumb({
       category: 'navigation',
       message: `Navigated to ${location.pathname}`,
@@ -20,7 +17,6 @@ function useSentryTracking() {
   }, []);
 
   useEffect(() => {
-    // Set browser context
     Sentry.setContext('browser', {
       userAgent: navigator.userAgent,
       language: navigator.language,
@@ -29,7 +25,6 @@ function useSentryTracking() {
   }, []);
 
   useEffect(() => {
-    // Set user context (id only)
     import('./supabaseClient').then(({ supabase }) => {
       supabase.auth.getUser().then(({ data }) => {
         if (data?.user) {

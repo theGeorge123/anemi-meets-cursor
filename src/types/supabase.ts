@@ -715,3 +715,6 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+export type Badge = Database['public']['Tables']['badges']['Row'];
+export type UserBadge = Database['public']['Tables']['user_badges']['Row'];

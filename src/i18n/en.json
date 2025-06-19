@@ -57,5 +57,17 @@
     "edit": "Edit",
     "save": "Save",
     "cancel": "Cancel"
+  },
+  "betaSignup": {
+    "title": "Join the Beta",
+    "description": "Be one of the first to try Anemi Meets!",
+    "tagline": "Connect with fellow coffee lovers in your city.",
+    "emailPlaceholder": "Enter your email",
+    "cta": "Join Waitlist",
+    "sending": "Joining...",
+    "success": "You're on the list! We'll let you know when you can join.",
+    "error": "Oops! Something went wrong. Please try again.",
+    "alreadyOnList": "You're already on the waitlist! We'll let you know when you can join.",
+    "invalidEmail": "Please enter a valid email address."
   }
 }

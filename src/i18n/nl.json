@@ -4,6 +4,18 @@
     "acceptedEmailSubject": "Je bent erbij! Welkom bij de Anemi Meets Beta ☕️",
     "acceptedEmailBody": "Hey koffie-vriend! Je bent toegelaten tot de Anemi Meets beta. Log in en ga lekker koffiedrinken! ☕️✨"
   },
+  "betaSignup": {
+    "title": "Doe mee met de Beta",
+    "description": "Wees een van de eersten die Anemi Meets uitprobeert!",
+    "tagline": "Ontmoet andere koffieliefhebbers in jouw stad.",
+    "emailPlaceholder": "Vul je e-mailadres in",
+    "cta": "Zet me op de lijst",
+    "sending": "Even geduld...",
+    "success": "Je staat op de lijst! We laten je weten wanneer je mee kunt doen.",
+    "error": "Oeps! Er ging iets mis. Probeer het opnieuw.",
+    "alreadyOnList": "Je staat al op de wachtlijst! We laten je weten wanneer je mee kunt doen.",
+    "invalidEmail": "Vul een geldig e-mailadres in."
+  },
   "inviteFriend": {
     "title": "Vriendschapsuitnodiging accepteren",
     "invalid": "Ongeldige of verlopen uitnodigingslink.",

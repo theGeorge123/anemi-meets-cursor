@@ -1,70 +1,89 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
 export async function handleCreateNotification(req: Request): Promise<Response> {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    });
-  }
-
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Only POST requests allowed." }),
-      {
-        status: 405,
-        headers: { "Access-Control-Allow-Origin": "*" },
-      },
-    );
-  }
-
   try {
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response(
-        JSON.stringify({ error: "Server misconfiguration" }),
-        {
-          status: 500,
-          headers: { "Access-Control-Allow-Origin": "*" },
-        },
+    if (req.method === "OPTIONS") {
+      return new Response("ok", {
+        status: 200,
+        headers: CORS_HEADERS,
+      });
+    }
+
+    if (req.method !== "POST") {
+      throw new AppError(
+        "Only POST requests allowed",
+        ERROR_CODES.INVALID_REQUEST,
+        405
       );
     }
+
+    // Validate required environment variables
+    validateEnvVars(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     // Require Authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), { status: 401, headers: { "Access-Control-Allow-Origin": "*" } });
+      throw new AppError(
+        "Missing or invalid authorization header",
+        ERROR_CODES.UNAUTHORIZED,
+        401
+      );
     }
+
     const jwt = authHeader.replace("Bearer ", "");
+    
     // Verify JWT via Supabase
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data, error: verifyError } = await supabase.auth.getUser(jwt);
+    
     if (verifyError || !data?.user) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { "Access-Control-Allow-Origin": "*" } });
-    }
-    const userId = data.user.id;
-
-    const { user_id, type, content, related_id } = await req.json();
-    if (!user_id || !type || !content) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        {
-          status: 400,
-          headers: { "Access-Control-Allow-Origin": "*" },
-        },
+      throw new AppError(
+        "Invalid authentication token",
+        ERROR_CODES.UNAUTHORIZED,
+        401,
+        verifyError
       );
     }
-    // Only allow notifications for yourself
-    if (user_id !== userId) {
-      return new Response(JSON.stringify({ error: "Forbidden: can only create notifications for yourself" }), { status: 403, headers: { "Access-Control-Allow-Origin": "*" } });
+    
+    const userId = data.user.id;
+
+    // Parse and validate request body
+    const { user_id, type, content, related_id } = await req.json().catch(() => {
+      throw new AppError(
+        "Invalid JSON payload",
+        ERROR_CODES.INVALID_REQUEST,
+        400
+      );
+    });
+
+    if (!user_id || !type || !content) {
+      throw new AppError(
+        "Missing required fields: user_id, type, content",
+        ERROR_CODES.VALIDATION_ERROR,
+        400
+      );
     }
 
-    const { error } = await supabase.from("notifications").insert({
+    // Only allow notifications for yourself
+    if (user_id !== userId) {
+      throw new AppError(
+        "Forbidden: can only create notifications for yourself",
+        ERROR_CODES.FORBIDDEN,
+        403
+      );
+    }
+
+    // Create notification
+    const { error: insertError } = await supabase.from("notifications").insert({
       user_id,
       type,
       content,
@@ -72,27 +91,32 @@ export async function handleCreateNotification(req: Request): Promise<Response> 
       is_read: false,
       created_at: new Date().toISOString(),
     });
-    if (error) {
-      return new Response(
-        JSON.stringify({ error: error.message }),
-        {
-          status: 500,
-          headers: { "Access-Control-Allow-Origin": "*" },
-        },
+
+    if (insertError) {
+      throw new AppError(
+        "Failed to create notification",
+        ERROR_CODES.DATABASE_ERROR,
+        500,
+        insertError
       );
     }
+
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ 
+        success: true,
+        message: "Notification created successfully"
+      }),
       {
         status: 200,
-        headers: { "Access-Control-Allow-Origin": "*" },
-      },
+        headers: {
+          ...CORS_HEADERS,
+          "Content-Type": "application/json"
+        }
+      }
     );
-  } catch (e) {
-    return new Response(JSON.stringify({ error: "Unexpected server error" }), {
-      status: 500,
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
+  } catch (error) {
+    const errorResponse = handleError(error);
+    return createErrorResponse(errorResponse, CORS_HEADERS);
   }
 }
 

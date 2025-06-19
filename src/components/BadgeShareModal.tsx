@@ -9,15 +9,25 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({ badge, onClose }) => 
   const shareText = `I just earned the \"${badge.label}\" badge on Anemi Meets! ${badge.emoji}`;
 
   const handleShare = async () => {
-    if (navigator.share) {
-      await navigator.share({
-        title: `Badge Earned: ${badge.label}`,
-        text: shareText,
-        url: window.location.href
-      });
-    } else {
-      await navigator.clipboard.writeText(shareText);
-      alert('Copied to clipboard!');
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Badge Earned: ${badge.label}`,
+          text: shareText,
+          url: window.location.href
+        });
+      } else {
+        await navigator.clipboard.writeText(shareText);
+        alert('Copied to clipboard!');
+      }
+    } catch (error) {
+      // If share fails, fall back to clipboard
+      try {
+        await navigator.clipboard.writeText(shareText);
+        alert('Copied to clipboard!');
+      } catch (clipboardError) {
+        alert('Failed to share. Please try again.');
+      }
     }
   };
 

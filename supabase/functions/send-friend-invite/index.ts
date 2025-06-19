@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { escapeHtml } from "../utils.ts";
+import { escapeHtml, AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
 
 function getUUID() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -16,7 +16,11 @@ function getUUID() {
       ([4, 6, 8, 10].includes(i) ? "-" : "") + b.toString(16).padStart(2, "0")
     ).join("");
   }
-  throw new Error("No secure random generator available for UUID");
+  throw new AppError(
+    "No secure random generator available for UUID",
+    ERROR_CODES.SERVER_ERROR,
+    500
+  );
 }
 
 export async function handleFriendInvite(req: Request): Promise<Response> {
@@ -32,48 +36,32 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
   }
 
   if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Only POST requests allowed." }),
-      {
-        status: 405,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-        },
-      },
+    throw new AppError(
+      "Only POST requests allowed.",
+      ERROR_CODES.INVALID_REQUEST,
+      405
     );
   }
 
   try {
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    // Validate required environment variables
+    validateEnvVars([
+      "SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "RESEND_API_KEY"
+    ]);
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !RESEND_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "Server misconfiguration" }),
-        {
-          status: 500,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-          },
-        },
-      );
-    }
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 
     // Require Authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Missing authorization" }),
-        {
-          status: 401,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-          },
-        },
+      throw new AppError(
+        "Missing authorization",
+        ERROR_CODES.UNAUTHORIZED,
+        401
       );
     }
     const jwt = authHeader.replace("Bearer ", "");
@@ -83,15 +71,10 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
     });
     const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
     if (authError || !userData?.user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid token" }),
-        {
-          status: 401,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-          },
-        },
+      throw new AppError(
+        "Invalid token",
+        ERROR_CODES.UNAUTHORIZED,
+        401
       );
     }
 
@@ -99,15 +82,10 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
 
     const { inviter_id, invitee_email, lang = "nl" } = await req.json();
     if (inviter_id && inviter_id !== userId) {
-      return new Response(
-        JSON.stringify({ error: "Inviter mismatch" }),
-        {
-          status: 403,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-          },
-        },
+      throw new AppError(
+        "Inviter mismatch",
+        ERROR_CODES.UNAUTHORIZED,
+        403
       );
     }
 
@@ -137,15 +115,11 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       insertData,
     );
     if (insertError) {
-      return new Response(
-        JSON.stringify({ error: "Could not create invite" }),
-        {
-          status: 500,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-          },
-        },
+      throw new AppError(
+        "Could not create invite",
+        ERROR_CODES.DATABASE_ERROR,
+        500,
+        insertError
       );
     }
 
@@ -156,15 +130,10 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       .eq("id", finalInviterId)
       .maybeSingle();
     if (inviterError || !inviter) {
-      return new Response(
-        JSON.stringify({ error: "Inviter not found" }),
-        {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-          },
-        },
+      throw new AppError(
+        "Inviter not found",
+        ERROR_CODES.NOT_FOUND,
+        404
       );
     }
 
@@ -228,7 +197,12 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       });
 
       if (!emailRes.ok) {
-        throw new Error("Email not sent: " + (await emailRes.text()));
+        throw new AppError(
+          "Failed to send email",
+          ERROR_CODES.EMAIL_ERROR,
+          500,
+          await emailRes.text()
+        );
       }
     }
 
@@ -237,19 +211,14 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       {
         status: 200,
         headers: {
+          "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
         },
-      },
+      }
     );
-  } catch (e) {
-    return new Response(JSON.stringify({ error: "Unexpected server error" }), {
-      status: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-      },
-    });
+  } catch (error) {
+    return createErrorResponse(handleError(error));
   }
 }
 
