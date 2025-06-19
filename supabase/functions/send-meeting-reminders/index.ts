@@ -1,3 +1,4 @@
+/// <reference lib="deno.ns" />
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { escapeHtml, AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
 
@@ -14,20 +15,18 @@ async function wantsReminders(
   supabase: ReturnType<typeof createClient>,
   email: string,
 ): Promise<boolean> {
-  const { data: user, error: userError } = await supabase.auth.admin
-    .getUserByEmail(email);
-  if (userError || !user) {
-    return false;
-  }
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("wantsReminders")
-    .eq("id", user.id)
+    .select("id, wantsReminders")
+    .eq("email", email)
     .maybeSingle();
-  if (profileError) {
+  if (profileError || !profile) {
+    console.log('wantsReminders', { email, result: false });
     return false;
   }
-  return !!profile?.wantsReminders;
+  const result = !!profile.wantsReminders;
+  console.log('wantsReminders', { email, result });
+  return result;
 }
 
 const slots: Record<string, [string, string]> = {
@@ -85,7 +84,7 @@ export async function handleReminders(): Promise<Response> {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) as any;
 
     const nowDate = new Date();
     const today = nowDate.toISOString().split("T")[0];
@@ -112,6 +111,7 @@ export async function handleReminders(): Promise<Response> {
     }
 
     if (!invitations) {
+      console.log('No invitations to process');
       return new Response(
         JSON.stringify({ message: "No invitations to process" }),
         { 
@@ -120,6 +120,8 @@ export async function handleReminders(): Promise<Response> {
         }
       );
     }
+
+    console.log('Fetched invitations:', invitations);
 
     const now = new Date();
     const processedInvitations = [];
@@ -131,12 +133,10 @@ export async function handleReminders(): Promise<Response> {
           continue;
         }
 
-        const slot = String(inv.selected_time).toLowerCase();
+        const slot = String(inv.selected_time).toLowerCase() as 'morning' | 'afternoon' | 'evening';
         const [dtStart] = slots[slot] || slots["morning"];
         const startTime = new Date(
-          `${inv.selected_date}T${dtStart.slice(1, 3)}:${dtStart.slice(3, 5)}:${
-            dtStart.slice(5)
-          }`,
+          `${inv.selected_date}T${dtStart.slice(1, 3)}:${dtStart.slice(3, 5)}:${dtStart.slice(5)}`,
         );
         const diffMs = startTime.getTime() - now.getTime();
         const diffHours = diffMs / (1000 * 60 * 60);
@@ -144,7 +144,10 @@ export async function handleReminders(): Promise<Response> {
         const needs24h = diffHours <= 24 && diffHours > 1 && !inv.reminded_24h;
         const needs1h = diffHours <= 1 && diffHours > 0 && !inv.reminded_1h;
 
-        if (!needs24h && !needs1h) continue;
+        if (!needs24h && !needs1h) {
+          console.log('Skipping invitation: does not need reminder', { id: inv.id, diffHours, needs24h, needs1h });
+          continue;
+        }
 
         const { data: cafe, error: cafeErr } = await supabase
           .from("cafes")
@@ -197,6 +200,8 @@ export async function handleReminders(): Promise<Response> {
           recipients.push(inv.email_b);
         }
         if (recipients.length === 0) continue;
+
+        console.log('About to send email', { recipients, subject, html });
 
         const emailRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -273,34 +278,40 @@ export async function handleReminders(): Promise<Response> {
   }
 }
 
-Deno.serve(async (req) => {
-  try {
-    if (req.method !== "POST") {
-      throw new AppError(
-        "Only POST requests allowed",
-        ERROR_CODES.INVALID_REQUEST,
-        405
-      );
+if (import.meta.main) {
+  Deno.serve(async (req) => {
+    try {
+      if (req.method !== "POST") {
+        throw new AppError(
+          "Only POST requests allowed",
+          ERROR_CODES.INVALID_REQUEST,
+          405
+        );
+      }
+
+      validateEnvVars(["MEETING_REMINDERS_SECRET"]);
+      const secret = Deno.env.get("MEETING_REMINDERS_SECRET")!;
+      
+      const auth = req.headers.get("Authorization");
+      if (!auth || auth !== `Bearer ${secret}`) {
+        throw new AppError(
+          "Invalid or missing authorization",
+          ERROR_CODES.UNAUTHORIZED,
+          401
+        );
+      }
+
+      return handleReminders();
+    } catch (error) {
+      return createErrorResponse(handleError(error));
     }
+  });
+}
 
-    validateEnvVars(["MEETING_REMINDERS_SECRET"]);
-    const secret = Deno.env.get("MEETING_REMINDERS_SECRET")!;
-    
-    const auth = req.headers.get("Authorization");
-    if (!auth || auth !== `Bearer ${secret}`) {
-      throw new AppError(
-        "Invalid or missing authorization",
-        ERROR_CODES.UNAUTHORIZED,
-        401
-      );
-    }
-
-    return handleReminders();
-  } catch (error) {
-    return createErrorResponse(handleError(error));
-  }
-});
-
-Deno.cron("send-meeting-reminders", "0 9 * * *", () => {
-  return handleReminders();
-});
+// Guard Deno.cron for local testing
+if ("cron" in Deno) {
+  // @ts-ignore
+  Deno.cron("send-meeting-reminders", "0 9 * * *", () => {
+    handleReminders();
+  });
+}
