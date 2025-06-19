@@ -2,8 +2,19 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 // @ts-expect-error Deno globals are available in Edge Functions
 Deno.serve(async (req: Request) => {
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   try {
     if (req.method !== 'POST') {
       throw new AppError(
@@ -91,7 +102,8 @@ Deno.serve(async (req: Request) => {
       {
         status: 200,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...corsHeaders
         }
       }
     );
