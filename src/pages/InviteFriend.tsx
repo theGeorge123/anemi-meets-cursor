@@ -28,7 +28,7 @@ const InviteFriend = () => {
       }
       // Get invite
       const { data: invite, error: inviteError } = await supabase
-        .from('friend_invites')
+        .from('meeting_invites')
         .select('id, inviter_id, status, invitee_email, expires_at')
         .eq('token', token)
         .maybeSingle();
@@ -60,7 +60,7 @@ const InviteFriend = () => {
     });
   }, [token, t]);
 
-  // Accept invite (must be logged in)
+  // Accept invite (guest or logged in)
   const handleAcceptInvite = async () => {
     setAcceptLoading(true);
     setAcceptError(null);
@@ -68,34 +68,54 @@ const InviteFriend = () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setAcceptError(
-          t('inviteFriend.errorAccept', 'You must be logged in to accept this invite.'),
-        );
-        setAcceptLoading(false);
-        return;
-      }
-      // Call Edge Function
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accept-friend-invite`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      let res, body;
+      if (session?.user) {
+        // Authenticated flow
+        res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accept-meeting-invite`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({ token }),
           },
-          body: JSON.stringify({ token }),
-        },
-      );
-      const body = await res.json().catch(() => ({}));
+        );
+      } else {
+        // Guest flow
+        if (!email) {
+          setAcceptError(t('inviteFriend.errorAccept', 'Please enter your email.'));
+          setAcceptLoading(false);
+          return;
+        }
+        res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accept-meeting-invite`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({ token, inviteeEmail: email }),
+          },
+        );
+      }
+      body = await res.json().catch(() => ({}));
       if (!res.ok || !body.success) {
         setAcceptError(body.error || t('inviteFriend.errorAccept', 'Could not accept invite.'));
         setAcceptLoading(false);
         return;
       }
       setAcceptSuccess(true);
-      setTimeout(() => navigate('/dashboard'), 2000);
+      setTimeout(() => {
+        if (isLoggedIn) {
+          navigate('/dashboard');
+        } else {
+          navigate('/login');
+        }
+      }, 2000);
     } catch (err: unknown) {
       setAcceptError(
         err instanceof Error
@@ -113,12 +133,16 @@ const InviteFriend = () => {
 
   return (
     <div className="max-w-xl mx-auto py-12 px-4 text-center">
-      <h1 className="text-2xl font-bold mb-4">{t('inviteFriend.title', 'Accept Friend Invite')}</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {t('inviteFriend.title', 'Accept Meeting Invite')}
+      </h1>
       {loading && <div>{t('loading')}</div>}
       {error && <div className="text-red-500 mb-4">{error}</div>}
       {acceptSuccess && (
         <div className="text-green-600 font-semibold mb-4">
-          {t('inviteFriend.success', 'You are now friends! Redirecting...')}
+          {isLoggedIn
+            ? t('inviteFriend.success', 'You are now friends! Redirecting...')
+            : t('inviteFriend.successGuest', 'Meeting accepted! Check your email. Redirecting...')}
         </div>
       )}
       {!loading && !error && !acceptSuccess && inviter && (
@@ -141,21 +165,20 @@ const InviteFriend = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('inviteFriend.emailPlaceholder', 'Enter your email')}
               required
-              disabled
+              disabled={isLoggedIn}
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
-            {isLoggedIn ? (
-              <button
-                className="btn-primary w-full sm:w-auto"
-                onClick={handleAcceptInvite}
-                disabled={acceptLoading}
-              >
-                {acceptLoading ? t('loading') : t('inviteFriend.accept', 'Accept Invite')}
-              </button>
-            ) : (
-              <button className="btn-primary w-full sm:w-auto" onClick={handleSignupRedirect}>
-                {t('inviteFriend.signupAndAccept', 'Sign up & accept')}
+            <button
+              className="btn-primary w-full sm:w-auto"
+              onClick={handleAcceptInvite}
+              disabled={acceptLoading || (!isLoggedIn && !email)}
+            >
+              {acceptLoading ? t('loading') : t('inviteFriend.accept', 'Accept Invite')}
+            </button>
+            {!isLoggedIn && (
+              <button className="btn-secondary w-full sm:w-auto" onClick={handleSignupRedirect}>
+                {t('inviteFriend.signupAndAccept', 'Sign up & add to dashboard')}
               </button>
             )}
           </div>

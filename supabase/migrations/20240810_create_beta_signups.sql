@@ -10,8 +10,9 @@ create table if not exists public.beta_signups (
 alter table public.beta_signups enable row level security;
 
 -- Policy: Anyone can insert (for signup)
+drop policy if exists "Anyone can sign up for beta" on public.beta_signups;
 create policy "Anyone can sign up for beta" on public.beta_signups
-  for insert using (true);
+  for insert with check (true);
 
 -- Policy: Only admin can view (service_role)
 create policy "Admin can view all" on public.beta_signups
