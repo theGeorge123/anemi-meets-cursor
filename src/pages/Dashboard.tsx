@@ -252,7 +252,7 @@ const Dashboard = () => {
         <div className="flex items-center gap-3 mb-6">
           {profile?.emoji && (
             (() => {
-              const profileTitle: string | undefined = profile.fullname ?? undefined;
+              const profileTitle: string | undefined = typeof profile.fullname === 'string' ? profile.fullname : undefined;
               return (
                 <span className="text-4xl" title={profileTitle}>
                   {profile.emoji}
