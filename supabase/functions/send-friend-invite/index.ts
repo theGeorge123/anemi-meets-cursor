@@ -1,147 +1,128 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { escapeHtml, AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  escapeHtml,
+  AppError,
+  ERROR_CODES,
+  handleError,
+  createErrorResponse,
+  validateEnvVars,
+} from '../utils.ts';
 
 function getUUID() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
   }
   // Secure fallback using crypto.getRandomValues
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
     // Per RFC4122 v4
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    return [...bytes].map((b, i) =>
-      ([4, 6, 8, 10].includes(i) ? "-" : "") + b.toString(16).padStart(2, "0")
-    ).join("");
+    return [...bytes]
+      .map((b, i) => ([4, 6, 8, 10].includes(i) ? '-' : '') + b.toString(16).padStart(2, '0'))
+      .join('');
   }
   throw new AppError(
-    "No secure random generator available for UUID",
+    'No secure random generator available for UUID',
     ERROR_CODES.SERVER_ERROR,
-    500
+    500,
   );
 }
 
 export async function handleFriendInvite(req: Request): Promise<Response> {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', {
       status: 200,
       headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
       },
     });
   }
 
-  if (req.method !== "POST") {
-    throw new AppError(
-      "Only POST requests allowed.",
-      ERROR_CODES.INVALID_REQUEST,
-      405
-    );
+  if (req.method !== 'POST') {
+    throw new AppError('Only POST requests allowed.', ERROR_CODES.INVALID_REQUEST, 405);
   }
 
   try {
     // Validate required environment variables
-    validateEnvVars([
-      "SUPABASE_URL",
-      "SUPABASE_SERVICE_ROLE_KEY",
-      "RESEND_API_KEY"
-    ]);
+    validateEnvVars(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'RESEND_API_KEY']);
 
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 
     // Require Authorization header
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new AppError(
-        "Missing authorization",
-        ERROR_CODES.UNAUTHORIZED,
-        401
-      );
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new AppError('Missing authorization', ERROR_CODES.UNAUTHORIZED, 401);
     }
-    const jwt = authHeader.replace("Bearer ", "");
+    const jwt = authHeader.replace('Bearer ', '');
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
     const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
     if (authError || !userData?.user) {
-      throw new AppError(
-        "Invalid token",
-        ERROR_CODES.UNAUTHORIZED,
-        401
-      );
+      throw new AppError('Invalid token', ERROR_CODES.UNAUTHORIZED, 401);
     }
 
     const userId = userData.user.id;
 
-    const { inviter_id, invitee_email, lang = "nl" } = await req.json();
+    const { inviter_id, invitee_email, lang = 'nl' } = await req.json();
     if (inviter_id && inviter_id !== userId) {
-      throw new AppError(
-        "Inviter mismatch",
-        ERROR_CODES.UNAUTHORIZED,
-        403
-      );
+      throw new AppError('Inviter mismatch', ERROR_CODES.UNAUTHORIZED, 403);
     }
 
     const finalInviterId = inviter_id || userId;
 
-    // Generate a unique token
-    let token = getUUID().replace(/-/g, "");
+    // Generate a unique token (UUID, no dashes)
+    let token = getUUID().replace(/-/g, '');
     // Ensure the token is unique
     let { data: existingInvite } = await supabase
-      .from("friend_invites")
-      .select("id")
-      .eq("token", token)
+      .from('friend_invites')
+      .select('id')
+      .eq('token', token)
       .maybeSingle();
     while (existingInvite) {
-      token = getUUID().replace(/-/g, "");
+      token = getUUID().replace(/-/g, '');
       ({ data: existingInvite } = await supabase
-        .from("friend_invites")
-        .select("id")
-        .eq("token", token)
+        .from('friend_invites')
+        .select('id')
+        .eq('token', token)
         .maybeSingle());
     }
 
-    // Insert the friend_invites row
-    const insertData: Record<string, unknown> = { inviter_id: finalInviterId, token };
+    // Insert the friend_invites row with status and expires_at
+    const insertData: Record<string, unknown> = {
+      inviter_id: finalInviterId,
+      token,
+      status: 'pending',
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    };
     if (invitee_email) insertData.invitee_email = invitee_email;
-    const { error: insertError } = await supabase.from("friend_invites").insert(
-      insertData,
-    );
+    const { error: insertError } = await supabase.from('friend_invites').insert(insertData);
     if (insertError) {
-      throw new AppError(
-        "Could not create invite",
-        ERROR_CODES.DATABASE_ERROR,
-        500,
-        insertError
-      );
+      throw new AppError('Could not create invite', ERROR_CODES.DATABASE_ERROR, 500, insertError);
     }
 
     // Look up inviter profile
     const { data: inviter, error: inviterError } = await supabase
-      .from("profiles")
-      .select("fullName, email")
-      .eq("id", finalInviterId)
+      .from('profiles')
+      .select('fullName, email')
+      .eq('id', finalInviterId)
       .maybeSingle();
     if (inviterError || !inviter) {
-      throw new AppError(
-        "Inviter not found",
-        ERROR_CODES.NOT_FOUND,
-        404
-      );
+      throw new AppError('Inviter not found', ERROR_CODES.NOT_FOUND, 404);
     }
 
-    const isEnglish = lang === "en";
+    const isEnglish = lang === 'en';
     // @ts-expect-error Deno globals are available in Edge Functions
-    const inviteLink = `${Deno.env.get("PUBLIC_SITE_URL") || "https://anemimeets.com"}/invite-friend/${token}`;
+    const inviteLink = `${Deno.env.get('PUBLIC_SITE_URL') || 'https://anemimeets.com'}/invite-friend/${token}`;
     const siteUrl = inviteLink.split('/invite-friend/')[0];
-    const safeName = escapeHtml(inviter.fullName || (isEnglish ? "A friend" : "Een vriend"));
+    const safeName = escapeHtml(inviter.fullName || (isEnglish ? 'A friend' : 'Een vriend'));
     const subject = isEnglish
       ? `${safeName} invited you for coffee on Anemi Meets! ☕️`
       : `${safeName} heeft je uitgenodigd op Anemi Meets! ☕️`;
@@ -182,14 +163,14 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       `;
 
     if (invitee_email) {
-      const emailRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: "noreply@anemimeets.com",
+          from: 'noreply@anemimeets.com',
           to: [invitee_email],
           subject,
           html,
@@ -198,28 +179,25 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
 
       if (!emailRes.ok) {
         throw new AppError(
-          "Failed to send email",
+          'Failed to send email',
           ERROR_CODES.EMAIL_ERROR,
           500,
-          await emailRes.text()
+          await emailRes.text(),
         );
       }
     }
 
-    return new Response(
-      JSON.stringify({ success: true, token }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type, apikey, authorization"
-        },
-      }
-    );
+    return new Response(JSON.stringify({ success: true, token }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
+      },
+    });
   } catch (error) {
     return createErrorResponse(handleError(error));
   }
 }
 
-Deno.serve(handleFriendInvite); 
+Deno.serve(handleFriendInvite);

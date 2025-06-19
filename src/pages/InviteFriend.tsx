@@ -15,6 +15,7 @@ const InviteFriend = () => {
   const [acceptLoading, setAcceptLoading] = useState(false);
   const [acceptSuccess, setAcceptSuccess] = useState(false);
   const [acceptError, setAcceptError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const checkInvite = async () => {
@@ -28,7 +29,7 @@ const InviteFriend = () => {
       // Get invite
       const { data: invite, error: inviteError } = await supabase
         .from('friend_invites')
-        .select('id, inviter_id, accepted, invitee_email')
+        .select('id, inviter_id, status, invitee_email, expires_at')
         .eq('token', token)
         .maybeSingle();
       if (inviteError || !invite) {
@@ -36,8 +37,13 @@ const InviteFriend = () => {
         setLoading(false);
         return;
       }
-      if (invite.accepted) {
+      if (invite.status === 'accepted') {
         setError(t('inviteFriend.alreadyAccepted', 'This invite has already been used.'));
+        setLoading(false);
+        return;
+      }
+      if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+        setError(t('inviteFriend.invalid', 'This invite has expired.'));
         setLoading(false);
         return;
       }
@@ -48,26 +54,48 @@ const InviteFriend = () => {
       setLoading(false);
     };
     checkInvite();
+    // Check if user is logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session?.user);
+    });
   }, [token, t]);
 
-  // Accept as guest (no login)
-  const handleAcceptGuest = async () => {
+  // Accept invite (must be logged in)
+  const handleAcceptInvite = async () => {
     setAcceptLoading(true);
     setAcceptError(null);
     try {
-      // Accept invite by updating friend_invites (RLS policy allows by email)
-      const { error } = await supabase
-        .from('friend_invites')
-        .update({ accepted: true, accepted_at: new Date().toISOString() })
-        .eq('token', token)
-        .eq('invitee_email', email);
-      if (error) {
-        setAcceptError(t('inviteFriend.errorAccept', 'Could not accept invite.'));
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setAcceptError(
+          t('inviteFriend.errorAccept', 'You must be logged in to accept this invite.'),
+        );
+        setAcceptLoading(false);
+        return;
+      }
+      // Call Edge Function
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accept-friend-invite`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ token }),
+        },
+      );
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.success) {
+        setAcceptError(body.error || t('inviteFriend.errorAccept', 'Could not accept invite.'));
         setAcceptLoading(false);
         return;
       }
       setAcceptSuccess(true);
-      setTimeout(() => navigate('/login'), 2000);
+      setTimeout(() => navigate('/dashboard'), 2000);
     } catch (err: unknown) {
       setAcceptError(
         err instanceof Error
@@ -113,19 +141,23 @@ const InviteFriend = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('inviteFriend.emailPlaceholder', 'Enter your email')}
               required
+              disabled
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
-            <button
-              className="btn-primary w-full sm:w-auto"
-              onClick={handleAcceptGuest}
-              disabled={acceptLoading || !email}
-            >
-              {acceptLoading ? t('loading') : t('inviteFriend.stayStranger', 'Stay a stranger')}
-            </button>
-            <button className="btn-secondary w-full sm:w-auto" onClick={handleSignupRedirect}>
-              {t('inviteFriend.joinFamily', 'Join the family')}
-            </button>
+            {isLoggedIn ? (
+              <button
+                className="btn-primary w-full sm:w-auto"
+                onClick={handleAcceptInvite}
+                disabled={acceptLoading}
+              >
+                {acceptLoading ? t('loading') : t('inviteFriend.accept', 'Accept Invite')}
+              </button>
+            ) : (
+              <button className="btn-primary w-full sm:w-auto" onClick={handleSignupRedirect}>
+                {t('inviteFriend.signupAndAccept', 'Sign up & accept')}
+              </button>
+            )}
           </div>
           {acceptError && <div className="text-red-500 mb-4">{acceptError}</div>}
         </>
