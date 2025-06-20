@@ -396,7 +396,7 @@ export const en = {
     error: 'Oops! Something went wrong. Try again later.',
     success: "You're on the list! We'll email you soon. 🚀",
     notAccepted:
-      "Hang tight! We're still getting your spot ready. You're on the list, but we haven't opened the doors for you just yet. We'll let you know very soon! ✨",
+      "Good coffee takes time! ☕️ You're on our VIP list, but we're still brewing. We'll send you an invite the moment it's ready. Hang tight!",
     submitButton: 'Join the Waitlist',
   },
   inviteFriend: {

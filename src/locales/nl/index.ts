@@ -441,10 +441,10 @@ export const nl = {
     cta: 'Ik doe mee!',
     invalidEmail: 'Vul een geldig e-mailadres in! ☕️',
     alreadyOnList: 'Je staat al op de lijst! ☕️',
-    error: 'Oeps! Er ging iets mis. Probeer het later opnieuw.',
+    error: 'Er is iets misgegaan. Probeer het opnieuw.',
     success: 'Je staat op de lijst! We mailen je snel. 🚀',
     notAccepted:
-      'Nog heel even geduld! We zijn je plekje aan het voorbereiden. Je staat op de lijst, maar de deuren zijn nog niet voor je geopend. We laten het je snel weten! ✨',
+      'Goede koffie heeft tijd nodig! ☕️ Je staat op onze VIP-lijst, maar we zijn nog aan het brouwen. We sturen je een uitnodiging zodra het klaar is. Nog even geduld!',
     submitButton: 'Lid worden van de wachtlijst',
   },
 };

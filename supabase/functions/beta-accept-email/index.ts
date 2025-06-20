@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { Resend } from 'npm:resend@2.1.0';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import {
   AppError,
   ERROR_CODES,
@@ -12,7 +13,7 @@ import {
 serve(async (req) => {
   try {
     // Validate required environment variables
-    validateEnvVars(['RESEND_API_KEY']);
+    validateEnvVars(['RESEND_API_KEY', 'SUPABASE_URL', 'SUPABASE_ANON_KEY']);
 
     if (req.method !== 'POST') {
       throw new AppError('Only POST requests allowed', ERROR_CODES.INVALID_REQUEST, 405);
@@ -34,6 +35,19 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
       });
+    }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .update({ is_beta_user: true })
+      .eq('email', record.email);
+
+    if (profileError) {
+      throw new AppError('Failed to update profile', ERROR_CODES.DATABASE_ERROR, 500, profileError);
     }
 
     const email = record.email;
