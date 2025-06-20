@@ -163,70 +163,67 @@ const Account = () => {
         error: sessionError,
       } = await supabase.auth.getSession();
       if (sessionError) {
-        console.error('Fout bij ophalen sessie:', sessionError);
+        console.error('Error getting session:', sessionError);
         return;
       }
-      if (!session?.user) {
-        navigate('/login');
-        return;
-      }
-      // --- NEW: Sync Google profile info to Supabase profiles table ---
-      const user = session.user;
-      let fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
-      const email = user.email;
-      if (!fullName && email) {
-        fullName = email.split('@')[0];
-      }
-      // Upsert profile info (id, fullName, email)
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        fullName,
-        email,
-      });
-      // --- END NEW ---
-      // Haal profiel op
-      const { data: profileData, error: profileError } = await getProfile(session.user.id);
-      if (profileError) {
-        console.error('Fout bij ophalen profiel:', profileError);
-      }
-      if (profileData && isProfile(profileData)) {
-        setUser(profileData);
-        if (profileData.emoji) setSelectedEmoji(profileData.emoji);
-        if (profileData.age !== undefined && profileData.age !== null) setAge(profileData.age);
-        setWantsUpdates(!!profileData.wantsUpdates);
-        setWantsReminders(profileData.wantsReminders !== false);
-        setWantsNotifications(!!profileData.wantsNotifications);
-        setIsPrivate(!!profileData.isPrivate);
-        setPreferences(profileData.preferences || {});
-        setPreferredLanguage(profileData.preferred_language || 'en');
-      } else {
-        setUser(null);
-      }
-      setEmail(user.email || '');
-      setName(fullName);
-      // Haal meetups op
-      try {
-        const { data: meetups, error: meetupsError } = await supabase
-          .from('invitations')
-          .select('id, selected_date, selected_time, cafe_id, status, email_b')
-          .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
-        if (meetupsError) {
-          console.error('Fout bij ophalen meetups:', meetupsError.message);
-        } else {
-          setMyMeetups((meetups || []) as Invitation[]);
+
+      if (session) {
+        const user = session.user;
+        let fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+        const email = user.email;
+        if (!fullName && email) {
+          fullName = email.split('@')[0];
         }
-      } catch (err: unknown) {
-        console.error('Onverwachte fout bij ophalen meetups:', err);
-        setMyMeetups([]);
-      }
-      // Fetch badges
-      if (session?.user) {
-        const [allBadges, myBadges] = await Promise.all([
-          getAllBadges(),
-          getUserBadges(session.user.id),
-        ]);
-        setBadges(allBadges);
-        setUserBadges(myBadges);
+        // Upsert profile info (id, fullName, email)
+        await supabase.from('profiles').upsert({
+          id: user.id,
+          fullName,
+          email,
+        });
+        // Haal profiel op
+        const { data: profileData, error: profileError } = await getProfile(session.user.id);
+        if (profileError) {
+          console.error('Fout bij ophalen profiel:', profileError);
+        }
+        if (profileData && isProfile(profileData)) {
+          setUser(profileData);
+          if (profileData.emoji) setSelectedEmoji(profileData.emoji);
+          if (profileData.age !== undefined && profileData.age !== null) setAge(profileData.age);
+          setWantsUpdates(!!profileData.wantsUpdates);
+          setWantsReminders(profileData.wantsReminders !== false);
+          setWantsNotifications(!!profileData.wantsNotifications);
+          setIsPrivate(!!profileData.isPrivate);
+          setPreferences(profileData.preferences || {});
+          setPreferredLanguage(profileData.preferred_language || 'en');
+        } else {
+          setUser(null);
+        }
+        setEmail(user.email || '');
+        setName(fullName);
+        // Haal meetups op
+        try {
+          const { data: meetups, error: meetupsError } = await supabase
+            .from('invitations')
+            .select('id, selected_date, selected_time, cafe_id, status, email_b')
+            .or(`invitee_id.eq.${session.user.id},email_b.eq.${session.user.email}`);
+          if (meetupsError) {
+            console.error('Fout bij ophalen meetups:', meetupsError.message);
+          } else {
+            setMyMeetups((meetups || []) as Invitation[]);
+          }
+        } catch (err: unknown) {
+          console.error('Onverwachte fout bij ophalen meetups:', err);
+          setMyMeetups([]);
+        }
+        // Fetch badges
+        if (session?.user) {
+          const [allBadges, myBadges] = await Promise.all([
+            getAllBadges(),
+            getUserBadges(session.user.id),
+          ]);
+          setBadges(allBadges);
+          setUserBadges(myBadges);
+        }
       }
     };
     getUser();
