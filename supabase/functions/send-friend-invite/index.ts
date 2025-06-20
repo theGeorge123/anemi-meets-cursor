@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import type { Database } from '../../../src/types/supabase.ts';
 import {
   escapeHtml,
   AppError,
@@ -55,7 +56,7 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 
     // Create Supabase admin client with service role key
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    const supabase = createClient<Database>(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 

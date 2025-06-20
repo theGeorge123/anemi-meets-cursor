@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
+import type { Database } from '../../../src/types/supabase.ts';
 import { Resend } from 'npm:resend@2.1.0';
 import {
   AppError,
@@ -28,7 +29,7 @@ Deno.serve(async (req) => {
     }
 
     // Initialize Supabase client
-    const supabase = createClient(
+    const supabase = createClient<Database>(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );

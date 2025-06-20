@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { Database } from '../../../src/types/supabase.ts';
 import { AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
 
 const CORS_HEADERS = {
@@ -42,7 +43,7 @@ export async function handleCreateNotification(req: Request): Promise<Response> 
     const jwt = authHeader.replace("Bearer ", "");
     
     // Verify JWT via Supabase
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data, error: verifyError } = await supabase.auth.getUser(jwt);
     
     if (verifyError || !data?.user) {

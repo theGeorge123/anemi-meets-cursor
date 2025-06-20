@@ -2,16 +2,19 @@
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
 // deno-lint-ignore no-explicit-any
-(Deno as any).cron = () => {};
+(Deno as unknown as { cron: () => void }).cron = () => {};
 
 const { handleReminders } = await import("./index.ts");
 
 // Track intervals for cleanup
 const intervals: number[] = [];
 const originalSetInterval = globalThis.setInterval;
-globalThis.setInterval = (handler: TimerHandler, timeout?: number, ...args: unknown[]) => {
-  // deno-lint-ignore no-explicit-any
-  const id = (originalSetInterval as any)(handler, timeout, ...args);
+globalThis.setInterval = (
+  handler: TimerHandler,
+  timeout?: number,
+  ...args: any[]
+) => {
+  const id = originalSetInterval(handler, timeout, ...args);
   intervals.push(id);
   return id;
 };
@@ -40,16 +43,14 @@ Deno.test("reminder email escapes html", async () => {
       super(...args);
       if (args.length === 0) {
         Object.setPrototypeOf(this, FakeDate.prototype);
-        // deno-lint-ignore no-explicit-any
-        return new RealDate(fixedDate) as any;
+        return new RealDate(fixedDate) as unknown as FakeDate;
       }
     }
     static override now() {
       return fixedDate.getTime();
     }
   }
-  // deno-lint-ignore no-explicit-any
-  (globalThis as any).Date = FakeDate;
+  (globalThis as unknown as { Date: typeof Date }).Date = FakeDate;
 
   globalThis.fetch = (input: Request | URL | string, init?: RequestInit) => {
     const url = typeof input === "string" ? input : (input as Request).url;
@@ -82,8 +83,7 @@ Deno.test("reminder email escapes html", async () => {
   assert(html.includes("&lt;script&gt;bad&lt;/script&gt;"));
 
   globalThis.fetch = originalFetch;
-  // deno-lint-ignore no-explicit-any
-  (globalThis as any).Date = RealDate;
+  (globalThis as unknown as { Date: typeof Date }).Date = RealDate;
 });
 
 addEventListener('unload', () => {

@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import type { Database } from '../../../src/types/supabase.ts';
 import {
   AppError,
   ERROR_CODES,
@@ -32,7 +33,7 @@ export async function handleAcceptMeetingInvite(req: Request): Promise<Response>
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     // @ts-expect-error Deno global is available in Edge Functions
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
