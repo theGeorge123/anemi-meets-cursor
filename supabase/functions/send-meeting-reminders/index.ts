@@ -298,6 +298,6 @@ if (import.meta.main) {
 
 // Guard Deno.cron for local testing
 if ("cron" in Deno) {
-  // @ts-expect-error: Deno.cron is not available in all environments
+  // @ts-expect-error Deno.cron is only available in the Supabase Edge runtime
   Deno.cron("reminder cron job", "0 * * * *", handleReminders);
 }
