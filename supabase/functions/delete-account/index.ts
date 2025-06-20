@@ -15,8 +15,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// @ts-expect-error Deno globals are available in Edge Functions
-Deno.serve(async (req: Request) => {
+export async function handleDeleteAccount(req: Request): Promise<Response> {
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -123,7 +122,7 @@ Deno.serve(async (req: Request) => {
           </div>
         `;
 
-      await fetch('https://api.resend.com/emails', {
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${resendApiKey}`,
@@ -136,6 +135,11 @@ Deno.serve(async (req: Request) => {
           html,
         }),
       });
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('Farewell email error:', text);
+        throw new AppError('Failed to send farewell email', ERROR_CODES.EMAIL_ERROR, 500, text);
+      }
     } catch (emailError) {
       // Log the error but don't block account deletion
       console.error(
@@ -194,4 +198,7 @@ Deno.serve(async (req: Request) => {
     console.error('Delete account error:', error);
     return createErrorResponse(handleError(error));
   }
-});
+}
+
+// @ts-expect-error Deno globals are available in Edge Functions
+Deno.serve(handleDeleteAccount);
