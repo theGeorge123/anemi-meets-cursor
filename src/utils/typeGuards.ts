@@ -163,3 +163,26 @@ export function validateResponse<T extends TableName>(
 ): TableRow<T> | null {
   return typeGuard(value) ? value : fallback;
 }
+
+type DateTimeOption = {
+  date: string;
+  times: string[];
+};
+
+export function isDateTimeOptions(value: unknown): value is DateTimeOption[] {
+  if (!Array.isArray(value)) {
+    return false;
+  }
+
+  return value.every((item) => {
+    return (
+      typeof item === 'object' &&
+      item !== null &&
+      'date' in item &&
+      typeof item.date === 'string' &&
+      'times' in item &&
+      Array.isArray(item.times) &&
+      item.times.every((time: unknown) => typeof time === 'string')
+    );
+  });
+}
