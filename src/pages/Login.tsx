@@ -140,7 +140,9 @@ const Login = () => {
           return;
         }
       }
-      navigate('/dashboard');
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
     }
     setLoading(false);
   };
