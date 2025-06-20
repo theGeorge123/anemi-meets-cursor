@@ -262,7 +262,7 @@ All Edge Functions are in `supabase/functions/`. Deploy with the Supabase CLI. M
 #### delete-account
 
 - **Purpose:** Deletes a user from Auth and their profile from the database.
-- **Env:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+- **Env:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`
 - **Usage:**
   - `POST` with `Authorization: Bearer <JWT>`
   - No body required (user is inferred from JWT)
