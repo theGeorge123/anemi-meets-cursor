@@ -237,8 +237,8 @@ const Signup = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-12 pb-8 px-4">
-      <div className="max-w-xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-6 px-2 sm:px-0">
+      <div className="max-w-md mx-auto">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-extrabold text-gray-800">{t('signup.title')}</h1>
           <p className="text-lg text-gray-500 mt-2">
@@ -280,7 +280,7 @@ const Signup = () => {
         </div>
 
         <main>
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8">
+          <form onSubmit={handleSubmit} className="bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
             <div className="min-h-[220px]">{renderStepContent()}</div>
 
             <FormStatus
