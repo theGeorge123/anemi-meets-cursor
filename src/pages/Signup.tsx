@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import FormStatus from '../components/FormStatus';
@@ -265,52 +265,82 @@ const Signup = () => {
     }
   };
 
+  const steps = [t('signup.step1'), t('signup.step2'), t('signup.step3')];
+
   return (
-    <main className="max-w-md mx-auto px-4 py-8">
-      <div className="bg-white rounded-xl shadow-xl p-6">
-        <h1 className="text-2xl font-bold text-center mb-6">{t('signup.title')}</h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="min-h-[120px]">{renderStep()}</div>
+    <main className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-4 py-8">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-xl shadow-xl p-8">
+          <h1 className="text-3xl font-bold text-center mb-4">{t('signup.title')}</h1>
 
-          <FormStatus
-            status={loading ? 'loading' : error ? 'error' : 'idle'}
-            message={error || ''}
-          />
-          <div className="flex justify-between items-center pt-4">
-            {step > 1 && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="text-gray-600 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100"
-              >
-                {t('common.back')}
-              </button>
-            )}
-            {step < 3 && (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 ml-auto"
-              >
-                {t('common.next')}
-              </button>
-            )}
-            {step === 3 && (
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 w-full disabled:bg-gray-400"
-              >
-                {loading ? t('common.loading') : t('signup.submit')}
-              </button>
-            )}
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-1">
+              {steps.map((s, i) => (
+                <div
+                  key={i}
+                  className={`text-sm font-semibold ${
+                    step > i ? 'text-primary-600' : 'text-gray-400'
+                  }`}
+                >
+                  {s}
+                </div>
+              ))}
+            </div>
+            <div className="relative w-full h-2 bg-gray-200 rounded-full">
+              <div
+                className="absolute top-0 left-0 h-2 bg-primary-600 rounded-full transition-all duration-300 ease-in-out"
+                style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}
+              ></div>
+            </div>
           </div>
-        </form>
 
-        <div className="mt-6 text-center">
-          <a href="/login" className="text-primary-600 underline hover:text-primary-800 text-sm">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="min-h-[140px]">{renderStep()}</div>
+
+            <FormStatus
+              status={loading ? 'loading' : error ? 'error' : 'idle'}
+              message={error || ''}
+            />
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                {step > 1 ? (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="text-gray-600 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100"
+                  >
+                    {t('common.back')}
+                  </button>
+                ) : (
+                  <div />
+                )}
+                {step < 3 && (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="bg-primary-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-primary-700 shadow-md transform hover:scale-105 transition-transform duration-200"
+                  >
+                    {t('common.next')}
+                  </button>
+                )}
+              </div>
+              {step === 3 && (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-700 disabled:bg-gray-400 shadow-lg transform hover:scale-105 transition-transform duration-200"
+                >
+                  {loading ? t('common.loading') : t('signup.submit')}
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+        <div className="text-center mt-6">
+          <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
             {t('signup.alreadyHaveAccount')}
-          </a>
+          </Link>
         </div>
       </div>
     </main>
