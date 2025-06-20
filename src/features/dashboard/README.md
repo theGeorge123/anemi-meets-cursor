@@ -8,4 +8,4 @@ The dashboard feature provides users with an overview of their activity, onboard
 ## Main Components
 - `components/OnboardingModal.tsx`: Modal shown to users for onboarding steps and guidance.
 
-Add additional components and services here as the dashboard feature grows. 
+Add additional components and services here as the dashboard feature grows.

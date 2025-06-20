@@ -8,4 +8,4 @@ The meetups feature allows users to create, join, and manage meetups, including 
 ## Main Components
 - `components/DateSelector.tsx`: UI for selecting dates for meetups.
 
-Add additional components and services here as the meetups feature grows. 
+Add additional components and services here as the meetups feature grows.
