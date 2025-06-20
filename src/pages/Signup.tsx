@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
@@ -147,117 +147,82 @@ const Signup = () => {
     }
   };
 
-  const renderStep = () => {
+  const renderStepContent = () => {
     switch (step) {
       case 1:
         return (
-          <div>
-            <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">📧</span> {t('signup.emailPrompt')}
-            </label>
+          <>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('signup.emailPrompt')}</h2>
+            <p className="text-gray-600 mb-6">Let's start with your email address.</p>
             <input
               type="email"
               id="signup-email"
-              className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${
-                errors.email ? ' border-red-500' : ''
+              className={`w-full p-4 rounded-xl border-2 mb-4 text-lg ${
+                errors.email ? 'border-red-500' : 'border-gray-200'
               }`}
               value={form.email}
               onChange={handleInputChange('email')}
               required
               placeholder={t('signup.emailPlaceholder')}
-              inputMode="email"
               autoComplete="email"
               disabled={!!inviteEmail}
             />
-            {errors.email && (
-              <p className="text-red-600 text-sm mt-1" aria-live="assertive">
-                {errors.email}
-              </p>
-            )}
-          </div>
+            {errors.email && <p className="text-red-600 mt-1">{errors.email}</p>}
+          </>
         );
       case 2:
         return (
-          <div>
-            <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
-              <span className="text-2xl">👋</span> {t('signup.namePrompt')}
-            </label>
+          <>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('signup.namePrompt')}</h2>
+            <p className="text-gray-600 mb-6">Your friends will see this name.</p>
             <input
               type="text"
               id="signup-name"
-              className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${
-                errors.fullName ? ' border-red-500' : ''
+              className={`w-full p-4 rounded-xl border-2 mb-4 text-lg ${
+                errors.fullName ? 'border-red-500' : 'border-gray-200'
               }`}
               value={form.fullName}
               onChange={handleInputChange('fullName')}
               required
               placeholder={t('signup.namePlaceholder')}
-              inputMode="text"
               autoComplete="name"
             />
-            {errors.fullName && (
-              <p className="text-red-600 text-sm mt-1" aria-live="assertive">
-                {errors.fullName}
-              </p>
-            )}
-          </div>
+            {errors.fullName && <p className="text-red-600 mt-1">{errors.fullName}</p>}
+          </>
         );
       case 3:
         return (
           <>
-            <div>
-              <label
-                htmlFor="signup-password"
-                className="block text-lg font-medium text-gray-700 mb-2"
-              >
-                <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
-              </label>
-              <input
-                type="password"
-                id="signup-password"
-                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${
-                  errors.password ? ' border-red-500' : ''
-                }`}
-                value={form.password}
-                onChange={handleInputChange('password')}
-                required
-                placeholder={t('signup.passwordPlaceholder')}
-                inputMode="text"
-                autoComplete="new-password"
-              />
-              {errors.password && (
-                <p className="text-red-600 text-sm mt-1" aria-live="assertive">
-                  {errors.password}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="signup-confirm-password"
-                className="block text-lg font-medium text-gray-700 mb-2"
-              >
-                <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
-              </label>
-              <input
-                type="password"
-                id="signup-confirm-password"
-                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${
-                  errors.confirmPassword ? ' border-red-500' : ''
-                }`}
-                value={form.confirmPassword}
-                onChange={handleInputChange('confirmPassword')}
-                required
-                placeholder={t('signup.confirmPasswordPlaceholder')}
-                inputMode="text"
-                autoComplete="new-password"
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-600 text-sm mt-1" aria-live="assertive">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('signup.passwordPrompt')}</h2>
+            <p className="text-gray-600 mb-6">Make sure it's a strong one!</p>
+            <input
+              type="password"
+              id="signup-password"
+              className={`w-full p-4 rounded-xl border-2 mb-4 text-lg ${
+                errors.password ? 'border-red-500' : 'border-gray-200'
+              }`}
+              value={form.password}
+              onChange={handleInputChange('password')}
+              required
+              placeholder={t('signup.passwordPlaceholder')}
+              autoComplete="new-password"
+            />
+            {errors.password && <p className="text-red-600 mt-1">{errors.password}</p>}
+            <input
+              type="password"
+              id="signup-confirm-password"
+              className={`w-full p-4 rounded-xl border-2 mt-4 text-lg ${
+                errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
+              }`}
+              value={form.confirmPassword}
+              onChange={handleInputChange('confirmPassword')}
+              required
+              placeholder={t('signup.confirmPasswordPlaceholder')}
+              autoComplete="new-password"
+            />
+            {errors.confirmPassword && (
+              <p className="text-red-600 mt-1">{errors.confirmPassword}</p>
+            )}
           </>
         );
       default:
@@ -265,66 +230,86 @@ const Signup = () => {
     }
   };
 
-  const steps = [t('signup.step1'), t('signup.step2'), t('signup.step3')];
+  const steps = [
+    { number: 1, label: t('signup.step1') },
+    { number: 2, label: t('signup.step2') },
+    { number: 3, label: t('signup.step3') },
+  ];
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-4 py-8">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-xl shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-center mb-4">{t('signup.title')}</h1>
+    <div className="min-h-screen bg-gray-50 pt-12 pb-8 px-4">
+      <div className="max-w-xl mx-auto">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold text-gray-800">{t('signup.title')}</h1>
+          <p className="text-lg text-gray-500 mt-2">
+            Just a few quick steps and you're ready to connect!
+          </p>
+        </header>
 
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-1">
-              {steps.map((s, i) => (
+        {/* Stepper */}
+        <div className="flex items-center justify-center mb-12">
+          {steps.map((item, index) => (
+            <React.Fragment key={item.number}>
+              <div className="flex flex-col items-center">
                 <div
-                  key={i}
-                  className={`text-sm font-semibold ${
-                    step > i ? 'text-primary-600' : 'text-gray-400'
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                    step >= item.number
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-white border-2 border-gray-300 text-gray-400'
                   }`}
                 >
-                  {s}
+                  {item.number}
                 </div>
-              ))}
-            </div>
-            <div className="relative w-full h-2 bg-gray-200 rounded-full">
-              <div
-                className="absolute top-0 left-0 h-2 bg-primary-600 rounded-full transition-all duration-300 ease-in-out"
-                style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}
-              ></div>
-            </div>
-          </div>
+                <p
+                  className={`mt-2 text-sm font-semibold ${
+                    step >= item.number ? 'text-gray-700' : 'text-gray-400'
+                  }`}
+                >
+                  {item.label}
+                </p>
+              </div>
+              {index < steps.length - 1 && (
+                <div
+                  className={`flex-auto border-t-2 mx-4 ${
+                    step > item.number ? 'border-primary-600' : 'border-gray-300'
+                  }`}
+                />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="min-h-[140px]">{renderStep()}</div>
+        <main>
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="min-h-[220px]">{renderStepContent()}</div>
 
             <FormStatus
               status={loading ? 'loading' : error ? 'error' : 'idle'}
               message={error || ''}
             />
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center">
-                {step > 1 ? (
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="text-gray-600 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100"
-                  >
-                    {t('common.back')}
-                  </button>
-                ) : (
-                  <div />
-                )}
-                {step < 3 && (
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    className="bg-primary-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-primary-700 shadow-md transform hover:scale-105 transition-transform duration-200"
-                  >
-                    {t('common.next')}
-                  </button>
-                )}
-              </div>
+
+            <div className="mt-8 flex items-center justify-between">
+              {step > 1 ? (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="font-semibold text-gray-600 py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  {t('common.back')}
+                </button>
+              ) : (
+                <div />
+              )}
+
+              {step < 3 && (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="bg-primary-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-primary-700 shadow-md transform hover:scale-105 transition-transform duration-200"
+                >
+                  {t('common.next')}
+                </button>
+              )}
               {step === 3 && (
                 <button
                   type="submit"
@@ -336,14 +321,14 @@ const Signup = () => {
               )}
             </div>
           </form>
-        </div>
-        <div className="text-center mt-6">
-          <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
-            {t('signup.alreadyHaveAccount')}
-          </Link>
-        </div>
+          <div className="text-center mt-6">
+            <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
+              {t('signup.alreadyHaveAccount')}
+            </Link>
+          </div>
+        </main>
       </div>
-    </main>
+    </div>
   );
 };
 
