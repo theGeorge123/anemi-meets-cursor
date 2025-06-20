@@ -301,6 +301,7 @@ export const en = {
       title: 'Ready to go?',
       description: "Let's create your first meetup! Let's go!",
     },
+    steps: ['Welcome', 'Name', 'Photo', 'Done'],
   },
   skip: 'Skip',
   get_started: "Let's go! ��",
@@ -393,7 +394,10 @@ export const en = {
     invalidEmail: 'Please enter a valid email address! ☕️',
     alreadyOnList: "You're already on the list! ☕️",
     error: 'Oops! Something went wrong. Try again later.',
-    success: "You're on the list! We'll let you know when the coffee's ready. ☕️✨",
+    success: "You're on the list! We'll email you soon. 🚀",
+    notAccepted:
+      "Hang tight! We're still getting your spot ready. You're on the list, but we haven't opened the doors for you just yet. We'll let you know very soon! ✨",
+    submitButton: 'Join the Waitlist',
   },
   inviteFriend: {
     stayStranger: 'Stay a stranger',

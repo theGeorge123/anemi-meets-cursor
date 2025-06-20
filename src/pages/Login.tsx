@@ -113,7 +113,7 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
     });
@@ -121,14 +121,11 @@ const Login = () => {
       setError(normalizeAuthError(t, error));
     } else {
       // Beta check after successful login
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user?.email) {
+      if (signInData.user?.email) {
         const { data } = await supabase
           .from('beta_signups')
           .select('status')
-          .eq('email', user.email)
+          .eq('email', signInData.user.email)
           .maybeSingle();
         if (data?.status !== 'accepted') {
           setBetaToast({ message: t('beta.notAccepted'), type: 'info' });
@@ -140,9 +137,7 @@ const Login = () => {
           return;
         }
       }
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 500);
+      navigate('/dashboard');
     }
     setLoading(false);
   };

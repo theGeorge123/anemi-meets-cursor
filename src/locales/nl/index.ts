@@ -326,6 +326,7 @@ export const nl = {
       title: 'Aan de slag',
       description: "Klaar om je eerste meetup te maken? Let's go!",
     },
+    steps: ['Welkom', 'Naam', 'Foto', 'Klaar'],
   },
   skip: 'Overslaan',
   get_started: 'Aan de slag! 🚀',
@@ -441,6 +442,9 @@ export const nl = {
     invalidEmail: 'Vul een geldig e-mailadres in! ☕️',
     alreadyOnList: 'Je staat al op de lijst! ☕️',
     error: 'Oeps! Er ging iets mis. Probeer het later opnieuw.',
-    success: 'Je staat op de lijst! We laten het weten als de koffie klaar is. ☕️✨',
+    success: 'Je staat op de lijst! We mailen je snel. 🚀',
+    notAccepted:
+      'Nog heel even geduld! We zijn je plekje aan het voorbereiden. Je staat op de lijst, maar de deuren zijn nog niet voor je geopend. We laten het je snel weten! ✨',
+    submitButton: 'Lid worden van de wachtlijst',
   },
 };
