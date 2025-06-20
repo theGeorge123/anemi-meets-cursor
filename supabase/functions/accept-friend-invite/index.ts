@@ -73,7 +73,7 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
     }
 
     // Call the atomic Postgres function via RPC
-    const { error: rpcError } = await supabase.rpc('accept_friend_invite', {
+    const { data: result, error: rpcError } = await supabase.rpc('accept_friend_invite', {
       invite_id: invite.id,
       inviter_id: invite.inviter_id,
       invitee_id: user.id,
@@ -86,7 +86,15 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
       );
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    if (!result.success) {
+      throw new AppError(
+        'Failed to accept invite: ' + (result.error || 'Unknown error'),
+        ERROR_CODES.DATABASE_ERROR,
+        400,
+      );
+    }
+
+    return new Response(JSON.stringify(result), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

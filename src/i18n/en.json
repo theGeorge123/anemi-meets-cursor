@@ -23,7 +23,25 @@
     "suggestionName": "Try a fun or creative nickname"
   },
   "common": {
-    "date": "Date"
+    "date": "Date",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "An error occurred.",
+    "success": "Success!",
+    "close": "Close",
+    "submit": "Submit",
+    "optional": "Optional",
+    "required": "Required",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "confirm": "Confirm",
+    "errorLoadingCities": "Could not load cities. Please check your connection."
   },
   "beta": {
     "notAccepted": "Oops! You're not in the beta (yet). Stay tuned, coffee friend!",

@@ -48,35 +48,22 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
 
   try {
     // Validate required environment variables
-    validateEnvVars(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'RESEND_API_KEY']);
+    validateEnvVars(['PROJECT_URL', 'SUPABASE_ANON_KEY', 'RESEND_API_KEY']);
 
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const PROJECT_URL = Deno.env.get('PROJECT_URL')!;
+    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 
-    // Require Authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AppError('Missing authorization', ERROR_CODES.UNAUTHORIZED, 401);
-    }
-    const jwt = authHeader.replace('Bearer ', '');
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    // Create Supabase client with anon key
+    const supabase = createClient(PROJECT_URL, SUPABASE_ANON_KEY, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
-    const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
-    if (authError || !userData?.user) {
-      throw new AppError('Invalid token', ERROR_CODES.UNAUTHORIZED, 401);
+
+    // Get request data first
+    const { invitee_email, lang = 'en' } = await req.json();
+    if (!invitee_email) {
+      throw new AppError('Missing invitee_email', ERROR_CODES.VALIDATION_ERROR, 400);
     }
-
-    const userId = userData.user.id;
-
-    const { inviter_id, invitee_email, lang = 'nl' } = await req.json();
-    if (inviter_id && inviter_id !== userId) {
-      throw new AppError('Inviter mismatch', ERROR_CODES.UNAUTHORIZED, 403);
-    }
-
-    const finalInviterId = inviter_id || userId;
 
     // Generate a unique token (UUID, no dashes)
     let token = getUUID().replace(/-/g, '');
@@ -97,32 +84,46 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
 
     // Insert the friend_invites row with status and expires_at
     const insertData: Record<string, unknown> = {
-      inviter_id: finalInviterId,
       token,
       status: 'pending',
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      invitee_email,
     };
-    if (invitee_email) insertData.invitee_email = invitee_email;
+
+    // Try to get user from Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const jwt = authHeader.replace('Bearer ', '');
+      const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
+      if (!authError && userData?.user) {
+        insertData.inviter_id = userData.user.id;
+      }
+    }
+
+    // Insert the invite
     const { error: insertError } = await supabase.from('friend_invites').insert(insertData);
     if (insertError) {
       throw new AppError('Could not create invite', ERROR_CODES.DATABASE_ERROR, 500, insertError);
     }
 
-    // Look up inviter profile
-    const { data: inviter, error: inviterError } = await supabase
-      .from('profiles')
-      .select('fullName, email')
-      .eq('id', finalInviterId)
-      .maybeSingle();
-    if (inviterError || !inviter) {
-      throw new AppError('Inviter not found', ERROR_CODES.NOT_FOUND, 404);
+    // Look up inviter profile if we have an inviter_id
+    let inviterName = 'A friend';
+    if (insertData.inviter_id) {
+      const { data: inviter } = await supabase
+        .from('profiles')
+        .select('fullName')
+        .eq('id', insertData.inviter_id)
+        .maybeSingle();
+      if (inviter?.fullName) {
+        inviterName = inviter.fullName;
+      }
     }
 
     const isEnglish = lang === 'en';
     // @ts-expect-error Deno globals are available in Edge Functions
     const inviteLink = `${Deno.env.get('PUBLIC_SITE_URL') || 'https://anemimeets.com'}/invite-friend/${token}`;
     const siteUrl = inviteLink.split('/invite-friend/')[0];
-    const safeName = escapeHtml(inviter.fullName || (isEnglish ? 'A friend' : 'Een vriend'));
+    const safeName = escapeHtml(inviterName);
     const subject = isEnglish
       ? `${safeName} invited you for coffee on Anemi Meets! ☕️`
       : `${safeName} heeft je uitgenodigd op Anemi Meets! ☕️`;

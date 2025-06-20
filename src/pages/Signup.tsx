@@ -26,6 +26,7 @@ const Signup = () => {
   const inviteToken = searchParams.get('invite_token');
   const inviteEmail = searchParams.get('email');
 
+  const [step, setStep] = useState(1);
   const [form, setForm] = useState<SignupForm>({
     email: inviteEmail || '',
     password: '',
@@ -37,34 +38,47 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const validateForm = () => {
+  const validateStep = () => {
     const newErrors: SignupErrors = {};
-    if (!form.email) {
-      newErrors.email = t('signup.errorEmailRequired');
-    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-      newErrors.email = t('signup.errorEmailInvalid');
-    }
-    if (!form.password) {
-      newErrors.password = t('signup.errorPasswordRequired');
-    } else if (form.password.length < 8) {
-      newErrors.password = t('signup.errorPasswordLength');
-    }
-    if (!form.confirmPassword) {
-      newErrors.confirmPassword = t('signup.errorConfirmRequired');
-    } else if (form.password !== form.confirmPassword) {
-      newErrors.confirmPassword = t('signup.errorPasswordMatch');
-    }
-    if (!form.fullName) {
-      newErrors.fullName = t('signup.errorNameRequired');
+    if (step === 1) {
+      if (!form.email) {
+        newErrors.email = t('signup.errorEmailRequired');
+      } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+        newErrors.email = t('signup.errorEmailInvalid');
+      }
+    } else if (step === 2) {
+      if (!form.fullName) {
+        newErrors.fullName = t('signup.errorNameRequired');
+      }
+    } else if (step === 3) {
+      if (!form.password) {
+        newErrors.password = t('signup.errorPasswordRequired');
+      } else if (form.password.length < 8) {
+        newErrors.password = t('signup.errorPasswordLength');
+      }
+      if (!form.confirmPassword) {
+        newErrors.confirmPassword = t('signup.errorConfirmRequired');
+      } else if (form.password !== form.confirmPassword) {
+        newErrors.confirmPassword = t('signup.errorPasswordMatch');
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleNext = () => {
+    if (validateStep()) {
+      setStep((prev) => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setStep((prev) => prev - 1);
+  };
+
   const handleInputChange =
     (field: keyof SignupForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
-      // Clear error when user starts typing
       if (errors[field]) {
         setErrors((prev) => ({ ...prev, [field]: undefined }));
       }
@@ -72,7 +86,7 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateStep()) return;
 
     setLoading(true);
     setError(null);
@@ -93,7 +107,6 @@ const Signup = () => {
       }
 
       if (data?.user) {
-        // Create profile
         const { error: profileError } = await supabase.from('profiles').insert({
           id: data.user.id,
           email: form.email,
@@ -104,7 +117,6 @@ const Signup = () => {
           console.error('Error creating profile:', profileError);
         }
 
-        // If there's an invite token, handle it
         if (inviteToken) {
           try {
             await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accept-friend-invite`, {
@@ -135,11 +147,10 @@ const Signup = () => {
     }
   };
 
-  return (
-    <main className="max-w-md mx-auto px-4 py-8">
-      <div className="bg-white rounded-xl shadow-xl p-6">
-        <h1 className="text-2xl font-bold text-center mb-6">{t('signup.title')}</h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
           <div>
             <label htmlFor="signup-email" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">📧</span> {t('signup.emailPrompt')}
@@ -164,7 +175,9 @@ const Signup = () => {
               </p>
             )}
           </div>
-
+        );
+      case 2:
+        return (
           <div>
             <label htmlFor="signup-name" className="block text-lg font-medium text-gray-700 mb-2">
               <span className="text-2xl">👋</span> {t('signup.namePrompt')}
@@ -188,73 +201,110 @@ const Signup = () => {
               </p>
             )}
           </div>
+        );
+      case 3:
+        return (
+          <>
+            <div>
+              <label
+                htmlFor="signup-password"
+                className="block text-lg font-medium text-gray-700 mb-2"
+              >
+                <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
+              </label>
+              <input
+                type="password"
+                id="signup-password"
+                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${
+                  errors.password ? ' border-red-500' : ''
+                }`}
+                value={form.password}
+                onChange={handleInputChange('password')}
+                required
+                placeholder={t('signup.passwordPlaceholder')}
+                inputMode="text"
+                autoComplete="new-password"
+              />
+              {errors.password && (
+                <p className="text-red-600 text-sm mt-1" aria-live="assertive">
+                  {errors.password}
+                </p>
+              )}
+            </div>
 
-          <div>
-            <label
-              htmlFor="signup-password"
-              className="block text-lg font-medium text-gray-700 mb-2"
-            >
-              <span className="text-2xl">🔒</span> {t('signup.passwordPrompt')}
-            </label>
-            <input
-              type="password"
-              id="signup-password"
-              className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${
-                errors.password ? ' border-red-500' : ''
-              }`}
-              value={form.password}
-              onChange={handleInputChange('password')}
-              required
-              placeholder={t('signup.passwordPlaceholder')}
-              inputMode="text"
-              autoComplete="new-password"
-            />
-            {errors.password && (
-              <p className="text-red-600 text-sm mt-1" aria-live="assertive">
-                {errors.password}
-              </p>
-            )}
-          </div>
+            <div>
+              <label
+                htmlFor="signup-confirm-password"
+                className="block text-lg font-medium text-gray-700 mb-2"
+              >
+                <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
+              </label>
+              <input
+                type="password"
+                id="signup-confirm-password"
+                className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${
+                  errors.confirmPassword ? ' border-red-500' : ''
+                }`}
+                value={form.confirmPassword}
+                onChange={handleInputChange('confirmPassword')}
+                required
+                placeholder={t('signup.confirmPasswordPlaceholder')}
+                inputMode="text"
+                autoComplete="new-password"
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-600 text-sm mt-1" aria-live="assertive">
+                  {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
 
-          <div>
-            <label
-              htmlFor="signup-confirm-password"
-              className="block text-lg font-medium text-gray-700 mb-2"
-            >
-              <span className="text-2xl">🔒</span> {t('signup.confirmPasswordPrompt')}
-            </label>
-            <input
-              type="password"
-              id="signup-confirm-password"
-              className={`w-full p-3 rounded-xl border-2 border-gray-200 mb-4 text-base${
-                errors.confirmPassword ? ' border-red-500' : ''
-              }`}
-              value={form.confirmPassword}
-              onChange={handleInputChange('confirmPassword')}
-              required
-              placeholder={t('signup.confirmPasswordPlaceholder')}
-              inputMode="text"
-              autoComplete="new-password"
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-600 text-sm mt-1" aria-live="assertive">
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
+  return (
+    <main className="max-w-md mx-auto px-4 py-8">
+      <div className="bg-white rounded-xl shadow-xl p-6">
+        <h1 className="text-2xl font-bold text-center mb-6">{t('signup.title')}</h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="min-h-[120px]">{renderStep()}</div>
 
           <FormStatus
             status={loading ? 'loading' : error ? 'error' : 'idle'}
             message={error || ''}
           />
-
-          <button
-            type="submit"
-            className="btn-primary w-full py-3 px-6 text-lg rounded-lg"
-            disabled={loading}
-          >
-            {t('signup.submitButton')}
-          </button>
+          <div className="flex justify-between items-center pt-4">
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={handleBack}
+                className="text-gray-600 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100"
+              >
+                {t('common.back')}
+              </button>
+            )}
+            {step < 3 && (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 ml-auto"
+              >
+                {t('common.next')}
+              </button>
+            )}
+            {step === 3 && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 w-full disabled:bg-gray-400"
+              >
+                {loading ? t('common.loading') : t('signup.submit')}
+              </button>
+            )}
+          </div>
         </form>
 
         <div className="mt-6 text-center">

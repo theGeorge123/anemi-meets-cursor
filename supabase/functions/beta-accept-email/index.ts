@@ -1,4 +1,5 @@
-import { serve } from 'std/server';
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { Resend } from 'npm:resend@2.1.0';
 import {
   AppError,
   ERROR_CODES,

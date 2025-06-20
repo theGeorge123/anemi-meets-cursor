@@ -1,4 +1,25 @@
 {
+  "common": {
+    "date": "Datum",
+    "back": "Terug",
+    "next": "Volgende",
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "loading": "Laden...",
+    "error": "Er is een fout opgetreden.",
+    "success": "Gelukt!",
+    "close": "Sluiten",
+    "submit": "Versturen",
+    "optional": "Optioneel",
+    "required": "Verplicht",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "name": "Naam",
+    "confirm": "Bevestigen",
+    "errorLoadingCities": "Kon de steden niet laden. Controleer je verbinding."
+  },
   "beta": {
     "notAccepted": "Oeps! Je bent (nog) niet toegelaten tot de beta. Blijf op de hoogte, koffie-vriend!",
     "acceptedEmailSubject": "Je bent erbij! Welkom bij de Anemi Meets Beta ☕️",
@@ -87,4 +108,4 @@
     "save": "Opslaan",
     "cancel": "Annuleren"
   }
-} 
+}
