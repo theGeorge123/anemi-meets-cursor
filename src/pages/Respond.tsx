@@ -291,7 +291,7 @@ const Respond = () => {
         token: token || '',
         email: formData.email,
         email_b: formData.email,
-        email_a: invitation?.email_a || '',
+        email_a: invitation?.email_b || '',
         selected_date: datePart,
         selected_time: timePart,
         cafe_id: cafeId!,
@@ -414,7 +414,7 @@ const Respond = () => {
                 {TIME_SLOT_LABELS[confirmationInfo.selected_time] || confirmationInfo.selected_time}
               </div>
               {/* Show all available times */}
-              {invitation?.date_time_options && (
+              {invitation?.date_time_options && isDateTimeOptions(invitation.date_time_options) && (
                 <div className="mt-2">
                   <div className="font-semibold text-primary-700 mb-1">
                     {_i18n.language === 'nl' ? 'Alle voorgestelde tijden:' : 'All suggested times:'}
