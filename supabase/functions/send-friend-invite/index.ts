@@ -48,14 +48,14 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
 
   try {
     // Validate required environment variables
-    validateEnvVars(['PROJECT_URL', 'SUPABASE_ANON_KEY', 'RESEND_API_KEY']);
+    validateEnvVars(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'RESEND_API_KEY']);
 
-    const PROJECT_URL = Deno.env.get('PROJECT_URL')!;
-    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 
-    // Create Supabase client with anon key
-    const supabase = createClient(PROJECT_URL, SUPABASE_ANON_KEY, {
+    // Create Supabase admin client with service role key
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 

@@ -297,18 +297,23 @@ const Account = () => {
   const handleDeleteAccount = async () => {
     const confirmMsg = t('account.deleteConfirm', 'Are you sure? This cannot be undone!');
     if (!window.confirm(confirmMsg)) return;
-    
+
     try {
       // Get the current session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
       if (sessionError || !session) {
         console.error('Failed to get session for deletion', sessionError);
         return;
       }
 
       // Get a fresh access token
-      const { data: { session: refreshedSession }, error: refreshError } = 
-        await supabase.auth.refreshSession();
+      const {
+        data: { session: refreshedSession },
+        error: refreshError,
+      } = await supabase.auth.refreshSession();
       if (refreshError || !refreshedSession) {
         console.error('Failed to refresh session', refreshError);
         return;
@@ -317,10 +322,10 @@ const Account = () => {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${refreshedSession.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${refreshedSession.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!res.ok) {

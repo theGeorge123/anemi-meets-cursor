@@ -60,6 +60,7 @@ A modern, calming web application for coordinating coffee meetups with friends. 
 | ------------------------- | -------- | ------------------------------------------------- |
 | VITE_SUPABASE_URL         | Yes      | Your Supabase project URL                         |
 | VITE_SUPABASE_ANON_KEY    | Yes      | Supabase anon public key (frontend)               |
+| SUPABASE_URL              | Yes      | Root URL of your Supabase project (for functions) |
 | SUPABASE_SERVICE_ROLE_KEY | Yes      | Supabase service role key (server-side/functions) |
 | RESEND_API_KEY            | Yes      | API key for Resend (email delivery)               |
 | MEETING_REMINDERS_SECRET  | Yes      | Secret for meeting reminders function             |
