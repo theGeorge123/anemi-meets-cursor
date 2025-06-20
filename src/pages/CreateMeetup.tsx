@@ -40,6 +40,12 @@ const getLastCity = () => {
 
 const QUEUE_KEY = 'meetups_queue_v1';
 
+const TIME_SLOT_LABELS: Record<string, string> = {
+  morning: '07:00–12:00',
+  afternoon: '12:00–16:00',
+  evening: '16:00–19:00',
+};
+
 async function flushMeetupQueue(onSuccess: () => void) {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
   if (!queue.length) return;
@@ -842,9 +848,12 @@ const CreateMeetup = () => {
                 {formData.dates.map((date) => {
                   const dateStr = getLocalDateString(date);
                   const dateOpt = dateTimeOptions.find((opt) => opt.date === dateStr);
+                  const times = (dateOpt?.times || [])
+                    .map((time) => `${t(time, { ns: 'common' })} (${TIME_SLOT_LABELS[time]})`)
+                    .join(', ');
                   return (
                     <li key={dateStr}>
-                      {date.toLocaleDateString()} ({(dateOpt?.times || []).join(', ')})
+                      {date.toLocaleDateString()} {times ? `(${times})` : ''}
                     </li>
                   );
                 })}
