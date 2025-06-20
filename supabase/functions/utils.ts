@@ -10,6 +10,8 @@
  * Use validateEnvVars(['RESEND_API_KEY', ...]) at the top of your handler to ensure all required env vars are present.
  */
 
+// deno-lint-ignore-file no-explicit-any
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 import { Resend } from 'resend';
 
 export function escapeHtml(unsafe: string): string {
@@ -105,7 +107,11 @@ export const ERROR_CODES = {
   SERVER_ERROR: 'SERVER_ERROR',
   DATABASE_ERROR: 'DATABASE_ERROR',
   EMAIL_ERROR: 'EMAIL_ERROR',
+  THIRD_PARTY_ERROR: 'THIRD_PARTY_ERROR',
+  MISSING_PARAMS: 'MISSING_PARAMS',
 } as const;
+
+export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
 export function validateEnvVars(required: string[]): void {
   const missing = required.filter((key) => !Deno.env.get(key));
@@ -178,3 +184,20 @@ export async function sendEmail(options: {
     throw new AppError('Failed to send email', ERROR_CODES.EMAIL_ERROR, 500, await res.text());
   }
 }
+
+// @ts-expect-error Deno global is available in Edge Functions
+Deno.serve(async (req: Request) => {
+  // ...
+});
+
+/* supabase/functions/accept-friend-invite/index.ts */
+// @ts-expect-error Deno global is available in Edge Functions
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+);
+
+// @ts-expect-error Deno global is available in Edge Functions
+Deno.serve(async (req) => {
+  // ...
+});
