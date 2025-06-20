@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { NavigationContext } from '../context/NavigationContext';
+import { NavigationContext } from '../context/navigation';
 import ErrorBoundary from './ErrorBoundary';
 
 export interface NavigationBarProps {
@@ -21,7 +21,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
   ];
 
   // Filter links op authenticatie
-  const filteredLinks = NAV_LINKS.filter(link => !link.auth || isAuthenticated);
+  const filteredLinks = NAV_LINKS.filter((link) => !link.auth || isAuthenticated);
 
   // Language selector handler
   const LANGUAGES = [
@@ -30,7 +30,10 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
   ];
 
   return (
-    <nav className="w-full bg-white/90 border-b border-primary-100 shadow-sm fixed top-0 left-0 z-40" role="navigation">
+    <nav
+      className="w-full bg-white/90 border-b border-primary-100 shadow-sm fixed top-0 left-0 z-40"
+      role="navigation"
+    >
       <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
         {/* Logo + naam replaced with styled span */}
         <Link to="/" className="flex items-center gap-2">
@@ -38,9 +41,14 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
         </Link>
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
-          {filteredLinks.map(link => (
+          {filteredLinks.map((link) =>
             link.to === '/login' && isAuthenticated ? (
-              <span key="logged-in" className="px-3 py-2 rounded-xl font-medium text-green-700 bg-green-100">Yes, you're logged in!</span>
+              <span
+                key="logged-in"
+                className="px-3 py-2 rounded-xl font-medium text-green-700 bg-green-100"
+              >
+                Yes, you're logged in!
+              </span>
             ) : (
               <Link
                 key={link.to}
@@ -50,8 +58,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
               >
                 {link.label}
               </Link>
-            )
-          ))}
+            ),
+          )}
           {profileEmoji && (
             <span className="ml-3 text-2xl" title={t('nav.profile')}>
               {profileEmoji}
@@ -62,7 +70,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
         <div className="flex items-center gap-2 md:gap-1">
           {/* Language selector: always visible */}
           <div className="flex gap-1 items-center" aria-label="Language selector">
-            {LANGUAGES.map(lang => (
+            {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => i18n.changeLanguage(lang.code)}
@@ -78,11 +86,17 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
           <div className="md:hidden flex items-center gap-2">
             <button
               className="flex items-center justify-center w-11 h-11 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 hover:bg-primary-50 transition-colors active:scale-95 active:bg-primary-100 min-h-[44px] min-w-[44px]"
-              onClick={() => setMenuOpen(v => !v)}
+              onClick={() => setMenuOpen((v) => !v)}
               aria-label="Menu"
               aria-expanded={menuOpen}
             >
-              <svg className="w-6 h-6 text-primary-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg
+                className="w-6 h-6 text-primary-700"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
                 {menuOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -107,10 +121,10 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
           className={`fixed top-0 right-0 h-full w-4/5 max-w-xs bg-white/95 shadow-lg transition-transform duration-300 ease-in-out ${
             menuOpen ? 'translate-x-0' : 'translate-x-full'
           } flex flex-col justify-between`}
-          onClick={e => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex flex-col items-center gap-4 pt-8">
-            {filteredLinks.map(link => (
+            {filteredLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
