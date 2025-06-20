@@ -1,4 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { Database } from '../../../src/types/supabase.ts';
 import { escapeHtml } from "../utils.ts";
 
 function encodeBase64(str: string) {
@@ -11,7 +12,7 @@ function sanitizeICSText(text: string) {
 }
 
 async function wantsReminders(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient<Database>,
   email: string,
 ): Promise<boolean> {
   const { data: user, error: userError } = await supabase.auth.admin
@@ -117,7 +118,7 @@ export async function handleConfirmation(req: Request): Promise<Response> {
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Check invitation first to validate email and status
     const { data: existing, error: fetchError } = await supabase

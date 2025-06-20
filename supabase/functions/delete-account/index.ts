@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import type { Database } from '../../../src/types/supabase.ts';
 import {
   AppError,
   ERROR_CODES,
@@ -40,7 +41,7 @@ Deno.serve(async (req: Request) => {
     const jwt = authHeader.replace('Bearer ', '');
 
     // Create admin client with service role
-    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+    const adminClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,

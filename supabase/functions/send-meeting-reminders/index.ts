@@ -1,6 +1,6 @@
 /// <reference lib="deno.ns" />
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import type { Database } from '../database.types.ts';
+import type { Database } from '../../src/types/supabase.ts';
 import { escapeHtml, AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
 
 function encodeBase64(str: string) {
