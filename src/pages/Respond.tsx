@@ -27,7 +27,7 @@ const Respond = () => {
     email: '',
     selectedTime: '',
   });
-  const [availableTimes, setAvailableTimes] = useState<{ date: string; time: string }[]>([]);
+  const [availableTimes, setAvailableTimes] = useState<{ [key: string]: string[] }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cafe, setCafe] = useState<Cafe | null>(null);
@@ -182,12 +182,12 @@ const Respond = () => {
           setCafe(null);
         }
         // Zet beschikbare tijden
-        const times: { date: string; time: string }[] = [];
+        const times: { [key: string]: string[] } = {};
         if (isDateTimeOptions(invitation.date_time_options)) {
           invitation.date_time_options.forEach((opt) => {
-            opt.times.forEach((time) => {
-              times.push({ date: opt.date, time });
-            });
+            if (opt.date && opt.times && opt.times.length > 0) {
+              times[opt.date] = opt.times;
+            }
           });
         }
         setAvailableTimes(times);
@@ -500,38 +500,50 @@ const Respond = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">
-            {t('respond.availableTimes')}
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {availableTimes.map((time, idx) => {
-              const value = `${time.date}-${time.time}`;
-              const isSelected = formData.selectedTime === value;
-              // Format date as 'Monday 3 June' or 'maandag 3 juni'
-              const dateObj = new Date(time.date);
-              const formattedDate = dateObj.toLocaleDateString(
-                _i18n.language === 'nl' ? 'nl-NL' : 'en-US',
-                {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                },
-              );
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, selectedTime: value }))}
-                  className={`w-full p-4 rounded-xl border-2 font-semibold text-lg shadow-sm flex flex-col items-center justify-center transition-all duration-150
-                    ${isSelected ? 'border-primary-600 bg-primary-100 text-primary-800 scale-105 ring-2 ring-primary-300' : 'border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50'}`}
-                  aria-pressed={isSelected}
-                >
-                  <span>{formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)}</span>
-                  <span className="mt-1">{t(`common.${time.time}`)}</span>
-                </button>
-              );
-            })}
+        <div className="mb-6 bg-white p-4 rounded-xl border border-primary-200">
+          <h3 className="text-lg font-semibold text-primary-700 mb-4">
+            {t('respond.chooseTime', 'When are you free?')}
+          </h3>
+          <div className="space-y-4">
+            {Object.entries(availableTimes).map(([date, times]) => (
+              <div key={date} className="bg-primary-50 p-3 rounded-lg">
+                <p className="font-semibold text-primary-800 mb-2">
+                  {new Date(date).toLocaleDateString(t('common.locale_code'), {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {times.map((time) => (
+                    <label
+                      key={`${date}-${time}`}
+                      className={`block p-3 rounded-lg text-center cursor-pointer transition-all duration-150 border-2 ${
+                        formData.selectedTime === `${date}-${time}`
+                          ? 'bg-primary-600 text-white border-primary-700 shadow-md scale-105'
+                          : 'bg-white hover:border-primary-400 border-gray-200'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="selectedTime"
+                        value={`${date}-${time}`}
+                        checked={formData.selectedTime === `${date}-${time}`}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, selectedTime: e.target.value }))
+                        }
+                        className="sr-only"
+                      />
+                      <span className="font-medium text-sm">{t(`common.${time}`, time)}</span>
+                      <span className="block text-xs opacity-80">
+                        {TIME_SLOT_LABELS[time] || ''}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

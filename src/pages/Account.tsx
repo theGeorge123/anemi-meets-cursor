@@ -13,12 +13,12 @@ import { displayCafeTag, displayPriceBracket } from '../utils/display';
 import BadgeNotification from '../components/BadgeNotification';
 import BadgeProgress from '../components/BadgeProgress';
 import BadgeShareModal from '../components/BadgeShareModal';
-import { User, Settings, Award, Trash2 } from 'lucide-react';
+import { User, Settings, Award, Trash2, Languages } from 'lucide-react';
 
 // TypeScript interfaces voor typeveiligheid
 interface Profile {
   id: string;
-  fullName: string;
+  fullname: string;
   email: string;
   emoji?: string;
   gender?: string;
@@ -47,11 +47,7 @@ interface Invitation {
 
 function isProfile(obj: unknown): obj is Profile {
   return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    'id' in obj &&
-    ('fullName' in obj || 'fullname' in obj) &&
-    'email' in obj
+    typeof obj === 'object' && obj !== null && 'id' in obj && 'fullname' in obj && 'email' in obj
   );
 }
 
@@ -60,7 +56,7 @@ const Account = () => {
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [age, setAge] = useState<number | ''>('');
   const [myMeetups, setMyMeetups] = useState<Invitation[]>([]);
-  const [name, setName] = useState('');
+  const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
   const [pwForm, setPwForm] = useState({ current: '', new: '', confirm: '' });
   const [wantsUpdates, setWantsUpdates] = useState(false);
@@ -76,7 +72,7 @@ const Account = () => {
 
   // Edit state for name/email/age
   const [editingProfile, setEditingProfile] = useState(false);
-  const [editName, setEditName] = useState(name);
+  const [editName, setEditName] = useState(fullname);
   const [editEmail, setEditEmail] = useState(email);
   const [editAge, setEditAge] = useState(age);
 
@@ -181,7 +177,7 @@ const Account = () => {
         // Upsert profile info (id, fullName, email)
         await supabase.from('profiles').upsert({
           id: user.id,
-          fullName,
+          fullname: fullName,
           email,
         });
         // Haal profiel op
@@ -191,6 +187,7 @@ const Account = () => {
         }
         if (profileData && isProfile(profileData)) {
           setUser(profileData);
+          setFullname(profileData.fullname || '');
           if (profileData.emoji) setSelectedEmoji(profileData.emoji);
           if (profileData.age !== undefined && profileData.age !== null) setAge(profileData.age);
           setWantsUpdates(!!profileData.wantsupdates);
@@ -209,7 +206,6 @@ const Account = () => {
           setUser(null);
         }
         setEmail(user.email || '');
-        setName(fullName);
         // Haal meetups op
         try {
           const { data: meetups, error: meetupsError } = await supabase
@@ -359,14 +355,14 @@ const Account = () => {
 
   const handleProfileEdit = () => {
     setEditingProfile(true);
-    setEditName(name);
+    setEditName(fullname);
     setEditEmail(email);
     setEditAge(age);
   };
 
   const handleProfileCancel = () => {
     setEditingProfile(false);
-    setEditName(name);
+    setEditName(fullname);
     setEditEmail(email);
     setEditAge(age);
   };
@@ -381,20 +377,14 @@ const Account = () => {
     // Sanitize age
     const sanitizedAge = editAge === '' ? null : Number(editAge);
     // Prepare update object
-    const updateObj: Record<string, unknown> = {
-      fullName: editName,
-      email: editEmail,
-      age: sanitizedAge,
-      preferred_language: preferredLanguage,
-      wantsupdates: wantsUpdates,
-      wantsreminders: wantsReminders,
-      wantsnotifications: wantsNotifications,
-      isprivate: isPrivate,
-      cafe_preferences: preferences,
-    };
+    const updateObj: { fullname?: string; age?: number | null; email?: string } = {};
+    if (editName !== fullname) updateObj.fullname = editName;
+    if (sanitizedAge !== age) updateObj.age = sanitizedAge;
+    if (editEmail !== email) updateObj.email = editEmail;
+
     const { error } = await supabase.from('profiles').update(updateObj).eq('id', user.id);
     if (!error) {
-      setName(editName);
+      setFullname(editName);
       setAge(sanitizedAge === null ? '' : sanitizedAge);
       setEmail(editEmail);
       setShowProfileToast(true);
@@ -522,7 +512,7 @@ const Account = () => {
                   placeholder={t('account.name')}
                 />
               ) : (
-                <span className="mobile-text text-lg">{name || t('account.notSpecified')}</span>
+                <span className="mobile-text text-lg">{fullname || t('account.notSpecified')}</span>
               )}
             </div>
             <div className="flex flex-row items-center gap-2">

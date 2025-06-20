@@ -1,5 +1,6 @@
 export const nl = {
   common: {
+    locale_code: 'nl-NL',
     ok: 'OK',
     cancel: 'Annuleren',
     close: 'Sluiten',

@@ -1,5 +1,6 @@
 export const en = {
   common: {
+    locale_code: 'en-US',
     ok: 'OK',
     cancel: 'Cancel',
     close: 'Close',

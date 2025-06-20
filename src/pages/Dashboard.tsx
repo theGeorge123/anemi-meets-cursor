@@ -14,6 +14,7 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import OnboardingModal from '../features/dashboard/components/OnboardingModal';
 import NavigationBarWithBoundary from '../components/NavigationBar';
 import type { Tables, Database } from '../types/supabase';
+import { formatDutchDate } from '../utils/date';
 
 interface Invitation {
   id: string;
@@ -272,29 +273,27 @@ const Dashboard = () => {
           />
         )}
         {/* Welcome message at the top */}
-        <div className="flex items-center gap-3 mb-6">
-          {profile?.emoji &&
-            (() => {
-              const profileTitle: string | undefined =
-                typeof profile.fullname === 'string' ? profile.fullname : undefined;
-              return (
-                <span className="text-4xl" title={profileTitle}>
-                  {profile.emoji}
-                </span>
-              );
-            })()}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
-              {t('dashboard.welcome')}, {profile?.fullname ?? t('dashboard.user')}!
-            </h1>
-            {profile && (
-              <div className="text-gray-600 text-sm">
-                {t('dashboard.lastLogin', {
-                  date: profile.last_seen ? new Date(profile.last_seen).toLocaleDateString() : '',
-                })}
+        <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md mb-6">
+          {profile && (
+            <div className="flex flex-col items-center gap-2 mb-2">
+              <span className="text-6xl" role="img" aria-label="profile emoji">
+                {profile?.emoji || '☕️'}
+              </span>
+              <div className="text-center">
+                <p className="text-xl font-bold text-gray-800">
+                  {t('dashboard.welcome', 'Hey there')},{' '}
+                  {profile?.fullname || t('dashboard.user', 'friend')}
+                </p>
+                {profile?.last_seen && (
+                  <p className="text-sm text-gray-500">
+                    {t('dashboard.lastLogin', 'Last seen: {{date}}', {
+                      date: formatDutchDate(profile.last_seen),
+                    })}
+                  </p>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         {/* Next Meetup Section (just below welcome) */}
         {nextMeetup && (
@@ -304,7 +303,7 @@ const Dashboard = () => {
                 {t('dashboard.nextMeetup', 'Your next meetup')}
               </div>
               <div className="text-base text-primary-800">
-                {nextMeetup.selected_date}{' '}
+                {formatDutchDate(nextMeetup.selected_date)}{' '}
                 {safeTime(nextMeetup.selected_time)
                   ? `, ${safeTime(nextMeetup.selected_time)}`
                   : ''}
@@ -365,7 +364,9 @@ const Dashboard = () => {
                     className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100"
                   >
                     <div>
-                      <span className="font-semibold text-primary-700">{m.selected_date}</span>
+                      <span className="font-semibold text-primary-700">
+                        {formatDutchDate(m.selected_date)}
+                      </span>
                       {time && <span> &bull; {time}</span>}
                       {safeTime(m.cafe_name) && <span> &bull; {m.cafe_name}</span>}
                       {!m.cafe_name && m.cafe_id && (
