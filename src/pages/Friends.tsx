@@ -19,7 +19,7 @@ interface FriendRequest {
   requester_id: string;
   addressee_id: string;
   status: string;
-  created_at: string;
+  created_at: string | null;
 }
 
 const Friends = () => {

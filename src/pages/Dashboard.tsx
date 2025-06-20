@@ -1,27 +1,30 @@
-import { useEffect, useState, useMemo, useRef } from "react";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
+import { useEffect, useState, useMemo, useRef } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 import { getProfile } from '../services/profileService';
 import { getFriends } from '../services/friendshipService';
-import { getOutgoingFriendRequests, getIncomingFriendRequests } from '../services/friendRequestService';
-import { useTranslation } from "react-i18next";
-import LoadingIndicator from "../components/LoadingIndicator";
-import SkeletonLoader from "../components/SkeletonLoader";
-import OnboardingModal from "../features/dashboard/components/OnboardingModal";
+import {
+  getOutgoingFriendRequests,
+  getIncomingFriendRequests,
+} from '../services/friendRequestService';
+import { useTranslation } from 'react-i18next';
+import LoadingIndicator from '../components/LoadingIndicator';
+import SkeletonLoader from '../components/SkeletonLoader';
+import OnboardingModal from '../features/dashboard/components/OnboardingModal';
 import NavigationBarWithBoundary from '../components/NavigationBar';
 import type { Tables, Database } from '../types/supabase';
 
 interface Invitation {
   id: string;
   selected_date: string;
-  selected_time?: string | undefined;
-  cafe_id?: string | undefined;
-  cafe_name?: string | undefined;
-  status?: string | undefined;
-  email_b?: string | undefined;
-  invitee_id?: string | undefined;
-  email_a?: string | undefined;
+  selected_time?: string | null;
+  cafe_id?: string | null;
+  cafe_name?: string | null;
+  status?: string | null;
+  email_b?: string | null;
+  invitee_id?: string | null;
+  email_a?: string | null;
 }
 
 // Helper to normalize selected_time to undefined if null
@@ -48,15 +51,19 @@ function safeTime(val: string | null | undefined): string | undefined {
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  const DASHBOARD_CACHE_KEY = "dashboard_cache_v1";
+  const DASHBOARD_CACHE_KEY = 'dashboard_cache_v1';
   const [meetups, setMeetups] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [friends, setFriends] = useState<Profile[]>([]);
-  const [outgoingRequests, setOutgoingRequests] = useState<Database['public']['Tables']['friend_requests']['Row'][]>([]);
-  const [incomingRequests, setIncomingRequests] = useState<Database['public']['Tables']['friend_requests']['Row'][]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<
+    Database['public']['Tables']['friend_requests']['Row'][]
+  >([]);
+  const [incomingRequests, setIncomingRequests] = useState<
+    Database['public']['Tables']['friend_requests']['Row'][]
+  >([]);
   const navigate = useNavigate();
   const channelRef = useRef<RealtimeChannel | null>(null);
 
@@ -68,9 +75,7 @@ const Dashboard = () => {
       meetups
         .filter((m) => new Date(m.selected_date) >= now)
         .sort(
-          (a, b) =>
-            new Date(a.selected_date).getTime() -
-            new Date(b.selected_date).getTime(),
+          (a, b) => new Date(a.selected_date).getTime() - new Date(b.selected_date).getTime(),
         )[0] || null;
     // Normalize selected_time
     return result ? { ...result, selected_time: safeTime(result.selected_time) } : null;
@@ -99,16 +104,16 @@ const Dashboard = () => {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        navigate("/login");
+        navigate('/login');
         return;
       }
       // Update lastSeen on dashboard visit
       await supabase
-        .from("profiles")
+        .from('profiles')
         .update({ last_seen: new Date().toISOString() })
-        .eq("id", session.user.id);
+        .eq('id', session.user.id);
       // Onboarding check: only show for new signups
-      if (localStorage.getItem("anemi-show-onboarding")) {
+      if (localStorage.getItem('anemi-show-onboarding')) {
         setShowOnboarding(true);
       }
       // Profiel ophalen (inclusief lastSeen)
@@ -125,11 +130,9 @@ const Dashboard = () => {
       setIncomingRequests(incoming);
       // Meetups ophalen
       const { data, error } = await supabase
-        .from("invitations")
-        .select("id, selected_date, selected_time, cafe_id, status, email_b")
-        .or(
-          `invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}"`,
-        );
+        .from('invitations')
+        .select('id, selected_date, selected_time, cafe_id, status, email_b')
+        .or(`invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}"`);
       if (error) {
         if (cached) {
           try {
@@ -145,7 +148,7 @@ const Dashboard = () => {
             console.error(err);
           }
         }
-        setError(t("dashboard.errorLoadingMeetups"));
+        setError(t('dashboard.errorLoadingMeetups'));
       } else {
         const normalizedMeetups = normalizeMeetups(data || []);
         setMeetups(normalizedMeetups);
@@ -173,10 +176,10 @@ const Dashboard = () => {
       if (!session?.user) return;
 
       channelRef.current = supabase
-        .channel("invitations")
+        .channel('invitations')
         .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "invitations" },
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'invitations' },
           (payload) => {
             const newInvite = payload.new as Invitation;
             if (
@@ -203,8 +206,8 @@ const Dashboard = () => {
           },
         )
         .on(
-          "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "invitations" },
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'invitations' },
           (payload) => {
             const updatedInvite = payload.new as Invitation;
             if (
@@ -245,15 +248,14 @@ const Dashboard = () => {
   }, [profile, friends, outgoingRequests, incomingRequests]);
 
   // Sorteer meetups op datum (oplopend)
-  const sortedMeetups = [...meetups].sort((a, b) =>
-    a.selected_date.localeCompare(b.selected_date),
-  );
-  const upcoming = sortedMeetups.filter(
-    (m) => new Date(m.selected_date) >= new Date(),
-  );
+  const sortedMeetups = [...meetups].sort((a, b) => a.selected_date.localeCompare(b.selected_date));
+  const upcoming = sortedMeetups.filter((m) => new Date(m.selected_date) >= new Date());
   const lastActivity =
     sortedMeetups.length > 0
-      ? ({ ...sortedMeetups[sortedMeetups.length - 1], selected_time: safeTime(sortedMeetups[sortedMeetups.length - 1].selected_time) } as Invitation)
+      ? ({
+          ...sortedMeetups[sortedMeetups.length - 1],
+          selected_time: safeTime(sortedMeetups[sortedMeetups.length - 1].selected_time),
+        } as Invitation)
       : null;
 
   return (
@@ -264,31 +266,31 @@ const Dashboard = () => {
           <OnboardingModal
             onFinish={() => {
               setShowOnboarding(false);
-              localStorage.removeItem("anemi-show-onboarding");
-              localStorage.setItem("anemi-onboarded", "1");
+              localStorage.removeItem('anemi-show-onboarding');
+              localStorage.setItem('anemi-onboarded', '1');
             }}
           />
         )}
         {/* Welcome message at the top */}
         <div className="flex items-center gap-3 mb-6">
-          {profile?.emoji && (
+          {profile?.emoji &&
             (() => {
-              const profileTitle: string | undefined = typeof profile.fullname === 'string' ? profile.fullname : undefined;
+              const profileTitle: string | undefined =
+                typeof profile.fullname === 'string' ? profile.fullname : undefined;
               return (
                 <span className="text-4xl" title={profileTitle}>
                   {profile.emoji}
                 </span>
               );
-            })()
-          )}
+            })()}
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-primary-700 mb-1">
-              {t("dashboard.welcome")}, {profile?.fullname ?? t("dashboard.user")}!
+              {t('dashboard.welcome')}, {profile?.fullname ?? t('dashboard.user')}!
             </h1>
             {profile && (
               <div className="text-gray-600 text-sm">
-                {t("dashboard.lastLogin", {
-                  date: profile.last_seen ? new Date(profile.last_seen).toLocaleDateString() : "",
+                {t('dashboard.lastLogin', {
+                  date: profile.last_seen ? new Date(profile.last_seen).toLocaleDateString() : '',
                 })}
               </div>
             )}
@@ -299,16 +301,18 @@ const Dashboard = () => {
           <div className="card mb-6 bg-primary-50 border-l-4 border-primary-400 p-4 flex flex-col sm:flex-row items-center justify-between">
             <div>
               <div className="text-lg font-semibold text-primary-700 mb-1">
-                {t("dashboard.nextMeetup", "Your next meetup")}
+                {t('dashboard.nextMeetup', 'Your next meetup')}
               </div>
               <div className="text-base text-primary-800">
-                {nextMeetup.selected_date}{" "}
-                {safeTime(nextMeetup.selected_time) ? `, ${safeTime(nextMeetup.selected_time)}` : ''}
+                {nextMeetup.selected_date}{' '}
+                {safeTime(nextMeetup.selected_time)
+                  ? `, ${safeTime(nextMeetup.selected_time)}`
+                  : ''}
                 {safeTime(nextMeetup.cafe_name) && <span> @ {safeTime(nextMeetup.cafe_name)}</span>}
               </div>
             </div>
             <button className="btn-primary mt-3 sm:mt-0">
-              {t("dashboard.viewMeetup", "View details")}
+              {t('dashboard.viewMeetup', 'View details')}
             </button>
           </div>
         )}
@@ -317,12 +321,16 @@ const Dashboard = () => {
         {lastActivity && (
           <div className="mb-6">
             <div className="text-gray-700 text-base">
-              {t("dashboard.lastActivity")}:{" "}
+              {t('dashboard.lastActivity')}:{' '}
               <span className="font-semibold">
                 {lastActivity.selected_date}
-                {safeTime(lastActivity.selected_time) ? `, ${safeTime(lastActivity.selected_time)}` : ''}
+                {safeTime(lastActivity.selected_time)
+                  ? `, ${safeTime(lastActivity.selected_time)}`
+                  : ''}
               </span>
-              {safeTime(lastActivity.cafe_name) && <span> @ {safeTime(lastActivity.cafe_name)}</span>}
+              {safeTime(lastActivity.cafe_name) && (
+                <span> @ {safeTime(lastActivity.cafe_name)}</span>
+              )}
             </div>
           </div>
         )}
@@ -330,44 +338,46 @@ const Dashboard = () => {
         {/* Samenvatting aankomende meetups */}
         <div className="mb-8">
           <h2 className="text-lg font-bold text-primary-700 mb-2">
-            {t("dashboard.upcomingMeetups")}
+            {t('dashboard.upcomingMeetups')}
           </h2>
           {loading && (
             <>
-              <LoadingIndicator
-                label={t("common.loading")}
-                size="md"
-                className="my-4"
-              />
+              <LoadingIndicator label={t('common.loading')} size="md" className="my-4" />
               <SkeletonLoader
                 count={2}
                 height="h-16"
                 className="my-2"
-                ariaLabel={t("common.loading")}
+                ariaLabel={t('common.loading')}
               />
             </>
           )}
           {error && <div className="text-red-500 mb-4">{error}</div>}
           {!loading && !error && upcoming.length === 0 && (
-            <div className="text-gray-600 text-center">
-              {t("dashboard.noMeetups")}
-            </div>
+            <div className="text-gray-600 text-center">{t('dashboard.noMeetups')}</div>
           )}
           {!loading && !error && upcoming.length > 0 && (
             <ul className="space-y-4">
               {upcoming.slice(0, 3).map((m) => {
                 const time = safeTime(m.selected_time);
                 return (
-                  <li key={m.id} className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100">
+                  <li
+                    key={m.id}
+                    className="bg-white/80 rounded-xl shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border border-primary-100"
+                  >
                     <div>
                       <span className="font-semibold text-primary-700">{m.selected_date}</span>
                       {time && <span> &bull; {time}</span>}
                       {safeTime(m.cafe_name) && <span> &bull; {m.cafe_name}</span>}
                       {!m.cafe_name && m.cafe_id && (
-                        <span> &bull; {t("cafe")} {m.cafe_id}</span>
+                        <span>
+                          {' '}
+                          &bull; {t('cafe')} {m.cafe_id}
+                        </span>
                       )}
                     </div>
-                    <span className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === "confirmed" ? "bg-green-100 text-green-700" : m.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-200 text-gray-700"}`}>
+                    <span
+                      className={`text-xs mt-2 sm:mt-0 px-3 py-1 rounded-full font-semibold ${m.status === 'confirmed' ? 'bg-green-100 text-green-700' : m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}
+                    >
                       {t(`account.status.${m.status}`)}
                     </span>
                   </li>
@@ -381,27 +391,27 @@ const Dashboard = () => {
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <button
             className="btn-primary flex-1 text-center active:scale-95 active:bg-primary-100"
-            onClick={() => navigate("/create-meetup")}
-            aria-label={t("dashboard.ctaNewMeetup")}
+            onClick={() => navigate('/create-meetup')}
+            aria-label={t('dashboard.ctaNewMeetup')}
           >
-            {t("dashboard.ctaNewMeetup")}
+            {t('dashboard.ctaNewMeetup')}
           </button>
           <button
             className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
-            onClick={() => navigate("/account")}
-            aria-label={t("dashboard.ctaProfile")}
+            onClick={() => navigate('/account')}
+            aria-label={t('dashboard.ctaProfile')}
           >
-            {t("dashboard.ctaProfile")}
+            {t('dashboard.ctaProfile')}
           </button>
           <button
             className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
             onClick={async () => {
               await supabase.auth.signOut();
-              navigate("/login");
+              navigate('/login');
             }}
-            aria-label={t("dashboard.ctaLogout")}
+            aria-label={t('dashboard.ctaLogout')}
           >
-            {t("dashboard.ctaLogout")}
+            {t('dashboard.ctaLogout')}
           </button>
         </div>
       </div>

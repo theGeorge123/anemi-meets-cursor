@@ -1,10 +1,10 @@
 import { supabase } from '../supabaseClient';
 import type { Database } from '../types/supabase';
 
-export async function sendFriendRequest(addresseeId: string) {
+export async function sendFriendRequest(requesterId: string, addresseeId: string) {
   const { data, error } = await supabase
     .from('friend_requests')
-    .insert({ addressee_id: addresseeId })
+    .insert({ requester_id: requesterId, addressee_id: addresseeId })
     .select()
     .single();
   if (error)

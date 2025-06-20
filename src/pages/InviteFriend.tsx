@@ -29,7 +29,7 @@ const InviteFriend = () => {
       // Get invite
       const { data: invite, error: inviteError } = await supabase
         .from('friend_invites')
-        .select('id, inviter_id, status, expires_at')
+        .select('id, inviter_id')
         .eq('token', token)
         .maybeSingle();
       if (inviteError || !invite) {
@@ -37,19 +37,14 @@ const InviteFriend = () => {
         setLoading(false);
         return;
       }
-      if (invite.status === 'accepted') {
-        setError(t('inviteFriend.alreadyAccepted', 'This invite has already been used.'));
-        setLoading(false);
-        return;
-      }
-      if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-        setError(t('inviteFriend.invalid', 'This invite has expired.'));
-        setLoading(false);
-        return;
-      }
       // Get inviter profile
       const { data: inviterProfile } = await getProfile(invite.inviter_id);
-      setInviter(inviterProfile);
+      if (inviterProfile) {
+        setInviter({
+          fullName: inviterProfile.fullname ?? '',
+          emoji: inviterProfile.emoji ?? undefined,
+        });
+      }
       setLoading(false);
     };
     checkInvite();

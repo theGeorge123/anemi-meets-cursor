@@ -47,7 +47,11 @@ interface Invitation {
 
 function isProfile(obj: unknown): obj is Profile {
   return (
-    typeof obj === 'object' && obj !== null && 'id' in obj && 'fullName' in obj && 'email' in obj
+    typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    ('fullName' in obj || 'fullname' in obj) &&
+    'email' in obj
   );
 }
 
@@ -189,11 +193,17 @@ const Account = () => {
           setUser(profileData);
           if (profileData.emoji) setSelectedEmoji(profileData.emoji);
           if (profileData.age !== undefined && profileData.age !== null) setAge(profileData.age);
-          setWantsUpdates(!!profileData.wantsUpdates);
-          setWantsReminders(profileData.wantsReminders !== false);
-          setWantsNotifications(!!profileData.wantsNotifications);
-          setIsPrivate(!!profileData.isPrivate);
-          setPreferences(profileData.preferences || {});
+          setWantsUpdates(!!profileData.wantsupdates);
+          setWantsReminders(profileData.wantsreminders !== false);
+          setWantsNotifications(!!profileData.wantsnotifications);
+          setIsPrivate(!!profileData.isprivate);
+          setPreferences(
+            (profileData.cafe_preferences as {
+              tags?: string[];
+              price?: string;
+              [key: string]: unknown;
+            }) || {},
+          );
           setPreferredLanguage(profileData.preferred_language || 'en');
         } else {
           setUser(null);
@@ -272,11 +282,11 @@ const Account = () => {
     const { error } = await supabase
       .from('profiles')
       .update({
-        wantsUpdates,
-        wantsReminders,
-        wantsNotifications,
-        isPrivate,
-        preferences,
+        wantsupdates: wantsUpdates,
+        wantsreminders: wantsReminders,
+        wantsnotifications: wantsNotifications,
+        isprivate: isPrivate,
+        cafe_preferences: preferences,
       })
       .eq('id', user.id);
     if (error) {
@@ -376,11 +386,11 @@ const Account = () => {
       email: editEmail,
       age: sanitizedAge,
       preferred_language: preferredLanguage,
-      wantsUpdates,
-      wantsReminders,
-      wantsNotifications,
-      isPrivate,
-      preferences,
+      wantsupdates: wantsUpdates,
+      wantsreminders: wantsReminders,
+      wantsnotifications: wantsNotifications,
+      isprivate: isPrivate,
+      cafe_preferences: preferences,
     };
     const { error } = await supabase.from('profiles').update(updateObj).eq('id', user.id);
     if (!error) {
@@ -408,7 +418,7 @@ const Account = () => {
     setPreferences((prev) => ({ ...prev, tags: newTags }));
     await supabase
       .from('profiles')
-      .update({ preferences: { ...preferences, tags: newTags } })
+      .update({ cafe_preferences: { ...preferences, tags: newTags } })
       .eq('id', user.id);
   };
 
@@ -417,7 +427,7 @@ const Account = () => {
     setPreferences((prev) => ({ ...prev, price }));
     await supabase
       .from('profiles')
-      .update({ preferences: { ...preferences, price } })
+      .update({ cafe_preferences: { ...preferences, price } })
       .eq('id', user.id);
   };
 
