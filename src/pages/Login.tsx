@@ -120,30 +120,6 @@ const Login = () => {
     if (error) {
       setError(normalizeAuthError(t, error));
     } else {
-      // Beta check after successful login
-      if (signInData.user?.email) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_beta_user')
-          .eq('id', signInData.user.id)
-          .single();
-
-        if (!profile?.is_beta_user) {
-          setBetaToast({
-            message: t('beta.notAccepted', {
-              defaultValue:
-                "Good coffee takes time! ☕️ You're on our VIP list, but we're still brewing. We'll send you an invite the moment it's ready. Hang tight!",
-            }),
-            type: 'info',
-          });
-          setTimeout(() => {
-            supabase.auth.signOut();
-            setBetaToast(null);
-          }, 3500);
-          setLoading(false);
-          return;
-        }
-      }
       navigate('/dashboard');
     }
     setLoading(false);
