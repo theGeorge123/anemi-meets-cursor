@@ -113,7 +113,7 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
     });
