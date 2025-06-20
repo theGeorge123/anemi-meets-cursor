@@ -235,6 +235,7 @@ export const en = {
 
   login: {
     title: 'Ready to log in? 👋',
+    alreadyLoggedIn: "You're already logged in! 🎉",
     subtitle: 'Ready for more coffee adventures? Log in below!',
     welcomeBack: "You're in! ☕️",
     welcomeDesc: "Pop in your details and let's get you back to your meetups.",

@@ -263,6 +263,7 @@ export const nl = {
 
   login: {
     title: 'Welkom terug! 👋',
+    alreadyLoggedIn: 'Je bent al ingelogd! 🎉',
     subtitle: 'Klaar voor meer koffie-avonturen? Log hieronder in!',
     welcomeBack: 'Welkom terug',
     welcomeDesc: 'Fijn je weer te zien! Log in om verder te gaan.',

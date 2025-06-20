@@ -23,7 +23,12 @@ module.exports = [
       'plugin:react-hooks/recommended',
     ],
     rules: {
-      'react-refresh/only-export-components': 'off',
+      'react-refresh/only-export-components': [
+        'warn',
+        {
+          allowConstantExport: true,
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': 'off',
       'no-case-declarations': 'off',
