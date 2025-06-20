@@ -69,11 +69,12 @@ describe('BetaSignup', () => {
   });
 
   it('handles duplicate email error', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(supabase.from).mockReturnValue({
       insert: vi.fn().mockResolvedValue({
         data: null,
-        error: { message: 'duplicate key value violates unique constraint' }
-      })
+        error: { message: 'duplicate key value violates unique constraint' },
+      }),
     } as any);
 
     const input = screen.getByRole('textbox');
@@ -88,11 +89,12 @@ describe('BetaSignup', () => {
   });
 
   it('handles API error', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(supabase.from).mockReturnValue({
       insert: vi.fn().mockResolvedValue({
         data: null,
-        error: { message: 'Internal server error' }
-      })
+        error: { message: 'Internal server error' },
+      }),
     } as any);
 
     const input = screen.getByRole('textbox');

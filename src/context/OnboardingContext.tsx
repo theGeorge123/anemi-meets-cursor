@@ -1,14 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-
-interface OnboardingContextType {
-  isOnboardingComplete: boolean;
-  showOnboarding: boolean;
-  startOnboarding: () => void;
-  completeOnboarding: () => void;
-  skipOnboarding: () => void;
-}
-
-const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
+import React, { useState, useEffect } from 'react';
+import { OnboardingContext } from './onboarding';
 
 export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -51,12 +42,4 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
     </OnboardingContext.Provider>
   );
-};
-
-export const useOnboarding = () => {
-  const context = useContext(OnboardingContext);
-  if (context === undefined) {
-    throw new Error('useOnboarding must be used within an OnboardingProvider');
-  }
-  return context;
 };

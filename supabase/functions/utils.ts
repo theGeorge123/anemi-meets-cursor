@@ -10,6 +10,8 @@
  * Use validateEnvVars(['RESEND_API_KEY', ...]) at the top of your handler to ensure all required env vars are present.
  */
 
+import { Resend } from 'resend';
+
 export function escapeHtml(unsafe: string): string {
   return unsafe
     .replace(/&/g, '&amp;')
@@ -143,19 +145,16 @@ export async function sendEmail(options: {
   const from = options.from || 'noreply@anemimeets.com';
   // Try Resend SDK if available
   try {
-    // @ts-expect-error: Resend SDK may not be available in all functions
-    if (typeof Resend !== 'undefined') {
-      const resend = new Resend(RESEND_API_KEY);
-      await resend.emails.send({
-        from,
-        to: options.to,
-        subject: options.subject,
-        text: options.text,
-        html: options.html,
-        attachments: options.attachments,
-      });
-      return;
-    }
+    const resend = new Resend(RESEND_API_KEY);
+    await resend.emails.send({
+      from,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+      attachments: options.attachments,
+    });
+    return;
   } catch (e) {
     // Fallback to HTTP below
   }

@@ -25,7 +25,7 @@ interface Invitation {
 }
 
 // Helper to normalize selected_time to undefined if null
-function normalizeMeetups(data: any[]): Invitation[] {
+function normalizeMeetups(data: Invitation[]): Invitation[] {
   return data.map((m) => ({
     id: m.id,
     selected_date: m.selected_date,

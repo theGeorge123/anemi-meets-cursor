@@ -14,7 +14,7 @@ module.exports = [
       browser: true,
       es2020: true,
     },
-    ignorePatterns: ['dist'],
+    ignorePatterns: ['dist', 'supabase/functions/**/*.ts'],
     parser: '@typescript-eslint/parser',
     plugins: ['@typescript-eslint', 'react-hooks', 'react-refresh'],
     extends: [

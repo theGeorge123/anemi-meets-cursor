@@ -1,22 +1,7 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-
-interface NavigationContextType {
-  activePath: string;
-  isAuthenticated: boolean;
-  history: string[];
-  goBack: () => void;
-  setActivePath: (path: string) => void;
-}
-
-export const NavigationContext = createContext<NavigationContextType>({
-  activePath: '/',
-  isAuthenticated: false,
-  history: [],
-  goBack: () => {},
-  setActivePath: () => {},
-});
+import { NavigationContext } from './navigation';
 
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();

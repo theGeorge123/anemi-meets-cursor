@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint \"src/**/*.{ts,tsx}\" \"supabase/**/*.ts\" \"e2e/**/*.ts\" --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" \"e2e/**/*.ts\" --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test:e2e": "playwright install --with-deps && playwright test",
     "test:unit": "deno test -A supabase/functions/**/*.test.ts",

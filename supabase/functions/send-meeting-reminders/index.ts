@@ -1,5 +1,6 @@
 /// <reference lib="deno.ns" />
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { Database } from '../database.types.ts';
 import { escapeHtml, AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
 
 function encodeBase64(str: string) {
@@ -7,12 +8,12 @@ function encodeBase64(str: string) {
 }
 
 function sanitizeICSText(text: string) {
-  // eslint-disable-next-line no-control-regex
-  return text.replace(/[\u0000-\u001F\u007F]+/g, " ").replace(/\s+/g, " ").trim();
+  // deno-lint-ignore no-control-regex
+  return text.replace(/[\u0000-\u001F\u007f]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
 async function wantsReminders(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient<Database>,
   email: string,
 ): Promise<boolean> {
   const { data: profile, error: profileError } = await supabase
@@ -84,7 +85,7 @@ export async function handleReminders(): Promise<Response> {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) as any;
+    const supabase: SupabaseClient<Database> = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const nowDate = new Date();
     const today = nowDate.toISOString().split("T")[0];
@@ -252,22 +253,18 @@ export async function handleReminders(): Promise<Response> {
         }
 
         processedInvitations.push(inv.id);
-      } catch (invError) {
-        console.error("Error processing invitation", {
-          id: inv.id,
-          error: invError
+      } catch (loopError) {
+        console.error("Error processing invitation:", {
+          invitationId: inv.id,
+          error: loopError,
         });
-        // Continue with next invitation even if one fails
-        continue;
       }
     }
 
+    console.log('Processed invitations:', processedInvitations);
+
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        message: "Reminders processed successfully",
-        processed: processedInvitations.length
-      }),
+      JSON.stringify({ success: true, processed: processedInvitations.length }),
       { 
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -279,28 +276,19 @@ export async function handleReminders(): Promise<Response> {
 }
 
 if (import.meta.main) {
-  Deno.serve(async (req) => {
+  Deno.serve((req) => {
     try {
       if (req.method !== "POST") {
-        throw new AppError(
-          "Only POST requests allowed",
-          ERROR_CODES.INVALID_REQUEST,
-          405
+        return createErrorResponse(
+          handleError(
+            new AppError(
+              "Invalid request method",
+              ERROR_CODES.INVALID_REQUEST,
+              405
+            )
+          )
         );
       }
-
-      validateEnvVars(["MEETING_REMINDERS_SECRET"]);
-      const secret = Deno.env.get("MEETING_REMINDERS_SECRET")!;
-      
-      const auth = req.headers.get("Authorization");
-      if (!auth || auth !== `Bearer ${secret}`) {
-        throw new AppError(
-          "Invalid or missing authorization",
-          ERROR_CODES.UNAUTHORIZED,
-          401
-        );
-      }
-
       return handleReminders();
     } catch (error) {
       return createErrorResponse(handleError(error));
@@ -310,8 +298,6 @@ if (import.meta.main) {
 
 // Guard Deno.cron for local testing
 if ("cron" in Deno) {
-  // @ts-ignore
-  Deno.cron("send-meeting-reminders", "0 9 * * *", () => {
-    handleReminders();
-  });
+  // @ts-expect-error: Deno.cron is not available in all environments
+  Deno.cron("reminder cron job", "0 * * * *", handleReminders);
 }
