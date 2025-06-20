@@ -368,21 +368,6 @@ const Respond = () => {
     }
   };
 
-  // Helper om de dag van de week te krijgen
-  const getDayOfWeek = (dateString: string) => {
-    const date = new Date(dateString);
-    return t(
-      `weekdays.${date.toLocaleDateString(_i18n.language, { weekday: 'long' }).toLowerCase()}`,
-    );
-  };
-
-  const uniqueDates = React.useMemo(() => {
-    if (invitation && isDateTimeOptions(invitation.date_time_options)) {
-      return Array.from(new Set(invitation.date_time_options.map((opt) => opt.date)));
-    }
-    return [];
-  }, [invitation]);
-
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">

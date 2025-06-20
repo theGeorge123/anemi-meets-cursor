@@ -71,28 +71,6 @@ function getUUID() {
   });
 }
 
-// Helper to log cafe analytics
-async function logCafeAnalytics({
-  cafeId,
-  action,
-  userId = null,
-  sessionId = null,
-}: {
-  cafeId: string;
-  action: 'selected' | 'skipped';
-  userId?: string | null;
-  sessionId?: string | null;
-}) {
-  await supabase.from('cafe_analytics').insert([
-    {
-      cafe_id: cafeId,
-      action,
-      user_id: userId,
-      session_id: sessionId,
-    },
-  ]);
-}
-
 const CreateMeetup = () => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
@@ -175,7 +153,12 @@ const CreateMeetup = () => {
       if (session?.user?.id) {
         const { data: profile } = await getProfile(session.user.id);
         if (profile && profile.cafe_preferences) {
-          setUserCafePreferences(profile.cafe_preferences);
+          setUserCafePreferences(
+            profile.cafe_preferences as {
+              tags?: string[];
+              price_bracket?: string;
+            },
+          );
         }
       }
     };
@@ -419,18 +402,7 @@ const CreateMeetup = () => {
     while (newCafe === selectedCafe) {
       newCafe = cafes[Math.floor(Math.random() * cafes.length)];
     }
-    // Log skip event for analytics
-    if (selectedCafe) {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      await logCafeAnalytics({
-        cafeId: selectedCafe.id,
-        action: 'skipped',
-        userId: session?.user?.id || null,
-        // Optionally add a sessionId if you want to group events
-      });
-    }
+    // Skip analytics when user shuffles
     setSelectedCafe(newCafe);
     setShuffleCooldown(true);
     if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
