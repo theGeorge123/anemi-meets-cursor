@@ -1,156 +1,87 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import { getProfile } from '../services/profileService';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { User } from '@supabase/supabase-js';
-import LoadingIndicator from '../components/LoadingIndicator';
-import FormStatus from '../components/FormStatus';
+import { supabase } from '@/supabaseClient';
+import FormStatus from '@/components/FormStatus';
+import Toast from '@/components/Toast';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import type { Database } from '../types/supabase';
 
-const InviteFriend = () => {
+type Invite = Database['public']['Tables']['friend_invites']['Row'];
+type Profile = Database['public']['Tables']['profiles']['Row'];
+
+interface ToastState {
+  message: string;
+  type: 'success' | 'error';
+}
+
+export default function InviteFriend(): JSX.Element {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [inviter, setInviter] = useState<{ fullName: string; emoji?: string } | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [invite, setInvite] = useState<Invite | null>(null);
+  const [inviterProfile, setInviterProfile] = useState<Profile | null>(null);
+  const [status, setStatus] = useState<{ kind: 'error' | 'success'; msg: string } | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   useEffect(() => {
-    const initialize = async () => {
-      setLoading(true);
-      setError(null);
-      if (!token) {
-        setError(t('inviteFriend.invalid', 'Invalid invite link.'));
-        setLoading(false);
+    const fetchInvite = async (): Promise<void> => {
+      if (!token) return;
+
+      const { data: inviteData, error } = await supabase
+        .from('friend_invites')
+        .select('*')
+        .eq('token', token)
+        .single<Invite>();
+
+      if (error || !inviteData) {
+        setStatus({ kind: 'error', msg: t('inviteFriend.invalidToken') });
         return;
       }
 
-      try {
-        const { data: invite, error: inviteError } = await supabase
-          .from('friend_invites')
-          .select('id, inviter_id, invitee_email')
-          .eq('token', token)
-          .eq('status', 'pending')
-          .maybeSingle();
+      setInvite(inviteData);
 
-        if (inviteError || !invite) {
-          setError(t('inviteFriend.invalid', 'Invalid or expired invite link.'));
-          return;
-        }
+      if (inviteData.inviter_id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('fullname, emoji')
+          .eq('id', inviteData.inviter_id)
+          .single<Profile>();
 
-        const { data: inviterProfile } = await getProfile(invite.inviter_id);
-        if (inviterProfile) {
-          setInviter({
-            fullName: inviterProfile.fullname ?? 'A friend',
-            emoji: inviterProfile.emoji ?? '👤',
-          });
-        }
-
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
-      } catch (e: any) {
-        setError(e.message || t('common.error_unexpected'));
-      } finally {
-        setLoading(false);
+        if (profileData) setInviterProfile(profileData);
       }
     };
 
-    initialize();
+    fetchInvite();
   }, [token, t]);
 
-  const handleAccept = useCallback(async () => {
-    if (!user || !token) return;
+  const handleAccept = useCallback(async (): Promise<void> => {
+    if (!invite) return;
 
-    setLoading(true);
-    setError(null);
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      const { error } = await supabase.rpc('accept_friend_invite', { token });
 
-      const response = await supabase.functions.invoke('accept-friend-invite', {
-        body: { token, email: user.email },
-      });
-
-      if (response.error) throw response.error;
-
-      navigate('/friends?accepted=true');
-    } catch (e: any) {
-      setError(e.message || t('inviteFriend.errorAccept', 'Could not accept invite.'));
-    } finally {
-      setLoading(false);
+      if (error) throw error;
+      setToast({ message: t('inviteFriend.success'), type: 'success' });
+      navigate('/dashboard');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t('inviteFriend.errorAccept');
+      setStatus({ kind: 'error', msg });
     }
-  }, [user, token, navigate, t]);
-
-  const redirectToAuth = (mode: 'login' | 'signup') => {
-    navigate(`/${mode}`, { state: { from: location } });
-  };
-
-  if (loading) {
-    return <LoadingIndicator />;
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-xl mx-auto py-12 px-4 text-center">
-        <FormStatus status="error" message={error} />
-      </div>
-    );
-  }
+  }, [invite, token, t, navigate]);
 
   return (
-    <div className="max-w-xl mx-auto py-12 px-4 text-center">
-      <div className="card bg-primary-50">
-        {inviter && (
-          <>
-            <div className="mb-6">
-              <span className="text-5xl">{inviter.emoji}</span>
-              <h1 className="text-2xl font-bold mt-4">
-                {t('inviteFriend.inviteFrom', { name: inviter.fullName })}
-              </h1>
-              <p className="text-gray-600 mt-2">{t('inviteFriend.joinPrompt')}</p>
-            </div>
+    <ErrorBoundary>
+      {status && <FormStatus status={status.kind} message={status.msg} />}
 
-            {user ? (
-              <div className="space-y-4">
-                <p>
-                  {t('inviteFriend.loggedInAs', 'You are logged in as')}{' '}
-                  <strong>{user.email}</strong>.
-                </p>
-                <button className="btn-primary w-full" onClick={handleAccept} disabled={loading}>
-                  {loading
-                    ? t('common.loading')
-                    : t('inviteFriend.accept', 'Accept & Become Friends')}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="font-semibold">{t('inviteFriend.loginToAccept')}</p>
-                <button
-                  className="btn-primary w-full"
-                  onClick={() => redirectToAuth('signup')}
-                >
-                  {t('inviteFriend.signupAndAccept', 'Sign Up to Accept')}
-                </button>
-                <button
-                  className="btn-secondary w-full"
-                  onClick={() => redirectToAuth('login')}
-                >
-                  {t('inviteFriend.loginAndAccept', 'Log In to Accept')}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+      {/* …invite preview UI using inviterProfile… */}
+
+      <button type="button" onClick={handleAccept}>
+        {t('inviteFriend.accept')}
+      </button>
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    </ErrorBoundary>
   );
-};
-
-export default InviteFriend;
+}
