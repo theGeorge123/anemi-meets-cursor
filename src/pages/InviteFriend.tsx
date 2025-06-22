@@ -5,7 +5,7 @@ import { supabase } from '@/supabaseClient';
 import FormStatus from '@/components/FormStatus';
 import Toast from '@/components/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import type { Database } from '../types/supabase';
+import type { Database } from '@/types/supabase';
 
 type Invite = Database['public']['Tables']['friend_invites']['Row'];
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -21,7 +21,7 @@ export default function InviteFriend(): JSX.Element {
   const navigate = useNavigate();
 
   const [invite, setInvite] = useState<Invite | null>(null);
-  const [inviterProfile, setInviterProfile] = useState<Profile | null>(null);
+  // const [inviterProfile, setInviterProfile] = useState<Profile | null>(null);
   const [status, setStatus] = useState<{ kind: 'error' | 'success'; msg: string } | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
 
@@ -43,13 +43,12 @@ export default function InviteFriend(): JSX.Element {
       setInvite(inviteData);
 
       if (inviteData.inviter_id) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('fullname, emoji')
-          .eq('id', inviteData.inviter_id)
-          .single<Profile>();
-
-        if (profileData) setInviterProfile(profileData);
+        // const { data: profileData } = await supabase
+        //   .from('profiles')
+        //   .select('fullname, emoji')
+        //   .eq('id', inviteData.inviter_id)
+        //   .single<Profile>();
+        // if (profileData) setInviterProfile(profileData);
       }
     };
 

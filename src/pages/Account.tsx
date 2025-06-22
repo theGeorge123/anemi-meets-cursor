@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/supabaseClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import FormStatus from '@/components/FormStatus';
+import type { Database } from '@/types/supabase';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type UpdateableField = 'fullname' | 'emoji' | 'wantsupdates' | 'wantsreminders' | 'isprivate';
@@ -27,11 +28,15 @@ export default function Account(): JSX.Element {
   const handleUpdate = useCallback(
     async (field: UpdateableField, value: string | boolean): Promise<void> => {
       setStatus(null);
+      if (!profile?.id) {
+        setStatus({ kind: 'error', msg: 'User profile not found.' });
+        return;
+      }
       try {
         const { error } = await supabase
           .from('profiles')
           .update({ [field]: value })
-          .eq('id', profile?.id);
+          .eq('id', profile.id);
 
         if (error) throw error;
         setProfile((prev) => (prev ? ({ ...prev, [field]: value } as Profile) : prev));

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/supabaseClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import FormStatus from '@/components/FormStatus';
+import type { Database } from '@/types/supabase';
 
 type Meetup = Database['public']['Tables']['meetups']['Row'];
 type Cafe = Database['public']['Tables']['cafes']['Row'];
