@@ -5,17 +5,16 @@ import { useTranslation } from 'react-i18next';
 import Toast from '../components/Toast';
 import { getMeetupCount } from '../services/invitationService';
 import { Database } from '../types/supabase';
-import { useAuth } from '../hooks/useAuth';
-import type { Meetup, Profile } from '../types/supabase';
+import { hasBadge, awardBadge } from '../services/badgeService';
 
-type Meetup = Database['public']['Tables']['invitations']['Row'];
+type MeetupRow = Database['public']['Tables']['invitations']['Row'];
 
 const LOCAL_CACHE_KEY = 'meetups_cache_v1';
 
 import type { TFunction } from 'i18next';
 
 interface MeetupListItemProps {
-  meetup: Meetup;
+  meetup: MeetupRow;
   onView: (id: string) => void;
   onJoin: (id: string) => void;
   t: TFunction;
@@ -119,7 +118,7 @@ const MeetupListItem = React.memo(function MeetupListItem({
 const Meetups: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation(['meetups', 'common']);
-  const [meetups, setMeetups] = useState<Meetup[]>([]);
+  const [meetups, setMeetups] = useState<MeetupRow[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(true);

@@ -7,9 +7,9 @@ import BetaSignup from './BetaSignup';
 vi.mock('../supabaseClient', () => ({
   supabase: {
     from: vi.fn(() => ({
-      insert: vi.fn().mockResolvedValue({ data: null, error: null })
-    }))
-  }
+      insert: vi.fn().mockResolvedValue({ data: null, error: null }),
+    })),
+  },
 }));
 
 // Mock react-i18next
@@ -25,13 +25,14 @@ vi.mock('react-i18next', () => ({
         'betaSignup.sending': 'Joining...',
         'betaSignup.success': "You're on the list! We'll let you know when you can join.",
         'betaSignup.error': 'Oops! Something went wrong. Please try again.',
-        'betaSignup.alreadyOnList': "You're already on the waitlist! We'll let you know when you can join.",
+        'betaSignup.alreadyOnList':
+          "You're already on the waitlist! We'll let you know when you can join.",
         'betaSignup.invalidEmail': 'Please enter a valid email address.',
-        'close': 'Close'
+        close: 'Close',
       };
       return translations[key] || key;
-    }
-  })
+    },
+  }),
 }));
 
 describe('BetaSignup', () => {
@@ -64,18 +65,19 @@ describe('BetaSignup', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent("You're on the list! We'll let you know when you can join.");
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        "You're on the list! We'll let you know when you can join.",
+      );
     });
   });
 
   it('handles duplicate email error', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(supabase.from).mockReturnValue({
       insert: vi.fn().mockResolvedValue({
         data: null,
         error: { message: 'duplicate key value violates unique constraint' },
       }),
-    } as any);
+    } as unknown as ReturnType<typeof supabase.from>);
 
     const input = screen.getByRole('textbox');
     const submitButton = screen.getByRole('button');
@@ -84,18 +86,19 @@ describe('BetaSignup', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent("You're already on the waitlist! We'll let you know when you can join.");
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        "You're already on the waitlist! We'll let you know when you can join.",
+      );
     });
   });
 
   it('handles API error', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(supabase.from).mockReturnValue({
       insert: vi.fn().mockResolvedValue({
         data: null,
         error: { message: 'Internal server error' },
       }),
-    } as any);
+    } as unknown as ReturnType<typeof supabase.from>);
 
     const input = screen.getByRole('textbox');
     const submitButton = screen.getByRole('button');
@@ -104,7 +107,9 @@ describe('BetaSignup', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Oops! Something went wrong. Please try again.');
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Oops! Something went wrong. Please try again.',
+      );
     });
   });
-}); 
+});
