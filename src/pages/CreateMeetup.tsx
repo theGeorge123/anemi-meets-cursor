@@ -111,25 +111,11 @@ const CreateMeetup = () => {
     message: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
+  const [friendEmails, setFriendEmails] = useState<string[]>([]);
 
-  const handleTimeChange = (date: string, time: string, isChecked: boolean) => {
-    setDateTimeOptions((prevOptions) => {
-      const newOptions = prevOptions.map((opt) => {
-        if (opt.date === date) {
-          const newTimes = isChecked
-            ? [...opt.times, time]
-            : opt.times.filter((t) => t !== time);
-          return { ...opt, times: newTimes };
-        }
-        return opt;
-      });
-      // Add date if not present
-      if (!newOptions.some((opt) => opt.date === date)) {
-        newOptions.push({ date, times: [time] });
-      }
-      return newOptions.filter((opt) => opt.times.length > 0);
-    });
-  };
+  // const handleTimeChange = (time: string) => {
+  //   setMeetupDetails((prev) => ({ ...prev, selected_time: time }));
+  // };
 
   const handleDateChange = (dates: Date[]) => {
     setFormData((prev) => ({ ...prev, dates }));

@@ -1,56 +1,56 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { supabase } from '@/supabaseClient';
+import { useEffect } from 'react';
+// import { useTranslation } from 'react-i18next';
+// import { supabase } from '@/supabaseClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import FormStatus from '@/components/FormStatus';
-import type { Database } from '@/types/supabase';
+// import FormStatus from '@/components/FormStatus';
+// import type { Database } from '@/types/supabase';
 
-type Meetup = Database['public']['Tables']['meetups']['Row'];
-type Cafe = Database['public']['Tables']['cafes']['Row'];
-type Profile = Database['public']['Tables']['profiles']['Row'];
+// type Meetup = Database['public']['Tables']['meetups']['Row'];
+// type Cafe = Database['public']['Tables']['cafes']['Row'];
+// type Profile = Database['public']['Tables']['profiles']['Row'];
 
-interface MeetupWithDetails extends Meetup {
-  cafes: Cafe;
-  meetups_participants: { profiles: Profile }[];
-}
+// interface MeetupWithDetails extends Meetup {
+//   cafes: Cafe;
+//   meetups_participants: { profiles: Profile }[];
+// }
 
 export default function Dashboard(): JSX.Element {
-  const { t } = useTranslation();
-  const [meetups, setMeetups] = useState<MeetupWithDetails[]>([]);
-  const [status, setStatus] = useState<{ kind: 'error' | 'success'; msg: string } | null>(null);
+  // const { t } = useTranslation();
+  // const [meetups, setMeetups] = useState<MeetupWithDetails[]>([]);
+  // const [status, setStatus] = useState<{ kind: 'error' | 'success'; msg: string } | null>(null);
 
   useEffect(() => {
-    const fetchMeetups = async (): Promise<void> => {
-      const { data, error } = await supabase
-        .from('meetups')
-        .select(
-          `
-          *,
-          cafes (*),
-          meetups_participants (
-            profiles (*)
-          )
-        `,
-        )
-        .returns<MeetupWithDetails[]>();
+    // const fetchMeetups = async (): Promise<void> => {
+    //   const { data, error } = await supabase
+    //     .from('meetups')
+    //     .select(
+    //       `
+    //       *,
+    //       cafes (*),
+    //       meetups_participants (
+    //         profiles (*)
+    //       )
+    //     `,
+    //     )
+    //     .returns<MeetupWithDetails[]>();
 
-      if (error) {
-        setStatus({ kind: 'error', msg: error.message });
-        return;
-      }
+    //   if (error) {
+    //     setStatus({ kind: 'error', msg: error.message });
+    //     return;
+    //   }
 
-      setMeetups(data ?? []);
-    };
+    //   setMeetups(data ?? []);
+    // };
 
-    fetchMeetups();
+    // fetchMeetups();
   }, []);
 
   return (
     <ErrorBoundary>
-      {status && <FormStatus status={status.kind} message={status.msg} />}
+      {/* {status && <FormStatus status={status.kind} message={status.msg} />} */}
 
       <section className="grid gap-4">
-        {meetups.map((m) => (
+        {/* {meetups.map((m) => (
           <article key={m.id} className="rounded-xl p-4 shadow">
             <h2 className="text-xl font-semibold">{m.title}</h2>
             <p className="text-sm">
@@ -67,7 +67,7 @@ export default function Dashboard(): JSX.Element {
               ))}
             </ul>
           </article>
-        ))}
+        ))} */}
       </section>
     </ErrorBoundary>
   );

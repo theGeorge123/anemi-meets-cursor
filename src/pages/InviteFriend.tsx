@@ -8,7 +8,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import type { Database } from '@/types/supabase';
 
 type Invite = Database['public']['Tables']['friend_invites']['Row'];
-type Profile = Database['public']['Tables']['profiles']['Row'];
+// type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface ToastState {
   message: string;
@@ -59,7 +59,7 @@ export default function InviteFriend(): JSX.Element {
     if (!invite) return;
 
     try {
-      const { error } = await supabase.rpc('accept_friend_invite', { token });
+      const { error } = await supabase.rpc('accept_friend_invite' as any, { token });
 
       if (error) throw error;
       setToast({ message: t('inviteFriend.success'), type: 'success' });

@@ -1,16 +1,16 @@
-import { useCallback, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { supabase } from '@/supabaseClient';
+import { useState } from 'react';
+// import { useTranslation } from 'react-i18next';
+// import { supabase } from '@/supabaseClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import FormStatus from '@/components/FormStatus';
 
-interface ScheduleResponse {
-  id: string;
-  created_at: string;
-}
+// interface ScheduleResponse {
+//   id: string;
+//   created_at: string;
+// }
 
 export default function SoloAdventure(): JSX.Element {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
 
   const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
