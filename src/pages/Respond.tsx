@@ -238,6 +238,13 @@ const Respond = () => {
         ) : (
           <p className="text-gray-500">{t('invite.cafeInfoPending')}</p>
         )}
+        {/* {cafe && (
+          <div className="mt-4 prose prose-sm max-w-none">
+            {cafe.story && <p>{cafe.story}</p>}
+            {cafe.specialty && <p>Specialty: {cafe.specialty}</p>}
+            {cafe.mission && <p>Mission: {cafe.mission}</p>}
+          </div>
+        )} */}
       </div>
       <h1 className="text-3xl font-bold text-primary-600 mb-2">{t('respond.title')}</h1>
       <p className="text-gray-600 mb-2">{t('respond.subtitle')}</p>
