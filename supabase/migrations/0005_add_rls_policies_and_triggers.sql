@@ -32,11 +32,11 @@ ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow guest to view invitation by token" ON public.invitations FOR SELECT TO anondummy, authenticated USING ((token)::text = (current_setting('request.headers'::text, true))::jsonb ->> 'x-invitation-token'::text));
 
-CREATE POLICY "Allow users to delete their own invitations" ON public.invitations FOR DELETE USING ((auth.uid() = sender_id));
+CREATE POLICY "Allow users to delete their own invitations" ON public.invitations FOR DELETE USING ((auth.uid() = inviter_id));
 
-CREATE POLICY "Allow users to read invitations they are involved in" ON public.invitations FOR SELECT USING (((auth.uid() = sender_id) OR (auth.uid() = receiver_id)));
+CREATE POLICY "Allow users to read invitations they are involved in" ON public.invitations FOR SELECT USING (((auth.uid() = inviter_id) OR (auth.uid() = invitee_id)));
 
-CREATE POLICY "Allow users to update their own invitations" ON public.invitations FOR UPDATE USING ((auth.uid() = sender_id)) WITH CHECK ((auth.uid() = sender_id));
+CREATE POLICY "Allow users to update their own invitations" ON public.invitations FOR UPDATE USING ((auth.uid() = inviter_id)) WITH CHECK ((auth.uid() = inviter_id));
 
 CREATE POLICY "Enable insert for authenticated users only" ON public.invitations FOR INSERT TO authenticated WITH CHECK (true);
 

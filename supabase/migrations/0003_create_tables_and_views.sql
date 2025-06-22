@@ -103,8 +103,8 @@ CREATE TABLE public.friendships (
 
 CREATE TABLE public.invitations (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
-    sender_id uuid NOT NULL,
-    receiver_id uuid,
+    inviter_id uuid NOT NULL,
+    invitee_id uuid,
     meetup_date timestamp with time zone NOT NULL,
     status public.invitation_status DEFAULT 'pending'::public.invitation_status NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
