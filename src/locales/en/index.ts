@@ -136,6 +136,11 @@ export const en = {
     copySuccess: 'Link copied! Go spread the coffee joy! ☕️🎉',
     copyError: 'Oops, copying failed! Try again or just shout the link across the room!',
     copy: 'Copy link',
+    shareTitle: 'You have a coffee invite!',
+    shareText: 'I want to meet up for coffee, are you in?',
+    shareTextWithCafe: 'I want to meet up for coffee at {{cafe}}, are you in?',
+    errorNotFound: 'This invitation link is invalid or expired.',
+    allProposedTimes: 'All suggested dates & times:',
   },
   respond: {
     title: "You've got a coffee invite! ☕️🥳",
@@ -156,6 +161,7 @@ export const en = {
     chooseCafeInfo: 'Shuffle for a surprise café!',
     noCafeMatch:
       "Oops! We couldn't find a café that matches your preferences. Maybe try relaxing your filters, or just go wild and pick any spot! ☕️✨",
+    whyThisCafe: 'Why this café?',
   },
   dashboard: {
     title: 'Your Dashboard',
@@ -233,6 +239,11 @@ export const en = {
     signupSuccess: "Account created! You're all set! ✨",
   },
   sessionExpiresSoon: 'Your session will expire soon. Please log in again.',
+  verifiedCafe: {
+    specialty: 'Specialty',
+    mission: 'Our Mission',
+    viewStory: 'View their story',
+  },
 
   login: {
     title: 'Ready to log in? 👋',

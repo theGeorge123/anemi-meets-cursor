@@ -215,12 +215,7 @@ const Invite = () => {
               {t(
                 'invite.shareInstructions',
                 'Share this link with your friend and let the coffee magic happen! ☕✨',
-              ) === 'invite.shareInstructions'
-                ? 'Share this link with your friend and let the coffee magic happen! ☕✨'
-                : t(
-                    'invite.shareInstructions',
-                    'Share this link with your friend and let the coffee magic happen! ☕✨',
-                  )}
+              )}
             </p>
             <div className="bg-white p-4 rounded-lg border border-primary-200 overflow-x-auto">
               <code className="text-primary-600 break-all text-sm sm:text-base">
@@ -236,9 +231,7 @@ const Invite = () => {
                 className="btn-primary w-full sm:w-auto py-3 px-6 text-lg rounded-lg"
                 disabled={!inviteLink}
               >
-                {t('invite.share', 'Share the magic! ✨') === 'invite.share'
-                  ? 'Share the magic! ✨'
-                  : t('invite.share', 'Share the magic! ✨')}
+                {t('invite.share', 'Share the magic! ✨')}
               </button>
             ) : (
               <button
@@ -246,9 +239,7 @@ const Invite = () => {
                 className="btn-secondary w-full sm:w-auto py-3 px-6 text-lg rounded-lg"
                 disabled={!inviteLink}
               >
-                {t('invite.copyLink', 'Copy link & send! 📋') === 'invite.copyLink'
-                  ? 'Copy link & send! 📋'
-                  : t('invite.copyLink', 'Copy link & send! 📋')}
+                {t('invite.copyLink', 'Copy link & send! 📋')}
               </button>
             )}
           </div>

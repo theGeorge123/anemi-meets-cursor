@@ -119,6 +119,11 @@ export const nl = {
     copyError: 'Oeps, kopiëren mislukt! Probeer het nog eens of roep de link gewoon door de kamer!',
     description: 'Share this link so your friend can confirm.',
     copy: 'Copy link',
+    shareTitle: 'Je hebt een koffie-uitnodiging!',
+    shareText: 'Ik wil graag koffie met je drinken, ben je erbij?',
+    shareTextWithCafe: 'Ik wil graag koffie met je drinken bij {{cafe}}, ben je erbij?',
+    errorNotFound: 'Deze uitnodigingslink is ongeldig of verlopen.',
+    allProposedTimes: 'Alle voorgestelde data & tijden:',
     inviteFriend: {
       stayStranger: 'Blijf een onbekende',
       joinFamily: 'Word lid van de familie',
@@ -186,6 +191,7 @@ export const nl = {
     chooseCafeInfo: 'Shuffle voor een verrassingscafé!',
     noCafeMatch:
       'Oeps! We konden geen café vinden dat bij jouw voorkeuren past. Probeer je filters te versoepelen, of kies gewoon lekker een willekeurige plek! ☕️✨',
+    whyThisCafe: 'Waarom dit café?',
   },
   dashboard: {
     title: 'Jouw Dashboard',
@@ -289,6 +295,7 @@ export const nl = {
     passwordPlaceholder: 'Je geheime wachtwoord',
     loginButton: 'Laat me binnen!',
     googleButton: 'Inloggen met Google',
+    submitButton: 'Lid worden van de wachtlijst',
   },
   signup: {
     title: 'Doe mee met Anemi Meets! 👋',
@@ -395,6 +402,7 @@ export const nl = {
     error: 'Kon je status niet controleren. Probeer het opnieuw.',
     cta: 'Ik heb bevestigd!',
     notReceived: 'Geen mail ontvangen? Kijk in je spam of probeer opnieuw aan te melden.',
+    submitButton: 'Lid worden van de wachtlijst',
   },
   changeEmailConfirm: {
     title: 'Je e-mailadres is gewijzigd!',
@@ -447,5 +455,10 @@ export const nl = {
     notAccepted:
       'Goede koffie heeft tijd nodig! ☕️ Je staat op onze VIP-lijst, maar we zijn nog aan het brouwen. We sturen je een uitnodiging zodra het klaar is. Nog even geduld!',
     submitButton: 'Lid worden van de wachtlijst',
+  },
+  verifiedCafe: {
+    specialty: 'Specialiteit',
+    mission: 'Onze missie',
+    viewStory: 'Bekijk hun verhaal',
   },
 };
