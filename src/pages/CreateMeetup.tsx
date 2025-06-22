@@ -522,11 +522,11 @@ const CreateMeetup = () => {
       {step === 1 && (
         <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
           <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">
-            {t('meetup.contactInfo', "Let's get to know you!")}
+            {t('meetup.contactInfo')}
           </h2>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2" htmlFor="name">
-              {t('meetup.nameLabel', "What's your beautiful name? (Or your nickname!)")}
+              {t('meetup.nameLabel')}
             </label>
             <input
               id="name"
@@ -575,7 +575,7 @@ const CreateMeetup = () => {
               disabled={!formData.name || (!user && !formData.email)}
               className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
             >
-              {t('meetup.continue', 'Continue')}
+              {t('meetup.continue')}
             </button>
           </div>
         </div>
