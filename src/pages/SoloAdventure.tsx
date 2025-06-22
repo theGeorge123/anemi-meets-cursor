@@ -12,8 +12,8 @@ import FormStatus from '@/components/FormStatus';
 export default function SoloAdventure(): JSX.Element {
   // const { t } = useTranslation();
 
-  const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [scheduleSuccess] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   // const handleSchedule = useCallback(async (cafeId: string) => {
   //   setError(null);

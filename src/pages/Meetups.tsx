@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import Toast from '../components/Toast';
-import { awardBadge, hasBadge } from '../services/badgeService';
 import { getMeetupCount } from '../services/invitationService';
 import { Database } from '../types/supabase';
+import { useAuth } from '../hooks/useAuth';
+import type { Meetup, Profile } from '../types/supabase';
 
 type Meetup = Database['public']['Tables']['invitations']['Row'];
 

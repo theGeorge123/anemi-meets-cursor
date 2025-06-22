@@ -111,35 +111,15 @@ const CreateMeetup = () => {
     message: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
-  const [friendEmails, setFriendEmails] = useState<string[]>([]);
 
-  // const handleTimeChange = (time: string) => {
-  //   setMeetupDetails((prev) => ({ ...prev, selected_time: time }));
+  // const handleDateChange = (dates: Date[]) => {
+  //   const newOptions = dates.map((d) => {
+  //     const iso = d.toISOString().split('T')[0];
+  //     const existing = dateTimeOptions.find((opt) => opt.date === iso);
+  //     return existing || { date: iso, times: [] };
+  //   });
+  //   setDateTimeOptions(newOptions);
   // };
-
-  const handleDateChange = (dates: Date[]) => {
-    setFormData((prev) => ({ ...prev, dates }));
-    const dateStrings = dates.map(
-      (d) =>
-        d.getFullYear() +
-        '-' +
-        String(d.getMonth() + 1).padStart(2, '0') +
-        '-' +
-        String(d.getDate()).padStart(2, '0'),
-    );
-
-    setDateTimeOptions((prevOptions) => {
-      // Filter out options for dates that are no longer selected
-      const newOptions = prevOptions.filter((opt) => dateStrings.includes(opt.date));
-      // Add new options for newly selected dates
-      dateStrings.forEach((dateStr) => {
-        if (!newOptions.some((opt) => opt.date === dateStr)) {
-          newOptions.push({ date: dateStr, times: [] });
-        }
-      });
-      return newOptions;
-    });
-  };
 
   // Fetch cities (no longer restricted to just Rotterdam)
   useEffect(() => {
