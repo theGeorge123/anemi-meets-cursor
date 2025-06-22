@@ -47,8 +47,61 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
       throw new AppError('Email mismatch', ERROR_CODES.UNAUTHORIZED, 403);
     }
 
-    // The rest of the logic to accept the invite will be handled via RPC
-    // to ensure atomicity and security. For now, we return success.
+    const { data: invite, error: inviteError } = await supabase
+      .from('friend_invites')
+      .select('id, inviter_id, invitee_email, status, expires_at')
+      .eq('token', token)
+      .maybeSingle();
+
+    if (
+      inviteError ||
+      !invite ||
+      invite.invitee_email !== email ||
+      invite.status !== 'pending' ||
+      (invite.expires_at && new Date(invite.expires_at) < new Date())
+    ) {
+      throw new AppError(
+        'Invalid or expired invite token',
+        ERROR_CODES.NOT_FOUND,
+        404,
+      );
+    }
+
+    const { error: updateError } = await supabase
+      .from('friend_invites')
+      .update({
+        status: 'accepted',
+        accepted_at: new Date().toISOString(),
+      })
+      .eq('id', invite.id);
+
+    if (updateError) {
+      throw new AppError(
+        'Could not update invite',
+        ERROR_CODES.DATABASE_ERROR,
+        500,
+        updateError,
+      );
+    }
+
+    const { error: friendshipError } = await supabase
+      .from('friendships')
+      .upsert(
+        [
+          { user_id: invite.inviter_id, friend_id: user.id, status: 'accepted' },
+          { user_id: user.id, friend_id: invite.inviter_id, status: 'accepted' },
+        ],
+        { onConflict: 'user_id,friend_id' },
+      );
+
+    if (friendshipError) {
+      throw new AppError(
+        'Could not create friendship',
+        ERROR_CODES.DATABASE_ERROR,
+        500,
+        friendshipError,
+      );
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
