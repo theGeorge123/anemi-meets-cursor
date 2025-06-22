@@ -34,6 +34,10 @@ const Respond = () => {
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const savedEmail = localStorage.getItem(UPDATES_EMAIL_KEY);
     if (savedEmail) {
       setEmail(savedEmail);
@@ -205,7 +209,7 @@ const Respond = () => {
             <a href="/signup" className="btn-secondary w-full mb-2">
               {t('respond.createAccountBtn')}
             </a>
-            <button className="btn-primary w-full" onClick={() => (window.location.href = '/')}>
+            <button className="btn-secondary w-full" onClick={() => (window.location.href = '/')}>
               {t('respond.backToHome')}
             </button>
           </div>
@@ -248,14 +252,10 @@ const Respond = () => {
       </div>
       <h1 className="text-3xl font-bold text-primary-600 mb-2">{t('respond.title')}</h1>
       <p className="text-gray-600 mb-2">{t('respond.subtitle')}</p>
-      <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-md p-4 mb-8 text-yellow-900 text-base font-medium shadow-sm">
-        <span role="img" aria-label="coffee">
-          ☕️
-        </span>{' '}
-        {t('respond.explanation')}
+      <div className="bg-primary-50 rounded-xl p-4 mb-4 text-center shadow">
+        <p className="text-primary-700 font-medium text-base">{t('respond.explanation')}</p>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="mb-6 bg-white p-4 rounded-xl border border-primary-200">
           <h3 className="text-lg font-semibold text-primary-700 mb-4">{t('respond.chooseTime')}</h3>
           <div className="space-y-4">
@@ -304,7 +304,7 @@ const Respond = () => {
           <input
             type="email"
             id="email"
-            className="input-field mt-1"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -317,24 +317,21 @@ const Respond = () => {
 
         <div className="flex items-center">
           <input
-            type="checkbox"
             id="updates"
+            name="updates"
+            type="checkbox"
             checked={wantsUpdates}
             onChange={(e) => setWantsUpdates(e.target.checked)}
-            className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
           />
-          <label htmlFor="updates" className="ml-2 text-sm text-gray-700">
+          <label htmlFor="updates" className="ml-2 block text-sm text-gray-900">
             {t('respond.updatesOptIn')}
           </label>
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? t('common.loading') : t('respond.btn_confirm')}
+        <button type="submit" className="btn-primary w-full" disabled={!selectedTimeSlot || !email}>
+          {t('respond.btn_confirm')}
         </button>
-        <FormStatus
-          status={loading ? 'loading' : submitted ? 'success' : error ? 'error' : 'idle'}
-          message={confirmationInfo ? (t('respond.success') as string) || '' : error || ''}
-        />
       </form>
     </main>
   );

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { getProfile } from '../services/profileService';
 import { getFriends } from '../services/friendshipService';
@@ -15,17 +15,15 @@ import OnboardingModal from '../features/dashboard/components/OnboardingModal';
 import NavigationBarWithBoundary from '../components/NavigationBar';
 import type { Tables, Database } from '../types/supabase';
 import { formatDutchDate } from '../utils/date';
+import { CalendarPlus, Coffee, UserCircle } from 'lucide-react';
 
 interface Invitation {
-  id: string;
+  id: number;
   selected_date: string;
-  selected_time?: string | null;
-  cafe_id?: string | null;
-  cafe_name?: string | null;
-  status?: string | null;
-  email_b?: string | null;
-  invitee_id?: string | null;
-  email_a?: string | null;
+  selected_time: string;
+  cafe_id: number;
+  status: string;
+  email_b: string;
 }
 
 // Helper to normalize selected_time to undefined if null
@@ -44,6 +42,9 @@ function normalizeMeetups(data: Invitation[]): Invitation[] {
 }
 
 type Profile = Tables<'profiles'>;
+type Meetup = Tables<'meetups'> & { meetups_participants: Participants[] };
+type Participants = Tables<'meetups_participants'> & { profiles: Profile };
+type SoloAdventureWithCafe = Tables<'solo_adventures'> & { cafes: Tables<'cafes'> };
 
 // Helper to safely display selected_time
 function safeTime(val: string | null | undefined): string | undefined {
@@ -53,7 +54,8 @@ function safeTime(val: string | null | undefined): string | undefined {
 const Dashboard = () => {
   const { t } = useTranslation();
   const DASHBOARD_CACHE_KEY = 'dashboard_cache_v1';
-  const [meetups, setMeetups] = useState<Invitation[]>([]);
+  const [meetups, setMeetups] = useState<Meetup[]>([]);
+  const [soloAdventures, setSoloAdventures] = useState<SoloAdventureWithCafe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -95,6 +97,7 @@ const Dashboard = () => {
           setOutgoingRequests(cache.outgoingRequests || []);
           setIncomingRequests(cache.incomingRequests || []);
           setMeetups(cache.meetups || []);
+          setSoloAdventures(cache.soloAdventures || []);
           setLoading(false);
           return;
         } catch (err) {
@@ -130,11 +133,11 @@ const Dashboard = () => {
       const incoming = await getIncomingFriendRequests(session.user.id);
       setIncomingRequests(incoming);
       // Meetups ophalen
-      const { data, error } = await supabase
-        .from('invitations')
-        .select('id, selected_date, selected_time, cafe_id, status, email_b')
-        .or(`invitee_id.eq.${session.user.id},email_b.eq."${session.user.email}"`);
-      if (error) {
+      const { data: meetupData, error: meetupError } = await supabase
+        .from('meetups')
+        .select('id, selected_date, selected_time, cafe_id, status, cafes(*)')
+        .or(`invitee_id.eq.${session.user.id},cafes.name.eq."${session.user.email}"`);
+      if (meetupError) {
         if (cached) {
           try {
             const cache = JSON.parse(cached);
@@ -143,6 +146,7 @@ const Dashboard = () => {
             setOutgoingRequests(cache.outgoingRequests || []);
             setIncomingRequests(cache.incomingRequests || []);
             setMeetups(cache.meetups || []);
+            setSoloAdventures(cache.soloAdventures || []);
             setLoading(false);
             return;
           } catch (err) {
@@ -151,7 +155,7 @@ const Dashboard = () => {
         }
         setError(t('dashboard.errorLoadingMeetups'));
       } else {
-        const normalizedMeetups = normalizeMeetups(data || []);
+        const normalizedMeetups = normalizeMeetups(meetupData || []) as Meetup[];
         setMeetups(normalizedMeetups);
         localStorage.setItem(
           DASHBOARD_CACHE_KEY,
@@ -161,6 +165,7 @@ const Dashboard = () => {
             outgoingRequests: outgoing,
             incomingRequests: incoming,
             meetups: normalizedMeetups,
+            soloAdventures: [],
           }),
         );
       }
@@ -190,7 +195,7 @@ const Dashboard = () => {
             ) {
               setMeetups((prev) => {
                 if (prev.some((m) => m.id === newInvite.id)) return prev;
-                const updated = [...prev, newInvite];
+                const updated = [...prev, newInvite as Meetup];
                 localStorage.setItem(
                   DASHBOARD_CACHE_KEY,
                   JSON.stringify({
@@ -199,6 +204,7 @@ const Dashboard = () => {
                     outgoingRequests,
                     incomingRequests,
                     meetups: updated,
+                    soloAdventures: [],
                   }),
                 );
                 return updated;
@@ -228,6 +234,7 @@ const Dashboard = () => {
                     outgoingRequests,
                     incomingRequests,
                     meetups: updatedList,
+                    soloAdventures: [],
                   }),
                 );
                 return updatedList;
@@ -258,6 +265,21 @@ const Dashboard = () => {
           selected_time: safeTime(sortedMeetups[sortedMeetups.length - 1].selected_time),
         } as Invitation)
       : null;
+
+  const fetchSoloAdventures = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('solo_adventures')
+      .select('*, cafes(*)')
+      .eq('user_id', userId)
+      .gte('adventure_date', new Date().toISOString())
+      .order('adventure_date', { ascending: true });
+
+    if (error) {
+      setError(t('dashboard.errorLoadingMeetups')); // Reusing translation for now
+    } else {
+      setSoloAdventures(data as any); // Casting to any to avoid type errors
+    }
+  };
 
   return (
     <>
@@ -388,32 +410,33 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Call-to-action knoppen */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <button
-            className="btn-primary flex-1 text-center active:scale-95 active:bg-primary-100"
-            onClick={() => navigate('/create-meetup')}
-            aria-label={t('dashboard.ctaNewMeetup')}
-          >
+        {/* Actions Grid */}
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 my-8 text-center">
+          <Link to="/create-meetup" className="btn-primary w-full sm:w-auto">
+            <CalendarPlus size={20} className="inline-block mr-2" />
             {t('dashboard.ctaNewMeetup')}
-          </button>
-          <button
-            className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
-            onClick={() => navigate('/account')}
-            aria-label={t('dashboard.ctaProfile')}
-          >
+          </Link>
+          <Link to="/account" className="btn-secondary w-full sm:w-auto">
+            <UserCircle size={20} className="inline-block mr-2" />
             {t('dashboard.ctaProfile')}
-          </button>
-          <button
-            className="btn-secondary flex-1 text-center active:scale-95 active:bg-primary-100"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              navigate('/login');
-            }}
-            aria-label={t('dashboard.ctaLogout')}
-          >
-            {t('dashboard.ctaLogout')}
-          </button>
+          </Link>
+        </div>
+
+        <div className="space-y-6">
+          <section>
+            <h2 className="text-2xl font-bold mb-4">{t('dashboard.upcomingMeetups')}</h2>
+            {loading ? (
+              <LoadingIndicator />
+            ) : meetups.length === 0 ? (
+              <p className="text-gray-500 italic">{t('dashboard.noMeetups')}</p>
+            ) : (
+              <div className="space-y-4">
+                {meetups.map((meetup) => (
+                  <MeetupCard key={meetup.id} meetup={meetup} currentUserId={profile?.id} />
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </>

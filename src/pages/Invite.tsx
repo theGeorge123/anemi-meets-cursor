@@ -117,9 +117,7 @@ const Invite = () => {
 
     const shareData = {
       title: t('invite.shareTitle'),
-      text: invitation?.cafe_name
-        ? t('invite.shareTextWithCafe', { cafe: invitation.cafe_name })
-        : t('invite.shareText'),
+      text: t('invite.shareText'),
       url: inviteLink,
     };
 

@@ -21,6 +21,8 @@ import Friends from './pages/Friends';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
 import Terms from './pages/Terms';
+import SoloAdventure from './pages/SoloAdventure';
+import Success from './pages/Success';
 
 const AppRoutes = () => {
   const { t } = useTranslation();
@@ -50,6 +52,8 @@ const AppRoutes = () => {
           <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/solo-adventure" element={<SoloAdventure />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

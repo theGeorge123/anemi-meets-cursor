@@ -123,7 +123,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
       </div>
       {selectedDates.length > 0 && (
         <div className="space-y-4">
-          <h3 className="font-medium text-gray-700">{t('meetup.selectedDates')}</h3>
+          <h3 className="font-medium text-gray-700">{t('createMeetup.selectedDates')}</h3>
           {selectedDates.map((date) => {
             const dateStr = getLocalDateString(date);
             const dateOpt = dateTimeOptions.find((opt) => opt.date === dateStr);
@@ -143,7 +143,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
                     type="button"
                     onClick={() => handleRemoveDate(dateStr)}
                     className="flex items-center gap-1 text-red-500 hover:text-white hover:bg-red-500 transition px-2 py-1 rounded focus-visible:ring-2 focus-visible:ring-primary-500"
-                    aria-label={t('meetup.remove')}
+                    aria-label={t('createMeetup.remove')}
                   >
                     <svg
                       className="w-4 h-4"
@@ -154,7 +154,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="hidden sm:inline">{t('meetup.remove')}</span>
+                    <span className="hidden sm:inline">{t('createMeetup.remove')}</span>
                   </button>
                 </div>
                 {holidays.length > 0 && (

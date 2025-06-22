@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import { displayCafeTag, displayPriceBracket } from '../utils/display';
 import Toast from '../components/Toast';
+import { CheckCircle } from 'lucide-react';
 
 interface City {
   id: string;
@@ -29,6 +30,10 @@ interface Cafe {
   open_morning?: boolean;
   open_afternoon?: boolean;
   open_evening?: boolean;
+  verified?: boolean;
+  story?: string;
+  specialty?: string;
+  mission?: string;
 }
 
 const getLastCity = () => {
@@ -106,6 +111,49 @@ const CreateMeetup = () => {
     message: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
+
+  const handleTimeChange = (date: string, time: string, isChecked: boolean) => {
+    setDateTimeOptions((prevOptions) => {
+      const newOptions = prevOptions.map((opt) => {
+        if (opt.date === date) {
+          const newTimes = isChecked
+            ? [...opt.times, time]
+            : opt.times.filter((t) => t !== time);
+          return { ...opt, times: newTimes };
+        }
+        return opt;
+      });
+      // Add date if not present
+      if (!newOptions.some((opt) => opt.date === date)) {
+        newOptions.push({ date, times: [time] });
+      }
+      return newOptions.filter((opt) => opt.times.length > 0);
+    });
+  };
+
+  const handleDateChange = (dates: Date[]) => {
+    setFormData((prev) => ({ ...prev, dates }));
+    const dateStrings = dates.map(
+      (d) =>
+        d.getFullYear() +
+        '-' +
+        String(d.getMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(d.getDate()).padStart(2, '0'),
+    );
+
+    setDateTimeOptions((prevOptions) => {
+      // Filter out options for dates that are no longer selected
+      const newOptions = prevOptions.filter((opt) => dateStrings.includes(opt.date));
+      // Add new options for newly selected dates
+      dateStrings.forEach((dateStr) => {
+        if (!newOptions.some((opt) => opt.date === dateStr)) {
+          newOptions.push({ date: dateStr, times: [] });
+        }
+      });
+      return newOptions;
+    });
+  };
 
   // Fetch cities (no longer restricted to just Rotterdam)
   useEffect(() => {
@@ -522,11 +570,11 @@ const CreateMeetup = () => {
       {step === 1 && (
         <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
           <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4 sm:mb-6">
-            {t('meetup.contactInfo')}
+            {t('createMeetup.contactInfo')}
           </h2>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2" htmlFor="name">
-              {t('meetup.nameLabel')}
+              {t('createMeetup.nameLabel')}
             </label>
             <input
               id="name"
@@ -534,7 +582,7 @@ const CreateMeetup = () => {
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               className="w-full p-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-4 focus-visible:ring-2 focus-visible:ring-primary-500"
-              placeholder={t('meetup.name', 'Name')}
+              placeholder={t('common.namePlaceholder')}
             />
             {/* Email for non-logged-in users */}
             {!user && (
@@ -575,7 +623,7 @@ const CreateMeetup = () => {
               disabled={!formData.name || (!user && !formData.email)}
               className="btn-primary w-full py-3 px-6 text-lg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary-500"
             >
-              {t('meetup.continue')}
+              {t('createMeetup.continue')}
             </button>
           </div>
         </div>
@@ -654,47 +702,44 @@ const CreateMeetup = () => {
       {/* Stap 3: Café kiezen */}
       {step === 3 && (
         <div className="card bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
-          <h2 className="text-lg sm:text-xl font-semibold text-primary-700 mb-3 sm:mb-4">
-            {t('chooseDates', 'Pick your dates')}
+          <h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-2">
+            {t('createMeetup.chooseDates')}
           </h2>
-          <p className="mb-3 sm:mb-4 text-gray-700 text-sm sm:text-base">
-            {t('chooseTimes', 'Pick your preferred times for each date')}
-          </p>
+          <p className="text-gray-600 mb-4">{t('createMeetup.chooseDaysInfo')}</p>
           <DateSelector
             selectedDates={formData.dates}
-            setSelectedDates={(update) =>
-              setFormData((prev) => ({
-                ...prev,
-                dates: typeof update === 'function' ? update(prev.dates) : update,
-              }))
-            }
+            setSelectedDates={(update) => {
+              const newDates = typeof update === 'function' ? update(formData.dates) : update;
+              setFormData((prev) => ({ ...prev, dates: newDates }));
+
+              const dateStrings = newDates.map(
+                (d) =>
+                  d.getFullYear() +
+                  '-' +
+                  String(d.getMonth() + 1).padStart(2, '0') +
+                  '-' +
+                  String(d.getDate()).padStart(2, '0'),
+              );
+
+              setDateTimeOptions((prevOptions) => {
+                // Filter out options for dates that are no longer selected
+                const newOptions = prevOptions.filter((opt) => dateStrings.includes(opt.date));
+                // Add new options for newly selected dates
+                dateStrings.forEach((dateStr) => {
+                  if (!newOptions.some((opt) => opt.date === dateStr)) {
+                    newOptions.push({ date: dateStr, times: [] });
+                  }
+                });
+                return newOptions;
+              });
+            }}
             dateTimeOptions={dateTimeOptions}
             setDateTimeOptions={setDateTimeOptions}
             error={formError}
           />
-          {formError && (
-            <div
-              className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800"
-              aria-live="polite"
-            >
-              {formError}
-            </div>
-          )}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4">
+          <p className="text-xs text-gray-500 mt-4 italic">{t('createMeetup.timeDisclaimer')}</p>
+          <div className="flex gap-4 mt-6">
             <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="btn-secondary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500"
-            >
-              {t('meetup.back', 'Back')}
-            </button>
-            <button
-              type="button"
-              className="btn-primary flex-1 focus-visible:ring-2 focus-visible:ring-primary-500"
-              disabled={
-                formData.dates.length === 0 ||
-                !dateTimeOptions.some((opt) => opt.times && opt.times.length > 0)
-              }
               onClick={() => {
                 if (formData.dates.length === 0) {
                   setFormError(t('errorDatesRequired', 'Please select at least one date.'));
@@ -707,8 +752,13 @@ const CreateMeetup = () => {
                 setFormError(null);
                 setStep(4);
               }}
+              className="btn-primary w-full py-3"
+              disabled={
+                formData.dates.length === 0 ||
+                !dateTimeOptions.some((opt) => opt.times && opt.times.length > 0)
+              }
             >
-              {t('meetup.continue', "Let's go!")}
+              {t('createMeetup.continue')}
             </button>
           </div>
         </div>
@@ -730,25 +780,31 @@ const CreateMeetup = () => {
               </div>
             )}
           {selectedCafe && (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+            <div className="mb-6 bg-white overflow-hidden rounded-xl border-2 border-primary-300 shadow-lg transition-all duration-300">
               {selectedCafe.image_url && (
                 <img
                   src={selectedCafe.image_url}
                   alt={selectedCafe.name}
-                  className="w-full h-40 sm:h-48 object-cover"
+                  className="w-full h-48 object-cover"
                 />
               )}
               <div className="p-4">
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-                  {selectedCafe.name}
-                </h3>
-                <p className="text-gray-600 mb-2">{selectedCafe.address}</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="font-bold text-lg text-primary-600">{selectedCafe.name}</h3>
+                  {selectedCafe.verified && (
+                    <span className="flex items-center gap-1 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-semibold">
+                      <CheckCircle className="w-4 h-4" />
+                      {t('verified', 'Verified')}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-600 mb-4">{selectedCafe.address}</p>
+
                 {selectedCafe.description && (
-                  <p className="text-gray-500 text-sm mb-2">{selectedCafe.description}</p>
+                  <p className="text-gray-500 text-sm mb-4">{selectedCafe.description}</p>
                 )}
-                {/* Show tags as badges */}
                 {selectedCafe.tags && selectedCafe.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {selectedCafe.tags.map((tag) => (
                       <span
                         key={tag}
@@ -759,26 +815,36 @@ const CreateMeetup = () => {
                     ))}
                   </div>
                 )}
-                {/* Show price bracket */}
                 {selectedCafe.price_bracket && (
-                  <div className="mb-2 text-sm text-primary-700 font-semibold">
+                  <div className="mb-4 text-sm text-primary-700 font-semibold">
                     {t('cafe.priceBracket', 'Price')}:{' '}
                     {displayPriceBracket(selectedCafe.price_bracket, t)}
                   </div>
                 )}
-                {/* Show opening hours */}
-                {selectedCafe.opening_hours && (
-                  <div className="mb-2">
-                    <div className="text-xs text-gray-500 font-semibold mb-1">
-                      {t('cafe.openingHours', 'Opening hours')}:
-                    </div>
-                    <ul className="text-xs text-gray-700">
-                      {Object.entries(selectedCafe.opening_hours).map(([day, hours]) => (
-                        <li key={day}>
-                          <span className="font-semibold">{day}:</span> {hours}
-                        </li>
-                      ))}
-                    </ul>
+
+                {selectedCafe.verified && (
+                  <div className="mt-4 pt-4 border-t border-primary-100">
+                    {selectedCafe.story && (
+                      <blockquote className="border-l-4 border-primary-200 pl-4 italic text-gray-700 my-4">
+                        "{selectedCafe.story}"
+                      </blockquote>
+                    )}
+                    {selectedCafe.mission && (
+                      <div className="mb-4">
+                        <h4 className="font-semibold text-primary-700">
+                          {t('verifiedCafe.mission', 'Our Mission')}
+                        </h4>
+                        <p className="text-gray-600">{selectedCafe.mission}</p>
+                      </div>
+                    )}
+                    {selectedCafe.specialty && (
+                      <div>
+                        <h4 className="font-semibold text-primary-700">
+                          {t('verifiedCafe.specialty', 'Our Specialty')}
+                        </h4>
+                        <p className="text-gray-600">{selectedCafe.specialty}</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

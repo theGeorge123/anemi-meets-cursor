@@ -15,7 +15,7 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization, x-client-info',
       },
     });
   }
@@ -108,7 +108,7 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization, x-client-info',
       },
     });
   } catch (error) {
