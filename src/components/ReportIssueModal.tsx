@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../supabaseClient';
+// import { supabase } from '../supabaseClient';
 // import { awardBadge } from '../services/badgeService';
-import FormStatus from './FormStatus';
 
 interface Props {
   open: boolean;
@@ -19,7 +18,6 @@ const ReportIssueModal: React.FC<Props> = ({ open, onClose }) => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   if (!open) return null;
 
@@ -83,7 +81,6 @@ const ReportIssueModal: React.FC<Props> = ({ open, onClose }) => {
       //   setStatus(null);
       // }, 3000);
 
-      setLoading(false);
       onClose();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Onbekende fout';

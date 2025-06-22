@@ -59,6 +59,7 @@ export default function InviteFriend(): JSX.Element {
     if (!invite) return;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase.rpc('accept_friend_invite' as any, { token });
 
       if (error) throw error;
