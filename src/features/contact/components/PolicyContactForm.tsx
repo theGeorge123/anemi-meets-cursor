@@ -42,59 +42,75 @@ const PolicyContactForm = () => {
   }, []);
 
   return (
-    <div className="mt-10">
-      <h2 className="text-xl font-semibold text-primary-600 mb-4">{t('contact', 'Contact')}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
+    <div className="bg-white shadow-lg rounded-lg p-8">
+      <h2 className="text-2xl font-bold text-center text-primary-600 mb-6">
+        {t('common.contact')}
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700">{t('contactName', 'Your name or nickname')}</label>
+          <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700">
+            {t('common.contactName')}
+          </label>
           <input
             id="contact-name"
             type="text"
             className="input-field mt-1 min-h-[48px] text-base"
             value={form.name}
-            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             required
             autoFocus
-            placeholder={t('namePlaceholder', 'e.g. CoffeeLover123')}
+            placeholder={t('common.namePlaceholder')}
             inputMode="text"
             autoComplete="given-name"
           />
         </div>
         <div>
-          <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700">{t('contactEmail', 'Your email (so we can reply)')}</label>
+          <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700">
+            {t('common.contactEmail')}
+          </label>
           <input
             id="contact-email"
             type="email"
             className="input-field mt-1 min-h-[48px] text-base"
             value={form.email}
-            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             required
-            placeholder={t('emailPlaceholder', 'you@example.com')}
+            placeholder={t('common.emailPlaceholder')}
             inputMode="email"
             autoComplete="email"
           />
         </div>
         <div>
-          <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700">{t('contactMessage', "What's up?")}</label>
+          <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700">
+            {t('common.contactMessage')}
+          </label>
           <textarea
             id="contact-message"
             className="input-field mt-1 min-h-[48px] text-base"
             rows={4}
             value={form.message}
-            onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
             required
-            placeholder={t('messagePlaceholder', "Tell us what's on your mind…")}
+            placeholder={t('common.messagePlaceholder')}
           />
         </div>
-        <button type="submit" className="btn-primary" disabled={loading}>{loading ? t('loading', 'Sending...') : t('contactSend', "Send it! 🚀")}</button>
-        <FormStatus
-          status={loading ? 'loading' : status}
-          message={status === 'success'
-            ? t('contactSuccess', "Thanks for reaching out! We'll get back to you soon ☕️") ?? ''
-            : status === 'error'
-              ? t('contactError', 'Something went wrong. Please try again!') ?? ''
-              : ''}
-        />
+        <div className="text-center">
+          <button type="submit" className="btn-primary w-full md:w-auto" disabled={loading}>
+            {loading ? t('common.loading') : t('common.contactSend')}
+          </button>
+        </div>
+        <div className="h-5">
+          <FormStatus
+            status={loading ? 'loading' : status}
+            message={
+              status === 'success'
+                ? (t('common.contactSuccess') ?? '')
+                : status === 'error'
+                  ? (t('common.contactError') ?? '')
+                  : ''
+            }
+          />
+        </div>
       </form>
     </div>
   );
