@@ -8,33 +8,22 @@ import FormStatus from '../components/FormStatus';
 import Toast from '../components/Toast';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { requestBrowserNotificationPermission } from '../utils/browserNotifications';
-import type { Badge, UserBadge } from '../types/supabase';
+import { User, Settings, Award, Trash2 } from 'lucide-react';
+import LoadingIndicator from '../components/LoadingIndicator';
+import { Database } from '../types/supabase';
 import { displayCafeTag, displayPriceBracket } from '../utils/display';
 import BadgeNotification from '../components/BadgeNotification';
 import BadgeProgress from '../components/BadgeProgress';
 import BadgeShareModal from '../components/BadgeShareModal';
-import { User, Settings, Award, Trash2, Languages } from 'lucide-react';
 
-// TypeScript interfaces voor typeveiligheid
-interface Profile {
-  id: string;
-  fullname: string;
-  email: string;
-  emoji?: string;
-  gender?: string;
-  age?: number;
-  wantsUpdates: boolean;
-  wantsReminders?: boolean;
-  wantsNotifications?: boolean;
-  isPrivate: boolean;
-  preferences?: {
-    tags?: string[];
-    price?: string;
-    [key: string]: unknown;
-  };
-  lastSeen?: string;
-  preferred_language: string;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Badge = Database['public']['Tables']['badges']['Row'];
+type ProfileBadge = Database['public']['Tables']['user_badges']['Row'];
+
+const LANGUAGES = [
+  { code: 'en', name: 'English' },
+  { code: 'nl', name: 'Nederlands' },
+];
 
 interface Invitation {
   id: string;
@@ -88,7 +77,7 @@ const Account = () => {
   }
 
   const [badges, setBadges] = useState<Badge[]>([]);
-  const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+  const [userBadges, setUserBadges] = useState<ProfileBadge[]>([]);
 
   // 1. Add state for emoji update loading and error
   const [emojiLoading, setEmojiLoading] = useState(false);
@@ -435,11 +424,14 @@ const Account = () => {
           )}
 
           {/* Show last seen */}
-          {user && user.lastSeen && (
-            <div className="mb-4 text-sm text-gray-500 text-center">
-              {i18n.language === 'nl'
-                ? `Laatst gezien: ${new Date(user.lastSeen).toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' })}`
-                : `Last seen: ${new Date(user.lastSeen).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`}
+          {user && (
+            <div className="flex items-center gap-4">
+              <p className="mobile-text mb-1">{t('account.lastSeen')}:</p>
+              <p className="mobile-text text-gray-500">
+                {user.lastseen
+                  ? new Date(user.lastseen).toLocaleString()
+                  : t('account.notAvailable')}
+              </p>
             </div>
           )}
 
@@ -567,12 +559,15 @@ const Account = () => {
                   value={preferredLanguage}
                   onChange={(e) => setPreferredLanguage(e.target.value)}
                 >
-                  <option value="en">English</option>
-                  <option value="nl">Nederlands</option>
+                  {LANGUAGES.map((lang) => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.name}
+                    </option>
+                  ))}
                 </select>
               ) : (
                 <span className="mobile-text text-lg">
-                  {preferredLanguage === 'nl' ? 'Nederlands' : 'English'}
+                  {LANGUAGES.find((lang) => lang.code === preferredLanguage)?.name || 'English'}
                 </span>
               )}
             </div>
