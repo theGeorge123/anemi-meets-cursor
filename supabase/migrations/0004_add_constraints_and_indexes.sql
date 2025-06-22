@@ -34,8 +34,6 @@ ALTER TABLE ONLY "auth"."users"
     ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");
 ALTER TABLE ONLY "public"."badges"
     ADD CONSTRAINT "badges_pkey" PRIMARY KEY ("id");
-ALTER TABLE ONLY "public"."beta_email_queue"
-    ADD CONSTRAINT "beta_email_queue_pkey" PRIMARY KEY ("id");
 ALTER TABLE ONLY "public"."beta_signups"
     ADD CONSTRAINT "beta_signups_email_key" UNIQUE ("email");
 ALTER TABLE ONLY "public"."beta_signups"
@@ -44,8 +42,6 @@ ALTER TABLE ONLY "public"."beta_signups"
     ADD CONSTRAINT "beta_signups_user_id_key" UNIQUE ("user_id");
 ALTER TABLE ONLY "public"."cafes"
     ADD CONSTRAINT "cafes_pkey" PRIMARY KEY ("id");
-ALTER TABLE ONLY "public"."cities"
-    ADD CONSTRAINT "cities_pkey" PRIMARY KEY ("id");
 ALTER TABLE ONLY "public"."communities"
     ADD CONSTRAINT "communities_pkey" PRIMARY KEY ("id");
 ALTER TABLE ONLY "public"."community_members"
@@ -68,10 +64,6 @@ ALTER TABLE ONLY "public"."profiles"
     ADD CONSTRAINT "profiles_pkey" PRIMARY KEY ("id");
 ALTER TABLE ONLY "public"."profiles"
     ADD CONSTRAINT "profiles_username_key" UNIQUE ("username");
-ALTER TABLE ONLY "public"."updates_subscribers"
-    ADD CONSTRAINT "updates_subscribers_email_key" UNIQUE ("email");
-ALTER TABLE ONLY "public"."updates_subscribers"
-    ADD CONSTRAINT "updates_subscribers_pkey" PRIMARY KEY ("id");
 ALTER TABLE ONLY "public"."user_badges"
     ADD CONSTRAINT "user_badges_pkey" PRIMARY KEY ("id");
 ALTER TABLE ONLY "storage"."buckets"
@@ -168,7 +160,7 @@ ALTER TABLE ONLY "public"."event_participants"
 ALTER TABLE ONLY "public"."events"
     ADD CONSTRAINT "events_community_id_fkey" FOREIGN KEY ("community_id") REFERENCES "public"."communities"("id");
 ALTER TABLE ONLY "public"."friend_invites"
-    ADD CONSTRAINT "friend_invites_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("id");
+    ADD CONSTRAINT "friend_invites_inviter_id_fkey" FOREIGN KEY ("inviter_id") REFERENCES "public"."profiles"("id");
 ALTER TABLE ONLY "public"."friend_requests"
     ADD CONSTRAINT "friend_requests_friend_id_fkey" FOREIGN KEY ("friend_id") REFERENCES "public"."profiles"("id");
 ALTER TABLE ONLY "public"."friend_requests"
@@ -186,7 +178,7 @@ ALTER TABLE ONLY "public"."invitations"
 ALTER TABLE ONLY "public"."profiles"
     ADD CONSTRAINT "profiles_id_fkey" FOREIGN KEY ("id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
 ALTER TABLE ONLY "public"."user_badges"
-    ADD CONSTRAINT "user_badges_badge_id_fkey" FOREIGN KEY ("badge_id") REFERENCES "public"."badges"("id");
+    ADD CONSTRAINT "user_badges_badge_key_fkey" FOREIGN KEY ("badge_key") REFERENCES "public"."badges"("key");
 ALTER TABLE ONLY "public"."user_badges"
     ADD CONSTRAINT "user_badges_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("id");
 ALTER TABLE ONLY "storage"."objects"
