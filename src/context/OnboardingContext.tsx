@@ -1,13 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { OnboardingContext } from './onboarding';
-
-export const useOnboarding = () => {
-  const context = useContext(OnboardingContext);
-  if (!context) {
-    throw new Error('useOnboarding must be used within an OnboardingProvider');
-  }
-  return context;
-};
+import React, { useState, useEffect } from 'react';
+import { OnboardingContext, useOnboarding } from './onboarding';
 
 export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
@@ -49,3 +41,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     </OnboardingContext.Provider>
   );
 };
+
+// eslint-disable-next-line react-refresh/only-export-components
+export { useOnboarding };
