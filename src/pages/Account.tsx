@@ -27,11 +27,7 @@ function Account() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState('');
-  const [website, setWebsite] = useState('');
-  const [allTags, setAllTags] = useState<string[]>([]);
-  const [favoriteTags, setFavoriteTags] = useState<string[]>([]);
-  const [pricePreference, setPricePreference] = useState<string[]>([]);
+  const [fullname, setFullname] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -48,7 +44,7 @@ function Account() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select(`username, website, favorite_tags, price_preference`)
+        .select(`fullname`)
         .eq('id', user.id)
         .single();
 
@@ -60,28 +56,13 @@ function Account() {
           description: 'We konden je profielgegevens niet ophalen.',
         });
       } else if (data && isMounted) {
-        setUsername(data.username || '');
-        setWebsite(data.website || '');
-        setFavoriteTags(data.favorite_tags || []);
-        setPricePreference(data.price_preference || []);
-      }
-    };
-
-    const fetchAllTags = async () => {
-      const { data, error } = await supabase.from('cafes').select('tags');
-      if (error) {
-        console.warn(error);
-      } else if (data) {
-        const uniqueTags = [...new Set(data.flatMap((cafe) => cafe.tags || []))];
-        if (isMounted) {
-          setAllTags(uniqueTags);
-        }
+        setFullname(data.fullname || '');
       }
     };
 
     const fetchProfileAndTags = async () => {
       setLoading(true);
-      await Promise.all([getProfile(), fetchAllTags()]);
+      await getProfile();
       if (isMounted) {
         setLoading(false);
       }
@@ -120,22 +101,6 @@ function Account() {
         description: message,
       });
     }
-  };
-
-  const handleToggleTag = async (tag: string) => {
-    const newTags = favoriteTags.includes(tag)
-      ? favoriteTags.filter((t) => t !== tag)
-      : [...favoriteTags, tag];
-    setFavoriteTags(newTags);
-    await updateProfile({ favorite_tags: newTags }, 'Je favoriete vibes zijn bijgewerkt.');
-  };
-
-  const handleTogglePrice = async (price: string) => {
-    const newPrices = pricePreference.includes(price)
-      ? pricePreference.filter((p) => p !== price)
-      : [...pricePreference, price];
-    setPricePreference(newPrices);
-    await updateProfile({ price_preference: newPrices }, 'Je prijsvoorkeur is bijgewerkt.');
   };
 
   const handleDeleteAccount = async () => {
@@ -187,47 +152,10 @@ function Account() {
         description="Deze gegevens zijn zichtbaar voor andere gebruikers."
       >
         <EditableField
-          label={t('account.username')}
-          value={username}
-          onSave={(value) => updateProfile({ username: value }, 'Je gebruikersnaam is bijgewerkt.')}
+          label={t('account.fullname', 'Naam')}
+          value={fullname}
+          onSave={(value) => updateProfile({ fullname: value }, 'Je naam is bijgewerkt.')}
         />
-        <EditableField
-          label={t('account.website')}
-          value={website}
-          onSave={(value) => updateProfile({ website: value }, 'Je website is bijgewerkt.')}
-        />
-      </SectionCard>
-
-      <SectionCard
-        title="Jouw favoriete vibes"
-        description="Selecteer de sferen die jij het leukst vindt in een café. Deze gebruiken we om betere suggesties te doen."
-      >
-        <div className="flex flex-wrap gap-2">
-          {allTags.map((tag) => (
-            <Chip
-              key={tag}
-              label={tag}
-              isSelected={favoriteTags.includes(tag)}
-              onToggle={() => handleToggleTag(tag)}
-            />
-          ))}
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        title="Jouw prijsklasse"
-        description="Wat mag een kop koffie voor jou ongeveer kosten?"
-      >
-        <div className="flex flex-wrap gap-2">
-          {priceOptions.map((price) => (
-            <Chip
-              key={price}
-              label={price}
-              isSelected={pricePreference.includes(price)}
-              onToggle={() => handleTogglePrice(price)}
-            />
-          ))}
-        </div>
       </SectionCard>
 
       <SectionCard

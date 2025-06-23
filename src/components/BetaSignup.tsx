@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
-import Toast from './Toast';
+import { Toast } from './ui/toast';
+import { ToastTitle, ToastDescription } from './ui/toast';
 
 const BetaSignup = () => {
   const { t } = useTranslation();
@@ -73,12 +74,10 @@ const BetaSignup = () => {
         </button>
       </form>
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-          position="bottom-right"
-        />
+        <Toast>
+          <ToastTitle>{toast.message}</ToastTitle>
+          {toast.type && <ToastDescription>{toast.type}</ToastDescription>}
+        </Toast>
       )}
     </section>
   );

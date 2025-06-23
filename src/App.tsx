@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
 import AppRoutes from './AppRoutes';
 import NavigationBar from './components/NavigationBar';
 import Footer from './components/Footer';
@@ -46,7 +45,7 @@ function App() {
       <NavigationProvider>
         <OnboardingProvider>
           <NavigationBar profileEmoji={profileEmoji} />
-          <main className="flex-grow">
+          <main className="flex-grow pt-16">
             <AppRoutes />
           </main>
           <Footer />

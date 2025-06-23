@@ -1,252 +1,426 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-          extensions?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
       badges: {
         Row: {
-          created_at: string;
-          description: string | null;
-          icon_name: string | null;
-          id: string;
-          name: string;
+          created_at: string | null;
+          description: string;
+          emoji: string;
+          id: number;
+          key: string;
+          label: string;
         };
         Insert: {
-          created_at?: string;
-          description?: string | null;
-          icon_name?: string | null;
-          id: string;
-          name: string;
+          created_at?: string | null;
+          description: string;
+          emoji: string;
+          id?: number;
+          key: string;
+          label: string;
         };
         Update: {
-          created_at?: string;
-          description?: string | null;
-          icon_name?: string | null;
+          created_at?: string | null;
+          description?: string;
+          emoji?: string;
+          id?: number;
+          key?: string;
+          label?: string;
+        };
+        Relationships: [];
+      };
+      beta_email_queue: {
+        Row: {
+          created_at: string | null;
+          email: string;
+          id: string;
+          processed: boolean | null;
+          processed_at: string | null;
+          status: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          email: string;
           id?: string;
-          name?: string;
+          processed?: boolean | null;
+          processed_at?: string | null;
+          status: string;
+        };
+        Update: {
+          created_at?: string | null;
+          email?: string;
+          id?: string;
+          processed?: boolean | null;
+          processed_at?: string | null;
+          status?: string;
         };
         Relationships: [];
       };
       beta_signups: {
         Row: {
-          created_at: string;
+          created_at: string | null;
           email: string;
-          id: number;
-          status: string;
-          user_id: string | null;
+          id: string;
+          status: string | null;
         };
         Insert: {
-          created_at?: string;
+          created_at?: string | null;
           email: string;
-          id?: number;
-          status?: string;
-          user_id?: string | null;
+          id?: string;
+          status?: string | null;
         };
         Update: {
-          created_at?: string;
+          created_at?: string | null;
           email?: string;
-          id?: number;
-          status?: string;
-          user_id?: string | null;
-        };
-        Relationships: [];
-      };
-      cafe_analytics: {
-        Row: {
-          cafe_id: number;
-          created_at: string;
-          event_type: string;
-          id: number;
-          profile_id: string | null;
-        };
-        Insert: {
-          cafe_id: number;
-          created_at?: string;
-          event_type: string;
-          id?: number;
-          profile_id?: string | null;
-        };
-        Update: {
-          cafe_id?: number;
-          created_at?: string;
-          event_type?: string;
-          id?: number;
-          profile_id?: string | null;
-        };
-        Relationships: [];
-      };
-      cafe_reviews: {
-        Row: {
-          cafe_id: number;
-          comment: string | null;
-          created_at: string;
-          id: number;
-          profile_id: string;
-          rating: number;
-        };
-        Insert: {
-          cafe_id: number;
-          comment?: string | null;
-          created_at?: string;
-          id?: number;
-          profile_id: string;
-          rating: number;
-        };
-        Update: {
-          cafe_id?: number;
-          comment?: string | null;
-          created_at?: string;
-          id?: number;
-          profile_id?: string;
-          rating?: number;
+          id?: string;
+          status?: string | null;
         };
         Relationships: [];
       };
       cafes: {
         Row: {
-          address: string | null;
-          city: string | null;
+          address: string;
+          city: string;
+          city_id: string | null;
           created_at: string;
-          gmaps_url: string | null;
-          id: number;
-          mission: string | null;
+          description: string | null;
+          id: string;
+          image_url: string | null;
           name: string;
-          specialty: string | null;
-          story: string | null;
+          open_afternoon: boolean | null;
+          open_evening: boolean | null;
+          open_morning: boolean | null;
+          opening_hours: Json | null;
+          price_bracket: string | null;
+          rating: number | null;
           tags: string[] | null;
+          transport: string[] | null;
+          updated_at: string;
           verified: boolean | null;
         };
         Insert: {
-          address?: string | null;
-          city?: string | null;
+          address: string;
+          city: string;
+          city_id?: string | null;
           created_at?: string;
-          gmaps_url?: string | null;
-          id?: number;
-          mission?: string | null;
+          description?: string | null;
+          id?: string;
+          image_url?: string | null;
           name: string;
-          specialty?: string | null;
-          story?: string | null;
+          open_afternoon?: boolean | null;
+          open_evening?: boolean | null;
+          open_morning?: boolean | null;
+          opening_hours?: Json | null;
+          price_bracket?: string | null;
+          rating?: number | null;
           tags?: string[] | null;
+          transport?: string[] | null;
+          updated_at?: string;
           verified?: boolean | null;
         };
         Update: {
-          address?: string | null;
-          city?: string | null;
+          address?: string;
+          city?: string;
+          city_id?: string | null;
           created_at?: string;
-          gmaps_url?: string | null;
-          id?: number;
-          mission?: string | null;
+          description?: string | null;
+          id?: string;
+          image_url?: string | null;
           name?: string;
-          specialty?: string | null;
-          story?: string | null;
+          open_afternoon?: boolean | null;
+          open_evening?: boolean | null;
+          open_morning?: boolean | null;
+          opening_hours?: Json | null;
+          price_bracket?: string | null;
+          rating?: number | null;
           tags?: string[] | null;
+          transport?: string[] | null;
+          updated_at?: string;
           verified?: boolean | null;
-        };
-        Relationships: [];
-      };
-      friend_requests: {
-        Row: {
-          created_at: string;
-          id: string;
-          receiver_id: string;
-          sender_id: string;
-          status: Database['public']['Enums']['friend_request_status'];
-          token: string | null;
-          updated_at: string;
-        };
-        Insert: {
-          created_at?: string;
-          id?: string;
-          receiver_id: string;
-          sender_id: string;
-          status?: Database['public']['Enums']['friend_request_status'];
-          token?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          created_at?: string;
-          id?: string;
-          receiver_id?: string;
-          sender_id?: string;
-          status?: Database['public']['Enums']['friend_request_status'];
-          token?: string | null;
-          updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'friend_requests_receiver_id_fkey';
-            columns: ['receiver_id'];
+            foreignKeyName: 'cafes_city_id_fkey';
+            columns: ['city_id'];
             isOneToOne: false;
-            referencedRelation: 'profiles';
+            referencedRelation: 'cities';
             referencedColumns: ['id'];
           },
+        ];
+      };
+      cities: {
+        Row: {
+          id: string;
+          name: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      communities: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          description: string | null;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      community_members: {
+        Row: {
+          community_id: string;
+          id: string;
+          joined_at: string;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          community_id: string;
+          id?: string;
+          joined_at?: string;
+          role?: string;
+          user_id: string;
+        };
+        Update: {
+          community_id?: string;
+          id?: string;
+          joined_at?: string;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [
           {
-            foreignKeyName: 'friend_requests_sender_id_fkey';
-            columns: ['sender_id'];
+            foreignKeyName: 'community_members_community_id_fkey';
+            columns: ['community_id'];
+            isOneToOne: false;
+            referencedRelation: 'communities';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      event_participants: {
+        Row: {
+          event_id: string;
+          id: string;
+          joined_at: string;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          event_id: string;
+          id?: string;
+          joined_at?: string;
+          role?: string;
+          user_id: string;
+        };
+        Update: {
+          event_id?: string;
+          id?: string;
+          joined_at?: string;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_participants_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      events: {
+        Row: {
+          community_id: string | null;
+          created_at: string;
+          created_by: string;
+          date: string;
+          description: string | null;
+          id: string;
+          location: string | null;
+          name: string;
+        };
+        Insert: {
+          community_id?: string | null;
+          created_at?: string;
+          created_by: string;
+          date: string;
+          description?: string | null;
+          id?: string;
+          location?: string | null;
+          name: string;
+        };
+        Update: {
+          community_id?: string | null;
+          created_at?: string;
+          created_by?: string;
+          date?: string;
+          description?: string | null;
+          id?: string;
+          location?: string | null;
+          name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'events_community_id_fkey';
+            columns: ['community_id'];
+            isOneToOne: false;
+            referencedRelation: 'communities';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      friend_invites: {
+        Row: {
+          accepted: boolean;
+          accepted_at: string | null;
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          invitee_email: string;
+          inviter_id: string | null;
+          status: string;
+          token: string;
+        };
+        Insert: {
+          accepted?: boolean;
+          accepted_at?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          invitee_email: string;
+          inviter_id?: string | null;
+          status?: string;
+          token: string;
+        };
+        Update: {
+          accepted?: boolean;
+          accepted_at?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          invitee_email?: string;
+          inviter_id?: string | null;
+          status?: string;
+          token?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'friend_invites_inviter_id_fkey';
+            columns: ['inviter_id'];
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
       };
+      friend_requests: {
+        Row: {
+          addressee_id: string;
+          created_at: string | null;
+          id: string;
+          requester_id: string;
+          status: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          addressee_id: string;
+          created_at?: string | null;
+          id?: string;
+          requester_id: string;
+          status?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          addressee_id?: string;
+          created_at?: string | null;
+          id?: string;
+          requester_id?: string;
+          status?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      friendship_audit: {
+        Row: {
+          action: string;
+          actor_id: string | null;
+          id: string;
+          occurring_at: string | null;
+          target_user: string | null;
+        };
+        Insert: {
+          action: string;
+          actor_id?: string | null;
+          id?: string;
+          occurring_at?: string | null;
+          target_user?: string | null;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string | null;
+          id?: string;
+          occurring_at?: string | null;
+          target_user?: string | null;
+        };
+        Relationships: [];
+      };
       friendships: {
         Row: {
           created_at: string;
+          friend_id: string;
           id: string;
-          updated_at: string;
-          user1_id: string;
-          user2_id: string;
+          status: string;
+          user_id: string;
         };
         Insert: {
           created_at?: string;
+          friend_id: string;
           id?: string;
-          updated_at?: string;
-          user1_id: string;
-          user2_id: string;
+          status?: string;
+          user_id: string;
         };
         Update: {
           created_at?: string;
+          friend_id?: string;
           id?: string;
-          updated_at?: string;
-          user1_id?: string;
-          user2_id?: string;
+          status?: string;
+          user_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'friendships_user1_id_fkey';
-            columns: ['user1_id'];
+            foreignKeyName: 'friendships_friend_id_fkey';
+            columns: ['friend_id'];
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'friendships_user2_id_fkey';
-            columns: ['user2_id'];
+            foreignKeyName: 'friendships_user_id_fkey';
+            columns: ['user_id'];
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
@@ -255,204 +429,202 @@ export type Database = {
       };
       invitations: {
         Row: {
-          cafe_id: number | null;
+          cafe_id: string | null;
+          city_id: string | null;
           created_at: string;
+          creator_id: string | null;
+          date_time_options: Json | null;
+          email_b: string | null;
+          expires_at: string | null;
           id: string;
           invitee_id: string | null;
-          inviter_id: string;
-          meetup_date: string;
-          status: Database['public']['Enums']['invitation_status'];
-          token: string | null;
-          updated_at: string;
-        };
-        Insert: {
-          cafe_id?: number | null;
-          created_at?: string;
-          id?: string;
-          invitee_id?: string | null;
-          inviter_id: string;
-          meetup_date: string;
-          status?: Database['public']['Enums']['invitation_status'];
-          token?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          cafe_id?: number | null;
-          created_at?: string;
-          id?: string;
-          invitee_id?: string | null;
-          inviter_id?: string;
-          meetup_date?: string;
-          status?: Database['public']['Enums']['invitation_status'];
-          token?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'invitations_cafe_id_fkey';
-            columns: ['cafe_id'];
-            isOneToOne: false;
-            referencedRelation: 'cafes';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'invitations_cafe_id_fkey';
-            columns: ['cafe_id'];
-            isOneToOne: false;
-            referencedRelation: 'random_coffee_shops';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'invitations_invitee_id_fkey';
-            columns: ['invitee_id'];
-            isOneToOne: false;
-            referencedRelation: 'profiles';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'invitations_inviter_id_fkey';
-            columns: ['inviter_id'];
-            isOneToOne: false;
-            referencedRelation: 'profiles';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      profile_badges: {
-        Row: {
-          badge_id: string;
-          created_at: string;
-          id: number;
-          profile_id: string;
-        };
-        Insert: {
-          badge_id: string;
-          created_at?: string;
-          id?: number;
-          profile_id: string;
-        };
-        Update: {
-          badge_id?: string;
-          created_at?: string;
-          id?: number;
-          profile_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'profile_badges_badge_id_fkey';
-            columns: ['badge_id'];
-            isOneToOne: false;
-            referencedRelation: 'badges';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'profile_badges_profile_id_fkey';
-            columns: ['profile_id'];
-            isOneToOne: false;
-            referencedRelation: 'profiles';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      profiles: {
-        Row: {
-          avatar_url: string | null;
-          cafe_preferences: Json | null;
-          email: string | null;
-          emoji: string | null;
-          favorite_tags: string[] | null;
-          firstName: string | null;
-          full_name: string | null;
-          id: string;
-          is_beta_user: boolean | null;
-          last_seen_at: string | null;
-          lastName: string | null;
-          preferences: Json | null;
-          preferred_language: string | null;
-          price_preference: string[] | null;
+          invitee_name: string | null;
+          meeting_id: string | null;
+          personal_note: string | null;
+          selected_date: string;
+          selected_time: string;
+          status: string | null;
+          token: string;
           updated_at: string | null;
-          username: string | null;
-          wants_notifications: boolean | null;
-          wants_reminders: boolean | null;
-          website: string | null;
         };
         Insert: {
-          avatar_url?: string | null;
-          cafe_preferences?: Json | null;
-          email?: string | null;
-          emoji?: string | null;
-          favorite_tags?: string[] | null;
-          firstName?: string | null;
-          full_name?: string | null;
-          id: string;
-          is_beta_user?: boolean | null;
-          last_seen_at?: string | null;
-          lastName?: string | null;
-          preferences?: Json | null;
-          preferred_language?: string | null;
-          price_preference?: string[] | null;
+          cafe_id?: string | null;
+          city_id?: string | null;
+          created_at?: string;
+          creator_id?: string | null;
+          date_time_options?: Json | null;
+          email_b?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          invitee_id?: string | null;
+          invitee_name?: string | null;
+          meeting_id?: string | null;
+          personal_note?: string | null;
+          selected_date: string;
+          selected_time: string;
+          status?: string | null;
+          token: string;
           updated_at?: string | null;
-          username?: string | null;
-          wants_notifications?: boolean | null;
-          wants_reminders?: boolean | null;
-          website?: string | null;
         };
         Update: {
-          avatar_url?: string | null;
-          cafe_preferences?: Json | null;
-          email?: string | null;
-          emoji?: string | null;
-          favorite_tags?: string[] | null;
-          firstName?: string | null;
-          full_name?: string | null;
+          cafe_id?: string | null;
+          city_id?: string | null;
+          created_at?: string;
+          creator_id?: string | null;
+          date_time_options?: Json | null;
+          email_b?: string | null;
+          expires_at?: string | null;
           id?: string;
-          is_beta_user?: boolean | null;
-          last_seen_at?: string | null;
-          lastName?: string | null;
-          preferences?: Json | null;
-          preferred_language?: string | null;
-          price_preference?: string[] | null;
+          invitee_id?: string | null;
+          invitee_name?: string | null;
+          meeting_id?: string | null;
+          personal_note?: string | null;
+          selected_date?: string;
+          selected_time?: string;
+          status?: string | null;
+          token?: string;
           updated_at?: string | null;
-          username?: string | null;
-          wants_notifications?: boolean | null;
-          wants_reminders?: boolean | null;
-          website?: string | null;
         };
         Relationships: [];
       };
+      profiles: {
+        Row: {
+          age: number | null;
+          avatar_url: string | null;
+          bio: string | null;
+          cafe_preferences: Json | null;
+          created_at: string;
+          email: string | null;
+          emoji: string | null;
+          fullname: string | null;
+          gender: string | null;
+          id: string;
+          isprivate: boolean | null;
+          last_seen: string | null;
+          lastseen: string | null;
+          preferred_language: string | null;
+          updated_at: string;
+          wantsnotifications: boolean | null;
+          wantsreminders: boolean | null;
+          wantsupdates: boolean | null;
+        };
+        Insert: {
+          age?: number | null;
+          avatar_url?: string | null;
+          bio?: string | null;
+          cafe_preferences?: Json | null;
+          created_at?: string;
+          email?: string | null;
+          emoji?: string | null;
+          fullname?: string | null;
+          gender?: string | null;
+          id: string;
+          isprivate?: boolean | null;
+          last_seen?: string | null;
+          lastseen?: string | null;
+          preferred_language?: string | null;
+          updated_at?: string;
+          wantsnotifications?: boolean | null;
+          wantsreminders?: boolean | null;
+          wantsupdates?: boolean | null;
+        };
+        Update: {
+          age?: number | null;
+          avatar_url?: string | null;
+          bio?: string | null;
+          cafe_preferences?: Json | null;
+          created_at?: string;
+          email?: string | null;
+          emoji?: string | null;
+          fullname?: string | null;
+          gender?: string | null;
+          id?: string;
+          isprivate?: boolean | null;
+          last_seen?: string | null;
+          lastseen?: string | null;
+          preferred_language?: string | null;
+          updated_at?: string;
+          wantsnotifications?: boolean | null;
+          wantsreminders?: boolean | null;
+          wantsupdates?: boolean | null;
+        };
+        Relationships: [];
+      };
+      updates_subscribers: {
+        Row: {
+          created_at: string | null;
+          email: string;
+          id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          email: string;
+          id?: string;
+        };
+        Update: {
+          created_at?: string | null;
+          email?: string;
+          id?: string;
+        };
+        Relationships: [];
+      };
+      user_badges: {
+        Row: {
+          awarded_at: string | null;
+          badge_key: string;
+          id: number;
+          user_id: string;
+        };
+        Insert: {
+          awarded_at?: string | null;
+          badge_key: string;
+          id?: number;
+          user_id: string;
+        };
+        Update: {
+          awarded_at?: string | null;
+          badge_key?: string;
+          id?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_badges_badge_key_fkey';
+            columns: ['badge_key'];
+            isOneToOne: false;
+            referencedRelation: 'badge_analytics';
+            referencedColumns: ['key'];
+          },
+          {
+            foreignKeyName: 'user_badges_badge_key_fkey';
+            columns: ['badge_key'];
+            isOneToOne: false;
+            referencedRelation: 'badges';
+            referencedColumns: ['key'];
+          },
+        ];
+      };
     };
     Views: {
-      random_coffee_shops: {
+      badge_analytics: {
         Row: {
-          address: string | null;
-          city: string | null;
-          id: number | null;
-          name: string | null;
+          completion_percentage: number | null;
+          key: string | null;
+          label: string | null;
+          total_awarded: number | null;
+          unique_users: number | null;
         };
         Relationships: [];
       };
     };
     Functions: {
-      email: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      jwt: {
-        Args: Record<PropertyKey, never>;
-        Returns: Json;
-      };
-      role: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      uid: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
+      check_request_limit: {
+        Args: { uid: string };
+        Returns: boolean;
       };
     };
     Enums: {
-      friend_request_status: 'pending' | 'accepted' | 'rejected';
-      invitation_status: 'pending' | 'accepted' | 'declined';
+      [_ in never]: never;
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -562,13 +734,7 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
-    Enums: {
-      friend_request_status: ['pending', 'accepted', 'rejected'],
-      invitation_status: ['pending', 'accepted', 'declined'],
-    },
+    Enums: {},
   },
 } as const;
