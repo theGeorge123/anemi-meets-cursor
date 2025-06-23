@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import type { Database } from '../../../src/types/supabase.ts';
+import type { Database } from '../../src/types/supabase.ts';
 import {
   AppError,
   ERROR_CODES,

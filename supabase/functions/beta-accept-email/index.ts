@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { Resend } from 'npm:resend@2.1.0';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import type { Database } from '../../../src/types/supabase.ts';
+import type { Database } from '../../src/types/supabase.ts';
 import {
   AppError,
   ERROR_CODES,

@@ -1,7 +1,13 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import type { Database } from '../../../src/types/supabase.ts'
-import { AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from '../utils.ts'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import type { Database } from '../../src/types/supabase.ts';
+import {
+  AppError,
+  ERROR_CODES,
+  handleError,
+  createErrorResponse,
+  validateEnvVars,
+} from '../utils.ts';
 
 serve(async (req) => {
   try {
@@ -9,32 +15,24 @@ serve(async (req) => {
     validateEnvVars(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']);
 
     if (req.method !== 'POST') {
-      throw new AppError(
-        'Only POST requests allowed',
-        ERROR_CODES.INVALID_REQUEST,
-        405
-      );
+      throw new AppError('Only POST requests allowed', ERROR_CODES.INVALID_REQUEST, 405);
     }
 
     const { userId, action, metadata } = await req.json().catch(() => {
-      throw new AppError(
-        'Invalid JSON payload',
-        ERROR_CODES.INVALID_REQUEST,
-        400
-      );
+      throw new AppError('Invalid JSON payload', ERROR_CODES.INVALID_REQUEST, 400);
     });
 
     if (!userId || !action) {
       throw new AppError(
         'Missing required fields: userId, action',
         ERROR_CODES.VALIDATION_ERROR,
-        400
+        400,
       );
     }
 
     const supabase = createClient<Database>(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
     // Complex badge logic
@@ -47,16 +45,11 @@ serve(async (req) => {
           .eq('status', 'accepted');
 
         if (error) {
-          throw new AppError(
-            'Failed to fetch meetups',
-            ERROR_CODES.DATABASE_ERROR,
-            500,
-            error
-          );
+          throw new AppError('Failed to fetch meetups', ERROR_CODES.DATABASE_ERROR, 500, error);
         }
 
         const meetupCount = meetups?.length || 0;
-        
+
         if (meetupCount === 1) {
           const { error: badgeError } = await supabase
             .from('user_badges')
@@ -68,7 +61,7 @@ serve(async (req) => {
               'Failed to award first meetup badge',
               ERROR_CODES.DATABASE_ERROR,
               500,
-              badgeError
+              badgeError,
             );
           }
         } else if (meetupCount === 5) {
@@ -82,7 +75,7 @@ serve(async (req) => {
               'Failed to award five meetups badge',
               ERROR_CODES.DATABASE_ERROR,
               500,
-              badgeError
+              badgeError,
             );
           }
         }
@@ -92,26 +85,22 @@ serve(async (req) => {
         // Add custom logic for activity badges
         break;
       default:
-        throw new AppError(
-          `Unknown action: ${action}`,
-          ERROR_CODES.INVALID_REQUEST,
-          400
-        );
+        throw new AppError(`Unknown action: ${action}`, ERROR_CODES.INVALID_REQUEST, 400);
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
-        message: 'Badge check completed successfully'
+        message: 'Badge check completed successfully',
       }),
-      { 
+      {
         status: 200,
         headers: {
-          'Content-Type': 'application/json'
-        }
-      }
+          'Content-Type': 'application/json',
+        },
+      },
     );
   } catch (error) {
     return createErrorResponse(handleError(error));
   }
-}); 
+});

@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
-import type { Database } from '../../../src/types/supabase.ts';
+import type { Database } from '../../src/types/supabase.ts';
 import { Resend } from 'npm:resend@2.1.0';
 import {
   AppError,
