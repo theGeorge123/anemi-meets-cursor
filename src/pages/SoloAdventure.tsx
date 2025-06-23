@@ -39,7 +39,7 @@ export default function SoloAdventure(): JSX.Element {
       } else {
         // Map Supabase response to full Cafe type
         const cafesData = (data ?? []).map((cafe: Partial<Cafe>) => ({
-          id: typeof cafe.id === 'number' ? cafe.id : parseInt(cafe.id as string, 10),
+          id: String(cafe.id),
           created_at: cafe.created_at ?? '',
           name: cafe.name ?? '',
           address: cafe.address ?? null,
