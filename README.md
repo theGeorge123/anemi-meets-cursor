@@ -65,6 +65,7 @@ A modern, calming web application for coordinating coffee meetups with friends. 
 | RESEND_API_KEY            | Yes      | API key for Resend (email delivery)               |
 | MEETING_REMINDERS_SECRET  | Yes      | Secret for meeting reminders function             |
 | PUBLIC_SITE_URL           | No       | Public site URL for links in emails               |
+| SENTRY_AUTH_TOKEN         | No       | Auth token for Sentry CLI (source maps)           |
 
 ## Environment Setup
 
