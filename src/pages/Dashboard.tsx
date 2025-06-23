@@ -95,38 +95,19 @@ export default function Dashboard(): JSX.Element {
       }
 
       // Fetch Solo Adventures
-      try {
-        const { data: soloAdventuresData, error: soloAdventuresError } = await supabase
-          .from('solo_adventures')
-          .select(
-            `
-            *,
-            cafes (
-              name,
-              address
-            )
-          `,
-          )
-          .eq('user_id', userId);
-
-        if (soloAdventuresError) {
-          setError(
-            t('dashboard.error.solo', {
-              details:
-                soloAdventuresError instanceof Error
-                  ? soloAdventuresError.message
-                  : String(soloAdventuresError),
-            }),
-          );
-        } else {
-          setSoloAdventures(soloAdventuresData as unknown as SoloAdventure[]);
-        }
-      } catch (err: unknown) {
-        setError(
-          t('dashboard.error.solo', { details: err instanceof Error ? err.message : String(err) }),
-        );
-        setSoloAdventures([]);
-      }
+      // TODO: solo_adventures table does not exist. Uncomment and implement when available.
+      // const { data: soloAdventuresData, error: soloAdventuresError } = await supabase
+      //   .from('solo_adventures')
+      //   .select(
+      //     `
+      //     *,
+      //     cafes (
+      //       name,
+      //       address
+      //     )
+      //   `,
+      //   )
+      //   .eq('user_id', userId);
 
       setLoading(false);
     };

@@ -6,7 +6,6 @@ import { supabase } from '../supabaseClient';
 import { useToast } from '../components/use-toast';
 import { EditableField } from '../components/EditableField';
 import { SectionCard } from '../components/SectionCard';
-import { Chip } from '../components/Chip';
 import { Button } from '../components/ui/button';
 import {
   AlertDialog,
