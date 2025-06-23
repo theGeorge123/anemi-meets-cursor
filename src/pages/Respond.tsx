@@ -18,8 +18,6 @@ interface ConfirmationInfo {
   ics_base64?: string;
 }
 
-type StatusType = 'success' | 'error' | 'loading' | 'idle';
-
 const Respond = () => {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();

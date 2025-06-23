@@ -29,7 +29,7 @@ const Login = () => {
     null,
   );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [status, setStatus] = useState<StatusType>('idle');
+  const [status] = useState<StatusType>('idle');
 
   useEffect(() => {
     // Prefill email if saved

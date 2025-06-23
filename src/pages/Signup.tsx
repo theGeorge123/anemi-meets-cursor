@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
-import FormStatus from '../components/FormStatus';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 interface SignupForm {
@@ -18,8 +17,6 @@ interface SignupErrors {
   confirmPassword?: string;
   fullName?: string;
 }
-
-type StatusType = 'success' | 'error' | 'loading' | 'idle';
 
 const Signup = () => {
   const { t } = useTranslation();
