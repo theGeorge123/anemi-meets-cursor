@@ -184,20 +184,3 @@ export async function sendEmail(options: {
     throw new AppError('Failed to send email', ERROR_CODES.EMAIL_ERROR, 500, await res.text());
   }
 }
-
-// @ts-expect-error Deno global is available in Edge Functions
-Deno.serve(async (req: Request) => {
-  // ...
-});
-
-/* supabase/functions/accept-friend-invite/index.ts */
-// @ts-expect-error Deno global is available in Edge Functions
-const supabaseAdmin = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-);
-
-// @ts-expect-error Deno global is available in Edge Functions
-Deno.serve(async (req) => {
-  // ...
-});
