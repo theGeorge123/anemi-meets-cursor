@@ -68,7 +68,6 @@ export default function InviteFriend(): JSX.Element {
       setToast({ message: t('inviteFriend.success'), type: 'success' });
       navigate('/dashboard');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t('inviteFriend.errorAccept');
       setStatus('error');
     }
   }, [invite, token, t, navigate]);
