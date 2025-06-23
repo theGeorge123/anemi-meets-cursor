@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/supabaseClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Link, useNavigate } from 'react-router-dom';
-import { Invitation, SoloAdventure, Profile } from '@/types';
+import { Invitation, Profile } from '@/types';
 import { useOnboarding } from '@/context/OnboardingContext';
 import OnboardingModal from '@/features/dashboard/components/OnboardingModal';
 import SkeletonLoader from '@/components/SkeletonLoader';
