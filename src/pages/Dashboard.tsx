@@ -15,7 +15,6 @@ export default function Dashboard(): JSX.Element {
   const { showOnboarding, completeOnboarding } = useOnboarding();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [soloAdventures, setSoloAdventures] = useState<SoloAdventure[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useContext(NavigationContext);
@@ -165,7 +164,7 @@ export default function Dashboard(): JSX.Element {
             </div>
           ) : (
             <div className="grid gap-4">
-              {invitations.length === 0 && soloAdventures.length === 0 ? (
+              {invitations.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">{t('dashboard.noUpcoming')}</p>
                 </div>
@@ -180,23 +179,6 @@ export default function Dashboard(): JSX.Element {
                       <p className="font-semibold text-primary-700">{t('dashboard.meetupWith')}</p>
                       <p className="text-sm text-gray-600">
                         {new Date(invite.meetup_date).toLocaleString(undefined, {
-                          dateStyle: 'long',
-                          timeStyle: 'short',
-                        })}
-                      </p>
-                    </Link>
-                  ))}
-                  {soloAdventures.map((adventure) => (
-                    <Link
-                      to={`/solo-adventure`}
-                      key={adventure.id}
-                      className="block bg-white/80 p-4 rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] transition-all"
-                    >
-                      <p className="font-semibold text-secondary-800">
-                        {t('dashboard.soloAdventureTitle')} @ {adventure.cafes?.name || 'een café'}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {new Date(adventure.adventure_date).toLocaleString(undefined, {
                           dateStyle: 'long',
                           timeStyle: 'short',
                         })}
