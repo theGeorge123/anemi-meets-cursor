@@ -90,6 +90,12 @@ To run this project locally, you need to set up your environment variables:
 4. Get your Supabase project values from Project Settings > API:
    - Copy the "Project URL" for VITE_SUPABASE_URL
    - Copy the "anon" key for VITE_SUPABASE_ANON_KEY
+5. Whenever you change the database schema, regenerate the Supabase types:
+   ```bash
+   npm run gen:types
+   ```
+   This requires the Supabase CLI to be installed and linked to this project with `supabase link`.
+   The command outputs `src/types/supabase.ts` (and after implementing Issue 1, also `supabase/src/types/supabase.ts`).
 
 Note: The `.env` file is intentionally gitignored for security. Never commit your API keys to version control!
 
