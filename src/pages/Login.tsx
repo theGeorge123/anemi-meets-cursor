@@ -10,6 +10,8 @@ import Toast from '../components/Toast';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
+type StatusType = 'success' | 'error' | 'loading' | 'idle';
+
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();

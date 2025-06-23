@@ -1,5 +1,3 @@
-import React from 'react';
-
 export type FormStatusProps = {
   type: 'success' | 'error' | 'info';
   msg: string;

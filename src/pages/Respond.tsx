@@ -34,8 +34,6 @@ const Respond = () => {
   const [submitted, setSubmitted] = useState(false);
   const [confirmationInfo, setConfirmationInfo] = useState<ConfirmationInfo | null>(null);
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
-  const [status, setStatus] = useState<StatusType>('idle');
-  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -337,12 +335,6 @@ const Respond = () => {
           {t('respond.btn_confirm')}
         </button>
       </form>
-      {status !== 'idle' && (
-        <FormStatus
-          type={status === 'loading' ? 'info' : (status as 'success' | 'error' | 'info')}
-          msg={message || ''}
-        />
-      )}
     </main>
   );
 };

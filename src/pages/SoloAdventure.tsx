@@ -38,20 +38,24 @@ export default function SoloAdventure(): JSX.Element {
         console.error(dbError);
       } else {
         // Map Supabase response to full Cafe type
-        const cafesData = (data ?? []).map((cafe: Partial<Cafe>) => ({
-          id: String(cafe.id),
-          created_at: cafe.created_at ?? '',
-          name: cafe.name ?? '',
-          address: cafe.address ?? null,
-          city: cafe.city ?? null,
-          gmaps_url: cafe.gmaps_url ?? null,
-          verified: cafe.verified ?? null,
-          story: cafe.story ?? null,
-          specialty: cafe.specialty ?? null,
-          mission: cafe.mission ?? null,
-          tags: cafe.tags ?? [],
-          price_bracket: cafe.price_bracket ?? undefined,
-        }));
+        const cafesData = (Array.isArray(data) ? data : []).map(
+          (cafe: Record<string, unknown>) => ({
+            id: typeof cafe.id === 'string' ? cafe.id : '',
+            created_at: typeof cafe.created_at === 'string' ? cafe.created_at : '',
+            name: typeof cafe.name === 'string' ? cafe.name : '',
+            address: typeof cafe.address === 'string' ? cafe.address : null,
+            city: typeof cafe.city === 'string' ? cafe.city : null,
+            gmaps_url: typeof cafe.gmaps_url === 'string' ? cafe.gmaps_url : null,
+            verified: typeof cafe.verified === 'boolean' ? cafe.verified : null,
+            story: typeof cafe.story === 'string' ? cafe.story : null,
+            specialty: typeof cafe.specialty === 'string' ? cafe.specialty : null,
+            mission: typeof cafe.mission === 'string' ? cafe.mission : null,
+            tags: Array.isArray(cafe.tags)
+              ? cafe.tags.filter((t): t is string => typeof t === 'string')
+              : [],
+            price_bracket: typeof cafe.price_bracket === 'string' ? cafe.price_bracket : undefined,
+          }),
+        );
         setCafes(cafesData);
       }
       setLoading(false);

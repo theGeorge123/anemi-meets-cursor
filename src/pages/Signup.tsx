@@ -38,9 +38,6 @@ const Signup = () => {
 
   const [errors, setErrors] = useState<SignupErrors>({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<StatusType>('idle');
-  const [message, setMessage] = useState<string>('');
 
   const validateStep = () => {
     const newErrors: SignupErrors = {};
@@ -93,7 +90,6 @@ const Signup = () => {
     if (!validateStep()) return;
 
     setLoading(true);
-    setError(null);
 
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
@@ -142,9 +138,9 @@ const Signup = () => {
     } catch (err) {
       console.error('Signup error:', err);
       if (err instanceof Error) {
-        setError(err.message);
+        // setError(err.message);
       } else {
-        setError(t('signup.errorGeneric'));
+        // setError(t('signup.errorGeneric'));
       }
     } finally {
       setLoading(false);
@@ -286,13 +282,6 @@ const Signup = () => {
         <main>
           <form onSubmit={handleSubmit} className="bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
             <div className="min-h-[220px]">{renderStepContent()}</div>
-
-            {status !== 'idle' && (
-              <FormStatus
-                type={status === 'loading' ? 'info' : (status as 'success' | 'error' | 'info')}
-                msg={message}
-              />
-            )}
 
             <div className="mt-8 flex items-center justify-between">
               {step > 1 ? (
