@@ -95,7 +95,7 @@ To run this project locally, you need to set up your environment variables:
    npm run gen:types
    ```
    This requires the Supabase CLI to be installed and linked to this project with `supabase link`.
-   The command outputs `src/types/supabase.ts` (and after implementing Issue 1, also `supabase/src/types/supabase.ts`).
+   The command generates `src/types/supabase.ts` and copies it to `supabase/src/types/supabase.ts`.
 
 Note: The `.env` file is intentionally gitignored for security. Never commit your API keys to version control!
 
