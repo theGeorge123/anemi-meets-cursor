@@ -1,6 +1,6 @@
 // @deno-types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import type { Database } from '../../../src/types/supabase.ts';
+import type { Database } from '../../src/types/supabase.ts';
 import {
   AppError,
   ERROR_CODES,
@@ -46,7 +46,7 @@ export async function handleSearchCafe(req: Request): Promise<Response> {
 
     const supabase = createClient<Database>(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
     let query = supabase.from('cafes').select('*').eq('city', city);
@@ -58,7 +58,7 @@ export async function handleSearchCafe(req: Request): Promise<Response> {
     if (tags && tags.length > 0) {
       query = query.contains('tags', tags);
     }
-    
+
     if (price_bracket) {
       query = query.eq('price_bracket', price_bracket);
     }
@@ -73,11 +73,10 @@ export async function handleSearchCafe(req: Request): Promise<Response> {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       status: 200,
     });
-
   } catch (error) {
     return createErrorResponse(handleError(error));
   }
 }
 
 // @ts-expect-error Deno global is available in Edge Functions
-Deno.serve(handleSearchCafe); 
+Deno.serve(handleSearchCafe);
