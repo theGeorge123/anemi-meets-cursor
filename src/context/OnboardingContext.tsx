@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { OnboardingContext } from './onboarding';
 
-export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const useOnboarding = () => {
+  const context = useContext(OnboardingContext);
+  if (!context) {
+    throw new Error('useOnboarding must be used within an OnboardingProvider');
+  }
+  return context;
+};
+
+export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
