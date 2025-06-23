@@ -71,13 +71,22 @@ A modern, calming web application for coordinating coffee meetups with friends. 
 To run this project locally, you need to set up your environment variables:
 
 1. Create a `.env` file in the project root
-2. Add the following variables with your Supabase project values:
-   ```
+2. Add the following variables with your Supabase project values (these are also required when serving or deploying Supabase functions):
+   ```bash
    VITE_SUPABASE_URL=your-project-url.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key
+   SUPABASE_URL=$VITE_SUPABASE_URL
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   RESEND_API_KEY=your-resend-api-key
+   MEETING_REMINDERS_SECRET=your-reminders-secret
+   PUBLIC_SITE_URL=http://localhost:5173
    ```
-3. Get these values from your Supabase project settings:
-   - Go to Project Settings > API
+3. When running functions locally, use:
+   ```bash
+   supabase functions serve <name> --env-file .env
+   ```
+   or set these variables in the Supabase dashboard when deploying.
+4. Get your Supabase project values from Project Settings > API:
    - Copy the "Project URL" for VITE_SUPABASE_URL
    - Copy the "anon" key for VITE_SUPABASE_ANON_KEY
 
