@@ -4,7 +4,8 @@ import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.t
 // deno-lint-ignore no-explicit-any
 (Deno as unknown as { cron: () => void }).cron = () => {};
 
-const { handleReminders } = await import("./index.ts");
+const mod = await import("./index.ts");
+const { handleReminders, handleRequest } = mod;
 
 // Track intervals for cleanup
 const intervals: number[] = [];
@@ -84,6 +85,24 @@ Deno.test("reminder email escapes html", async () => {
 
   globalThis.fetch = originalFetch;
   (globalThis as unknown as { Date: typeof Date }).Date = RealDate;
+});
+
+Deno.test("authorization header required", async () => {
+  Deno.env.set("SUPABASE_URL", "https://example.supabase.co");
+  Deno.env.set("SUPABASE_SERVICE_ROLE_KEY", "key");
+  Deno.env.set("RESEND_API_KEY", "key");
+  Deno.env.set("MEETING_REMINDERS_SECRET", "secret");
+
+  const originalHandleReminders = mod.handleReminders;
+  mod.handleReminders = async () => new Response("ok", { status: 200 });
+
+  const res1 = await handleRequest(new Request("http://localhost", { method: "POST" }));
+  assertEquals(res1.status, 401);
+
+  const res2 = await handleRequest(new Request("http://localhost", { method: "POST", headers: { Authorization: "Bearer secret" } }));
+  assertEquals(res2.status, 200);
+
+  mod.handleReminders = originalHandleReminders;
 });
 
 addEventListener('unload', () => {

@@ -1,6 +1,7 @@
 /// <reference lib="deno.ns" />
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import type { Database } from '../../src/types/supabase.ts';
+/* Required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, MEETING_REMINDERS_SECRET */
 import { escapeHtml, AppError, ERROR_CODES, handleError, createErrorResponse, validateEnvVars } from "../utils.ts";
 
 function encodeBase64(str: string) {
@@ -79,6 +80,7 @@ export async function handleReminders(): Promise<Response> {
       "SUPABASE_URL",
       "SUPABASE_SERVICE_ROLE_KEY",
       "RESEND_API_KEY"
+      "MEETING_REMINDERS_SECRET"
     ]);
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -275,25 +277,39 @@ export async function handleReminders(): Promise<Response> {
   }
 }
 
-if (import.meta.main) {
-  Deno.serve((req) => {
-    try {
-      if (req.method !== "POST") {
-        return createErrorResponse(
-          handleError(
-            new AppError(
-              "Invalid request method",
-              ERROR_CODES.INVALID_REQUEST,
-              405
-            )
-          )
-        );
-      }
-      return handleReminders();
-    } catch (error) {
-      return createErrorResponse(handleError(error));
+export function handleRequest(req: Request): Promise<Response> {
+  try {
+    if (req.method !== "POST") {
+      return createErrorResponse(
+        handleError(
+          new AppError(
+            "Invalid request method",
+            ERROR_CODES.INVALID_REQUEST,
+            405,
+          ),
+        ),
+      );
     }
-  });
+    const secret = Deno.env.get("MEETING_REMINDERS_SECRET");
+    if (!secret || req.headers.get("Authorization") !== `Bearer ${secret}`) {
+      return createErrorResponse(
+        handleError(
+          new AppError(
+            "Unauthorized",
+            ERROR_CODES.UNAUTHORIZED,
+            401,
+          ),
+        ),
+      );
+    }
+    return handleReminders();
+  } catch (error) {
+    return createErrorResponse(handleError(error));
+  }
+}
+
+if (import.meta.main) {
+  Deno.serve(handleRequest);
 }
 
 // Guard Deno.cron for local testing
