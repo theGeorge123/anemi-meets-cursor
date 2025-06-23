@@ -1,4 +1,3 @@
-
 -- Part 2: Functions
 
 CREATE OR REPLACE FUNCTION "public"."email"() RETURNS "text"
@@ -52,15 +51,21 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.award_badge(badge_id_to_award character varying) RETURNS trigger
+CREATE OR REPLACE FUNCTION public.award_badge() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
+DECLARE
+  badge_id_to_award VARCHAR;
 BEGIN
+  badge_id_to_award := TG_ARGV[0];
+
   IF EXISTS (SELECT 1 FROM public.profile_badges WHERE profile_id = NEW.id AND badge_id = badge_id_to_award) THEN
     RETURN NEW;
   END IF;
+  
   INSERT INTO public.profile_badges (profile_id, badge_id)
   VALUES (NEW.id, badge_id_to_award);
+  
   RETURN NEW;
 END;
 $$;

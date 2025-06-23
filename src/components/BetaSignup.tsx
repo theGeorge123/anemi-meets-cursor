@@ -7,7 +7,10 @@ const BetaSignup = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,19 +36,31 @@ const BetaSignup = () => {
   };
 
   return (
-    <section className="w-full bg-accent-50 border-b-2 border-accent-200 py-8 px-4 flex flex-col items-center justify-center text-center mb-8">
-      <h2 className="text-3xl sm:text-4xl font-extrabold text-primary-700 mb-2">{t('betaSignup.title')}</h2>
+    <section className="w-full bg-accent-50 border-b-2 border-accent-200 py-8 px-4 flex flex-col items-center justify-center text-center mb-8 mt-20">
+      <h2
+        className="text-4xl sm:text-5xl font-extrabold text-primary-700 mb-4 drop-shadow-lg bg-white/80 px-6 py-2 rounded-2xl border-2 border-primary-200"
+        style={{
+          letterSpacing: '0.02em',
+          textShadow: '0 2px 12px rgba(0,0,0,0.08)',
+        }}
+      >
+        {t('betaSignup.title')}
+      </h2>
       <p className="text-lg text-primary-600 mb-4 max-w-xl mx-auto">
-        {t('betaSignup.description')}<br/>
+        {t('betaSignup.description')}
+        <br />
         <span className="text-accent-500">{t('betaSignup.tagline')}</span>
       </p>
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 items-center justify-center w-full max-w-md mx-auto">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-2 items-center justify-center w-full max-w-md mx-auto"
+      >
         <input
           type="email"
           className="input-field flex-1 text-lg"
           placeholder={t('betaSignup.emailPlaceholder')}
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
           disabled={loading}
         />
@@ -69,4 +84,4 @@ const BetaSignup = () => {
   );
 };
 
-export default BetaSignup; 
+export default BetaSignup;

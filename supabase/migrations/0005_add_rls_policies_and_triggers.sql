@@ -30,7 +30,7 @@ CREATE POLICY "Allow users to read their own friendships" ON public.friendships 
 
 ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow guest to view invitation by token" ON public.invitations FOR SELECT TO anondummy, authenticated USING ((token)::text = (current_setting('request.headers'::text, true))::jsonb ->> 'x-invitation-token'::text));
+CREATE POLICY "Allow guest to view invitation by token" ON public.invitations FOR SELECT TO anon, authenticated USING (token::text = (current_setting('request.headers'::text, true))::jsonb->>'x-invitation-token');
 
 CREATE POLICY "Allow users to delete their own invitations" ON public.invitations FOR DELETE USING ((auth.uid() = inviter_id));
 
@@ -53,7 +53,7 @@ CREATE POLICY "Allow users to view their own profile" ON public.profiles FOR SEL
 CREATE TRIGGER award_account_creation_badge
 AFTER INSERT ON public.profiles
 FOR EACH ROW
-EXECUTE FUNCTION public.award_badge('account_created');
+EXECUTE PROCEDURE public.award_badge('account_created');
 
 CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users

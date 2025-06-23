@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/supabaseClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -7,17 +7,18 @@ import { Invitation, SoloAdventure, Profile } from '@/types';
 import { useOnboarding } from '@/context/OnboardingContext';
 import OnboardingModal from '@/features/dashboard/components/OnboardingModal';
 import SkeletonLoader from '@/components/SkeletonLoader';
+import { NavigationContext } from '../context/navigation';
 
 export default function Dashboard(): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { showOnboarding, completeOnboarding } = useOnboarding();
-
   const [profile, setProfile] = useState<Profile | null>(null);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [soloAdventures, setSoloAdventures] = useState<SoloAdventure[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useContext(NavigationContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -227,9 +228,11 @@ export default function Dashboard(): JSX.Element {
           )}
         </div>
         <div className="text-center mt-4">
-          <Link to="/account" className="text-primary-600 hover:underline">
-            {t('dashboard.settings')}
-          </Link>
+          {isAuthenticated && (
+            <Link to="/account" className="text-primary-600 hover:underline">
+              {t('dashboard.settings')}
+            </Link>
+          )}
         </div>
       </section>
     </ErrorBoundary>

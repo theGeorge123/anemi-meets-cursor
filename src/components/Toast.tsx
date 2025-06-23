@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ToastProps {
-  message: string;
-  icon?: React.ReactNode;
+  title: string;
+  description?: string;
   duration?: number; // ms
   onClose?: () => void;
   type?: 'success' | 'error' | 'info';
@@ -11,12 +11,46 @@ interface ToastProps {
 }
 
 const ICONS = {
-  success: <span aria-hidden="true" className="text-green-600 text-2xl">✅</span>,
-  error: <span aria-hidden="true" className="text-red-600 text-2xl">❌</span>,
-  info: <span aria-hidden="true" className="text-blue-600 text-2xl">ℹ️</span>,
+  success: (
+    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  ),
+  error: (
+    <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  ),
+  info: (
+    <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  ),
 };
 
-const Toast: React.FC<ToastProps> = ({ message, icon, duration = 5000, onClose, type = 'success', position = 'top-right' }) => {
+const Toast: React.FC<ToastProps> = ({
+  title,
+  description,
+  duration = 5000,
+  onClose,
+  type = 'success',
+  position = 'top-right',
+}) => {
   const { t } = useTranslation();
   const timer = useRef<NodeJS.Timeout | null>(null);
 
@@ -31,7 +65,6 @@ const Toast: React.FC<ToastProps> = ({ message, icon, duration = 5000, onClose, 
     };
   }, [duration, onClose]);
 
-  // Positioning logic
   let positionClass = '';
   switch (position) {
     case 'top-left':
@@ -49,21 +82,29 @@ const Toast: React.FC<ToastProps> = ({ message, icon, duration = 5000, onClose, 
 
   return (
     <div
-      className={`fixed z-50 max-w-xs w-full shadow-lg rounded-lg flex items-start gap-3 p-4 border-2 bg-white ${positionClass}
-        ${type === 'success' ? 'border-green-400' : type === 'error' ? 'border-red-400' : 'border-blue-400'}`}
-      role="alert"
+      className={`fixed z-50 max-w-sm w-full shadow-lg rounded-lg flex items-start gap-4 p-4 border bg-white ${positionClass}
+        ${type === 'success' ? 'border-green-200' : type === 'error' ? 'border-red-200' : 'border-blue-200'}`}
+      role="status"
       aria-live="polite"
       aria-atomic="true"
-      tabIndex={0}
     >
-      <div className="mt-1">{icon || ICONS[type]}</div>
-      <div className="flex-1 text-sm text-gray-900" style={{ wordBreak: 'break-word' }}>{message}</div>
+      <div className="flex-shrink-0 mt-0.5">{ICONS[type]}</div>
+      <div className="flex-1">
+        <p className="text-sm font-medium text-gray-900">{title}</p>
+        {description && <p className="mt-1 text-sm text-gray-700">{description}</p>}
+      </div>
       <button
         onClick={onClose}
         aria-label={t('close')}
-        className="ml-2 text-gray-500 hover:text-gray-900 focus:outline-none"
+        className="ml-4 flex-shrink-0 rounded-md p-1 text-gray-500 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
       >
-        <span aria-hidden="true">×</span>
+        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fillRule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
       </button>
     </div>
   );
