@@ -15,6 +15,8 @@ interface ToastState {
   type: 'success' | 'error';
 }
 
+type StatusType = 'success' | 'error' | 'loading' | 'idle';
+
 export default function InviteFriend(): JSX.Element {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
@@ -22,7 +24,7 @@ export default function InviteFriend(): JSX.Element {
 
   const [invite, setInvite] = useState<Invite | null>(null);
   // const [inviterProfile, setInviterProfile] = useState<Profile | null>(null);
-  const [status, setStatus] = useState<{ kind: 'error' | 'success'; msg: string } | null>(null);
+  const [status, setStatus] = useState<StatusType>('idle');
   const [toast, setToast] = useState<ToastState | null>(null);
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export default function InviteFriend(): JSX.Element {
         .single<Invite>();
 
       if (error || !inviteData) {
-        setStatus({ kind: 'error', msg: t('inviteFriend.invalidToken') });
+        setStatus('error');
         return;
       }
 
@@ -67,13 +69,24 @@ export default function InviteFriend(): JSX.Element {
       navigate('/dashboard');
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('inviteFriend.errorAccept');
-      setStatus({ kind: 'error', msg });
+      setStatus('error');
     }
   }, [invite, token, t, navigate]);
 
   return (
     <ErrorBoundary>
-      {status && <FormStatus status={status.kind} message={status.msg} />}
+      {status !== 'idle' && (
+        <FormStatus
+          type={status === 'loading' ? 'info' : (status as 'success' | 'error' | 'info')}
+          msg={
+            status === 'loading'
+              ? t('inviteFriend.loading')
+              : status === 'error'
+                ? t('inviteFriend.error')
+                : t('inviteFriend.success')
+          }
+        />
+      )}
 
       {/* …invite preview UI using inviterProfile… */}
 

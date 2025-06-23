@@ -19,6 +19,8 @@ interface SignupErrors {
   fullName?: string;
 }
 
+type StatusType = 'success' | 'error' | 'loading' | 'idle';
+
 const Signup = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -37,6 +39,8 @@ const Signup = () => {
   const [errors, setErrors] = useState<SignupErrors>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<StatusType>('idle');
+  const [message, setMessage] = useState<string>('');
 
   const validateStep = () => {
     const newErrors: SignupErrors = {};
@@ -283,10 +287,12 @@ const Signup = () => {
           <form onSubmit={handleSubmit} className="bg-primary-50 p-4 sm:p-6 rounded-xl shadow-md">
             <div className="min-h-[220px]">{renderStepContent()}</div>
 
-            <FormStatus
-              status={loading ? 'loading' : error ? 'error' : 'idle'}
-              message={error || ''}
-            />
+            {status !== 'idle' && (
+              <FormStatus
+                type={status === 'loading' ? 'info' : (status as 'success' | 'error' | 'info')}
+                msg={message}
+              />
+            )}
 
             <div className="mt-8 flex items-center justify-between">
               {step > 1 ? (

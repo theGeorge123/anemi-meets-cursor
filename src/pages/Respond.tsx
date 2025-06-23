@@ -18,6 +18,8 @@ interface ConfirmationInfo {
   ics_base64?: string;
 }
 
+type StatusType = 'success' | 'error' | 'loading' | 'idle';
+
 const Respond = () => {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
@@ -32,6 +34,8 @@ const Respond = () => {
   const [submitted, setSubmitted] = useState(false);
   const [confirmationInfo, setConfirmationInfo] = useState<ConfirmationInfo | null>(null);
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
+  const [status, setStatus] = useState<StatusType>('idle');
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -140,7 +144,7 @@ const Respond = () => {
   };
 
   if (loading) return <LoadingIndicator />;
-  if (error) return <FormStatus status="error" message={error} />;
+  if (error) return <FormStatus type="error" msg={error} />;
 
   if (submitted && confirmationInfo) {
     return (
@@ -333,6 +337,12 @@ const Respond = () => {
           {t('respond.btn_confirm')}
         </button>
       </form>
+      {status !== 'idle' && (
+        <FormStatus
+          type={status === 'loading' ? 'info' : (status as 'success' | 'error' | 'info')}
+          msg={message || ''}
+        />
+      )}
     </main>
   );
 };

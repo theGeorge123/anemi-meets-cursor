@@ -27,6 +27,7 @@ const Login = () => {
     null,
   );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [status, setStatus] = useState<StatusType>('idle');
 
   useEffect(() => {
     // Prefill email if saved
@@ -218,7 +219,12 @@ const Login = () => {
           </div>
         )}
 
-        <FormStatus status={loading ? 'loading' : error ? 'error' : 'idle'} message={error || ''} />
+        {status !== 'idle' && (
+          <FormStatus
+            type={status === 'loading' ? 'info' : (status as 'success' | 'error' | 'info')}
+            msg={error || ''}
+          />
+        )}
 
         <button
           type="submit"

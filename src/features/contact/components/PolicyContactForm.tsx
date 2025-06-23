@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import FormStatus from '../../../components/FormStatus';
 
+type StatusType = 'success' | 'error' | 'loading' | 'idle';
+
 const PolicyContactForm = () => {
   const { t } = useTranslation();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<StatusType>('idle');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,16 +102,20 @@ const PolicyContactForm = () => {
           </button>
         </div>
         <div className="h-5">
-          <FormStatus
-            status={loading ? 'loading' : status}
-            message={
-              status === 'success'
-                ? (t('common.contactSuccess') ?? '')
-                : status === 'error'
-                  ? (t('common.contactError') ?? '')
-                  : ''
-            }
-          />
+          {status !== 'idle' && (
+            <FormStatus
+              type={status === 'loading' ? 'info' : (status as 'success' | 'error' | 'info')}
+              msg={
+                status === 'success'
+                  ? (t('common.contactSuccess') ?? '')
+                  : status === 'error'
+                    ? (t('common.contactError') ?? '')
+                    : status === 'loading'
+                      ? t('common.loading')
+                      : ''
+              }
+            />
+          )}
         </div>
       </form>
     </div>
