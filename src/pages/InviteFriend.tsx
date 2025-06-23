@@ -93,7 +93,7 @@ export default function InviteFriend(): JSX.Element {
         {t('inviteFriend.accept')}
       </button>
 
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {toast && <Toast title={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </ErrorBoundary>
   );
 }

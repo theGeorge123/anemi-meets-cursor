@@ -331,7 +331,7 @@ const Meetups: React.FC = () => {
             aria-label={t('meetups:listAriaLabel', 'Meetup list')}
           >
             {toast && (
-              <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+              <Toast title={toast.message} type={toast.type} onClose={() => setToast(null)} />
             )}
             {filteredMeetups.map((meetup) => (
               <MeetupListItem

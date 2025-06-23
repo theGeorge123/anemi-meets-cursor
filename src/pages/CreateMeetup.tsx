@@ -110,7 +110,7 @@ const CreateMeetup = () => {
   const navigate = useNavigate();
   const [userCafePreferences, setUserCafePreferences] = useState<CafePreferences | null>(null);
   const [toast, setToast] = useState<{
-    message: string;
+    title: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
 
@@ -934,7 +934,7 @@ const CreateMeetup = () => {
       )}
       {toast && (
         <Toast
-          message={toast.message}
+          title={toast.title}
           type={toast.type}
           onClose={() => setToast(null)}
           position="bottom-right"

@@ -21,8 +21,6 @@ import {
 } from '../components/ui/alert-dialog';
 import { TablesUpdate } from '../types/supabase';
 
-const priceOptions = ['low', 'mid', 'high'];
-
 function Account() {
   const { t } = useTranslation();
   const { toast } = useToast();

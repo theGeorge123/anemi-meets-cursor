@@ -254,7 +254,7 @@ const Login = () => {
 
       {betaToast && (
         <Toast
-          message={betaToast.message}
+          title={betaToast.message}
           type={betaToast.type}
           onClose={() => setBetaToast(null)}
           position="top-right"

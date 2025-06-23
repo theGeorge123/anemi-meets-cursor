@@ -35,7 +35,7 @@ const Friends = () => {
   const [friends, setFriends] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{
-    message: string;
+    title: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
 
@@ -116,7 +116,7 @@ const Friends = () => {
       setSendStatus('error');
       setSendError(t('friends.errorNoUser', 'No user found with that email.'));
       setToast({
-        message: t('friends.errorNoUser', 'No user found with that email.'),
+        title: t('friends.errorNoUser', 'No user found with that email.'),
         type: 'error',
       });
       return;
@@ -128,11 +128,11 @@ const Friends = () => {
     if (reqError) {
       setSendStatus('error');
       setSendError(reqError.message);
-      setToast({ message: reqError.message, type: 'error' });
+      setToast({ title: reqError.message, type: 'error' });
     } else {
       setSendStatus('success');
       setEmail('');
-      setToast({ message: t('friends.requestSent'), type: 'success' });
+      setToast({ title: t('friends.requestSent'), type: 'success' });
     }
   };
 
@@ -155,15 +155,15 @@ const Friends = () => {
     try {
       if (accept) {
         await acceptFriendRequest(id);
-        setToast({ message: t('friends.accepted', 'Friend request accepted!'), type: 'success' });
+        setToast({ title: t('friends.accepted', 'Friend request accepted!'), type: 'success' });
       } else {
         await rejectFriendRequest(id);
-        setToast({ message: t('friends.rejected', 'Friend request rejected.'), type: 'info' });
+        setToast({ title: t('friends.rejected', 'Friend request rejected.'), type: 'info' });
       }
       setSendStatus('idle');
     } catch (err: unknown) {
       console.error('Friend request action failed:', err);
-      setToast({ message: getFriendlyError(err, t), type: 'error' });
+      setToast({ title: getFriendlyError(err, t), type: 'error' });
     }
   };
 
@@ -171,11 +171,11 @@ const Friends = () => {
     if (!user) return;
     try {
       await removeFriend(user.id, friendId);
-      setToast({ message: t('friends.removed', 'Friend removed.'), type: 'success' });
+      setToast({ title: t('friends.removed', 'Friend removed.'), type: 'success' });
       setFriends(friends.filter((f) => f.id !== friendId));
     } catch (err: unknown) {
       setToast({
-        message:
+        title:
           err instanceof Error ? err.message : t('friends.errorRemove', 'Could not remove friend.'),
         type: 'error',
       });
@@ -311,7 +311,7 @@ const Friends = () => {
       </section>
       {toast && (
         <Toast
-          message={toast.message}
+          title={toast.title}
           type={toast.type}
           onClose={() => setToast(null)}
           position="bottom-right"
