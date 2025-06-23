@@ -7,6 +7,7 @@ export interface Profile {
   age?: number;
   wantsupdates: boolean;
   isprivate: boolean;
+  favorite_tags?: string[];
 }
 
 export interface Invitation {

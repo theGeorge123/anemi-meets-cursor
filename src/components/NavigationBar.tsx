@@ -15,7 +15,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
   // Menu links met vertaalde labels
   const NAV_LINKS = [
     { to: '/dashboard', label: t('navigation.dashboard'), auth: true },
-    { to: '/create-meetup', label: t('navigation.plan'), auth: true },
     { to: '/friends', label: t('navigation.friends', 'Friends'), auth: true },
     { to: '/login', label: t('login.title'), auth: false },
   ];
@@ -60,6 +59,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
               </Link>
             ),
           )}
+          {/* Settings/Profile button */}
+          <Link
+            to="/account"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-colors min-h-[44px] min-w-[44px] text-primary-700 hover:bg-primary-50 active:scale-95 active:bg-primary-100"
+            aria-label={t('navigation.settings', 'Instellingen')}
+          >
+            <span className="text-xl">⚙️</span>
+            <span className="hidden sm:inline">{t('navigation.settings', 'Instellingen')}</span>
+          </Link>
           {profileEmoji && (
             <span className="ml-3 text-2xl" title={t('nav.profile')}>
               {profileEmoji}
@@ -134,6 +142,16 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ profileEmoji }) => {
                 {link.label}
               </Link>
             ))}
+            {/* Settings/Profile button in mobile menu */}
+            <Link
+              to="/account"
+              className="w-full text-center px-6 py-4 rounded-xl text-lg font-medium flex items-center justify-center gap-2 text-primary-700 hover:bg-primary-50 active:scale-95 active:bg-primary-100"
+              onClick={() => setMenuOpen(false)}
+              aria-label={t('navigation.settings', 'Instellingen')}
+            >
+              <span className="text-2xl">⚙️</span>
+              <span>{t('navigation.settings', 'Instellingen')}</span>
+            </Link>
             {profileEmoji && (
               <span className="text-3xl mt-2" title={t('nav.profile')}>
                 {profileEmoji}

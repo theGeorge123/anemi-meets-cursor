@@ -36,6 +36,11 @@ interface Cafe {
   mission?: string;
 }
 
+interface CafePreferences {
+  tags?: string[];
+  price_bracket?: string;
+}
+
 const getLastCity = () => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('lastCity') || '';
@@ -103,10 +108,7 @@ const CreateMeetup = () => {
   const [isLoadingCities, setIsLoadingCities] = useState(true);
   const [cityError, setCityError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [userCafePreferences, setUserCafePreferences] = useState<{
-    tags?: string[];
-    price_bracket?: string;
-  } | null>(null);
+  const [userCafePreferences, setUserCafePreferences] = useState<CafePreferences | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'error' | 'info';
@@ -172,13 +174,27 @@ const CreateMeetup = () => {
       } = await supabase.auth.getSession();
       if (session?.user?.id) {
         const { data: profile } = await getProfile(session.user.id);
-        if (profile && profile.cafe_preferences) {
-          setUserCafePreferences(
-            profile.cafe_preferences as {
-              tags?: string[];
-              price_bracket?: string;
-            },
-          );
+        if (profile) {
+          let tags: string[] = [];
+          let price_bracket: string | undefined = undefined;
+          // cafe_preferences kan een JSON string of object zijn
+          let cafePrefs = profile.cafe_preferences as CafePreferences | null;
+          if (cafePrefs && typeof cafePrefs === 'object' && !Array.isArray(cafePrefs)) {
+            if (Array.isArray(cafePrefs.tags)) {
+              tags = cafePrefs.tags;
+            }
+            if (typeof cafePrefs.price_bracket === 'string') {
+              price_bracket = cafePrefs.price_bracket;
+            }
+          }
+          if (
+            (!tags || tags.length === 0) &&
+            Array.isArray(profile.favorite_tags) &&
+            profile.favorite_tags.length > 0
+          ) {
+            tags = profile.favorite_tags;
+          }
+          setUserCafePreferences({ tags, price_bracket });
         }
       }
     };

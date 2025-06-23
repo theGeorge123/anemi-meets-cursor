@@ -507,6 +507,7 @@ export type Database = {
           wantsnotifications: boolean | null;
           wantsreminders: boolean | null;
           wantsupdates: boolean | null;
+          favorite_tags: string[] | null;
         };
         Insert: {
           age?: number | null;
@@ -527,6 +528,7 @@ export type Database = {
           wantsnotifications?: boolean | null;
           wantsreminders?: boolean | null;
           wantsupdates?: boolean | null;
+          favorite_tags?: string[] | null;
         };
         Update: {
           age?: number | null;
@@ -547,6 +549,7 @@ export type Database = {
           wantsnotifications?: boolean | null;
           wantsreminders?: boolean | null;
           wantsupdates?: boolean | null;
+          favorite_tags?: string[] | null;
         };
         Relationships: [];
       };

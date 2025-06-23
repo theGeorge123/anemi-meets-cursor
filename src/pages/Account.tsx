@@ -13,6 +13,7 @@ interface Profile {
   age?: number;
   wantsupdates: boolean;
   isprivate: boolean;
+  favorite_tags?: string[];
 }
 
 interface Invitation {
@@ -62,12 +63,20 @@ const Account = () => {
   const [editGender, setEditGender] = useState(false);
   const [editAge, setEditAge] = useState(false);
   const [showPwForm, setShowPwForm] = useState(false);
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [favoriteTags, setFavoriteTags] = useState<string[]>([]);
+  const [tagsSaving, setTagsSaving] = useState(false);
+  const [tagsMsg, setTagsMsg] = useState<string | null>(null);
 
   const EMOJI_OPTIONS = ['😃', '😎', '🧑‍🎤', '🦄', '🐱', '🐶', '☕️', '🌈', '💡', '❤️'];
-  const genderOptions = t('common.genderOptions', { returnObjects: true }) as {
-    value: string;
-    label: string;
-  }[];
+  const genderOptionsRaw = t('common.genderOptions', { returnObjects: true });
+  const genderOptions = Array.isArray(genderOptionsRaw)
+    ? genderOptionsRaw
+    : [
+        { value: 'male', label: 'Man' },
+        { value: 'female', label: 'Vrouw' },
+        { value: 'other', label: 'Anders' },
+      ];
 
   function generateRandomName() {
     const adjectives = [
@@ -132,6 +141,7 @@ const Account = () => {
         if (profile.age !== undefined && profile.age !== null) setAge(profile.age);
         setWantsUpdates(!!profile.wantsupdates);
         setIsPrivate(!!profile.isprivate);
+        setFavoriteTags(profile.favorite_tags ?? []);
       } else {
         setUser(null);
         setDisplayName(generateRandomName());
@@ -170,6 +180,23 @@ const Account = () => {
     setPendingGender(gender);
     setPendingAge(age);
   }, [navigate, t]);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const { data, error } = await supabase.from('cafes').select('tags');
+      if (error) return;
+      const tagSet = new Set<string>();
+      (data || []).forEach((cafe: { tags: string[] | null }) => {
+        (cafe.tags || []).forEach((tag) => tagSet.add(tag));
+      });
+      setAllTags(Array.from(tagSet).sort());
+    };
+    fetchTags();
+  }, []);
+
+  useEffect(() => {
+    if (user) setFavoriteTags(user.favorite_tags ?? []);
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -419,6 +446,29 @@ const Account = () => {
     setPrefsSaving(false);
   };
 
+  const handleToggleTag = (tag: string) => {
+    setFavoriteTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+    setTagsMsg(null);
+  };
+
+  const handleSaveTags = async () => {
+    if (!user || !user.id) return;
+    setTagsSaving(true);
+    setTagsMsg(null);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ favorite_tags: favoriteTags.length ? favoriteTags : null })
+      .eq('id', user.id);
+    if (error) {
+      setTagsMsg('Oeps, opslaan mislukt. Probeer het later nog eens.');
+    } else {
+      setTagsMsg('Top! Je vibes zijn opgeslagen.');
+    }
+    setTagsSaving(false);
+  };
+
   return (
     <div className="max-w-2xl mx-auto py-8 px-2 flex flex-col gap-8">
       {/* Profile Card */}
@@ -468,7 +518,7 @@ const Account = () => {
               <>
                 <span className="text-primary-700 font-semibold">{name}</span>
                 <button className="btn-secondary px-3 py-1 ml-2" onClick={() => setEditName(true)}>
-                  naam wijzigen
+                  Je naam aanpassen
                 </button>
               </>
             ) : (
@@ -482,8 +532,7 @@ const Account = () => {
                   autoFocus
                 />
                 <div className="text-xs text-gray-500 mt-1">
-                  {t('account.nameEditHint').toLowerCase() ||
-                    'Naam verkeerd gespeld? Pas hier aan!'}
+                  Hoe wil je genoemd worden? Gebruik gerust een bijnaam!
                 </div>
                 <div className="flex gap-2 mt-1">
                   <button
@@ -491,10 +540,10 @@ const Account = () => {
                     onClick={handleNameSave}
                     disabled={nameSaving}
                   >
-                    opslaan
+                    Opslaan
                   </button>
                   <button className="btn-secondary px-4 py-1" onClick={() => setEditName(false)}>
-                    annuleren
+                    Laat maar
                   </button>
                 </div>
                 {nameMsg && <div className="text-sm mt-1 text-green-700">✅ {nameMsg}</div>}
@@ -512,7 +561,7 @@ const Account = () => {
               <>
                 <span className="text-primary-700 font-semibold">{email}</span>
                 <button className="btn-secondary px-3 py-1 ml-2" onClick={() => setEditEmail(true)}>
-                  e-mail wijzigen
+                  Je e-mailadres aanpassen
                 </button>
               </>
             ) : (
@@ -526,7 +575,7 @@ const Account = () => {
                   autoFocus
                 />
                 <div className="text-xs text-gray-500 mt-1">
-                  {t('account.emailEditHint').toLowerCase() || 'E-mail verkeerd? Pas hier aan!'}
+                  We delen je e-mail nooit met anderen.
                 </div>
                 <div className="flex gap-2 mt-1">
                   <button
@@ -534,10 +583,10 @@ const Account = () => {
                     onClick={handleEmailSave}
                     disabled={emailSaving}
                   >
-                    opslaan
+                    Opslaan
                   </button>
                   <button className="btn-secondary px-4 py-1" onClick={() => setEditEmail(false)}>
-                    annuleren
+                    Laat maar
                   </button>
                 </div>
                 {emailMsg && <div className="text-sm mt-1 text-green-700">✅ {emailMsg}</div>}
@@ -562,7 +611,7 @@ const Account = () => {
                   className="btn-secondary px-3 py-1 ml-2"
                   onClick={() => setEditGender(true)}
                 >
-                  toch wijzigen?
+                  Wil je dit aanpassen?
                 </button>
               </>
             ) : (
@@ -591,10 +640,10 @@ const Account = () => {
                     onClick={handleGenderSave}
                     disabled={genderSaving}
                   >
-                    opslaan
+                    Opslaan
                   </button>
                   <button className="btn-secondary px-4 py-1" onClick={() => setEditGender(false)}>
-                    annuleren
+                    Laat maar
                   </button>
                 </div>
                 {genderMsg && <div className="text-sm mt-1 text-green-700">✅ {genderMsg}</div>}
@@ -612,7 +661,7 @@ const Account = () => {
                   {age || t('account.noAge').toLowerCase()}
                 </span>
                 <button className="btn-secondary px-3 py-1 ml-2" onClick={() => setEditAge(true)}>
-                  leeftijd wijzigen
+                  Leeftijd aanpassen
                 </button>
               </>
             ) : (
@@ -637,10 +686,10 @@ const Account = () => {
                     onClick={handleAgeSave}
                     disabled={ageSaving}
                   >
-                    opslaan
+                    Opslaan
                   </button>
                   <button className="btn-secondary px-4 py-1" onClick={() => setEditAge(false)}>
-                    annuleren
+                    Laat maar
                   </button>
                 </div>
                 {ageMsg && <div className="text-sm mt-1 text-green-700">✅ {ageMsg}</div>}
@@ -744,6 +793,33 @@ const Account = () => {
             <div className="text-sm mt-2 text-green-700 flex items-center gap-1">✅ {prefsMsg}</div>
           )}
         </div>
+      </div>
+
+      {/* Vibes/tags sectie */}
+      <div className="bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-4 border border-[#b2dfdb]/30">
+        <h2 className="text-xl font-bold text-primary-700 mb-2 flex items-center gap-2">
+          ✨ Jouw favoriete vibes
+        </h2>
+        <p className="text-gray-500 mb-2">
+          Kies de sfeer die jij zoekt in een café. Nieuwe vibes worden vanzelf toegevoegd!
+        </p>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {allTags.length === 0 && <span className="text-gray-400">Geen vibes gevonden...</span>}
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => handleToggleTag(tag)}
+              className={`px-4 py-2 rounded-full border-2 transition-all text-sm font-medium ${favoriteTags.includes(tag) ? 'bg-primary-500 text-white border-primary-500' : 'bg-white hover:border-primary-300'}`}
+            >
+              {tag.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+            </button>
+          ))}
+        </div>
+        <button className="btn-primary w-fit" onClick={handleSaveTags} disabled={tagsSaving}>
+          {tagsSaving ? 'Opslaan...' : 'Vibes opslaan'}
+        </button>
+        {tagsMsg && <div className="text-green-700 mt-2">{tagsMsg}</div>}
       </div>
 
       {/* Meetups Section */}
