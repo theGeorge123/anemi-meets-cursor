@@ -35,15 +35,15 @@ export async function handleAcceptMeetingInvite(req: Request): Promise<Response>
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { token, inviteeEmail } = await req.json();
-    if (!token) {
-      throw new AppError('Missing invite token', ERROR_CODES.VALIDATION_ERROR, 400);
+    const { token, email } = await req.json();
+    if (!token || !email) {
+      throw new AppError('Missing invite token or email', ERROR_CODES.VALIDATION_ERROR, 400);
     }
 
     // Look up the invite
     const { data: invite, error: inviteError } = await supabase
       .from('meeting_invites')
-      .select('id, inviter_id, invitee_email, meeting_id, status')
+      .select('id, inviter_id, meeting_id, status')
       .eq('token', token)
       .eq('status', 'pending')
       .maybeSingle();
@@ -51,30 +51,16 @@ export async function handleAcceptMeetingInvite(req: Request): Promise<Response>
       throw new AppError('Invalid or expired invite token', ERROR_CODES.NOT_FOUND, 404);
     }
 
-    // Check authentication
-    const authHeader = req.headers.get('Authorization');
-    let isAuthenticated = false;
-    let userEmail = null;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const jwt = authHeader.replace('Bearer ', '');
-      const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
-      if (userData?.user && !authError) {
-        isAuthenticated = true;
-        userEmail = userData.user.email;
-      }
-    }
-
-    // Anyone can accept the invite now, so skip email checks
     // Mark as accepted
     const { error: updateError } = await supabase
       .from('meeting_invites')
-      .update({ status: 'accepted', accepted_at: new Date().toISOString() })
+      .update({ status: 'accepted', accepted_at: new Date().toISOString(), invitee_email: email })
       .eq('id', invite.id);
     if (updateError) {
       throw new AppError('Could not update invite', ERROR_CODES.DATABASE_ERROR, 500, updateError);
     }
 
-    // Send confirmation emails to both inviter and invitee
+    // Send confirmation emails to both inviter and the provided email
     // Look up inviter email
     const { data: inviterProfile } = await supabase
       .from('profiles')
@@ -82,7 +68,7 @@ export async function handleAcceptMeetingInvite(req: Request): Promise<Response>
       .eq('id', invite.inviter_id)
       .maybeSingle();
     const inviterEmail = inviterProfile?.email;
-    const inviteeEmailToSend = invite.invitee_email;
+    const inviteeEmailToSend = email;
     // Compose email content (customize as needed)
     const subject = 'Meeting Accepted!';
     const html = `<p>Your meeting invite has been accepted. See you soon!</p>`;
