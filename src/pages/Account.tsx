@@ -102,21 +102,20 @@ function Account() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Not logged in');
       // Prepare updates for Supabase with correct types
-      const updatesCopy = { ...updates };
+      const { age, ...restUpdates } = updates;
+      const updatesCopy: Partial<TablesUpdate<'profiles'>> = { ...restUpdates };
       let ageToSend: number | null | undefined = undefined;
-      if ('age' in updatesCopy) {
-        if (updatesCopy.age === '' || updatesCopy.age === undefined) {
+      if (typeof age === 'string') {
+        if (age === '') {
           ageToSend = null;
-        } else if (typeof updatesCopy.age === 'string') {
-          const parsed = Number(updatesCopy.age);
+        } else {
+          const parsed = Number(age);
           ageToSend = isNaN(parsed) ? null : parsed;
         }
-        delete updatesCopy.age;
       }
-      const updatesToSend: TablesUpdate<'profiles'> = {
-        ...updatesCopy,
-        ...(ageToSend !== undefined ? { age: ageToSend } : {}),
-      };
+      // Only add age if it's a number or null
+      const updatesToSend: TablesUpdate<'profiles'> =
+        ageToSend !== undefined ? { ...updatesCopy, age: ageToSend } : { ...updatesCopy };
       const { error } = await supabase.from('profiles').update(updatesToSend).eq('id', user.id);
       if (error) throw error;
       setProfile((prev) => safeSetProfile(prev, updates));
