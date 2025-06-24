@@ -190,12 +190,7 @@ function Account() {
         <EditableField
           label={t('account.age', 'Leeftijd')}
           value={profile.age}
-          onSave={(value) =>
-            updateProfile(
-              { age: value === '' ? null : Number(value) },
-              'Je leeftijd is bijgewerkt.',
-            )
-          }
+          onSave={(value) => updateProfile({ age: value }, 'Je leeftijd is bijgewerkt.')}
         />
         <EditableField
           label={t('account.bio', 'Bio')}
