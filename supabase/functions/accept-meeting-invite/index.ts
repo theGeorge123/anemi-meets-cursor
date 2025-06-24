@@ -29,9 +29,7 @@ export async function handleAcceptMeetingInvite(req: Request): Promise<Response>
 
   try {
     validateEnvVars(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']);
-    // @ts-expect-error Deno global is available in Edge Functions
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-    // @ts-expect-error Deno global is available in Edge Functions
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false },
@@ -66,22 +64,7 @@ export async function handleAcceptMeetingInvite(req: Request): Promise<Response>
       }
     }
 
-    // Guest flow: require inviteeEmail and validate
-    if (!isAuthenticated) {
-      if (!inviteeEmail || inviteeEmail !== invite.invitee_email) {
-        throw new AppError('Email mismatch or missing', ERROR_CODES.UNAUTHORIZED, 403);
-      }
-    } else {
-      // Authenticated: email must match invitee_email
-      if (userEmail !== invite.invitee_email) {
-        throw new AppError(
-          'Authenticated user does not match invitee',
-          ERROR_CODES.UNAUTHORIZED,
-          403,
-        );
-      }
-    }
-
+    // Anyone can accept the invite now, so skip email checks
     // Mark as accepted
     const { error: updateError } = await supabase
       .from('meeting_invites')
@@ -123,5 +106,4 @@ export async function handleAcceptMeetingInvite(req: Request): Promise<Response>
   }
 }
 
-// @ts-expect-error Deno global is available in Edge Functions
 Deno.serve(handleAcceptMeetingInvite);

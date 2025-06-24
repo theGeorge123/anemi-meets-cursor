@@ -146,26 +146,12 @@ export default function SoloAdventure(): JSX.Element {
     const specificTime = timeSlotMap[adventureTime] || '09:00:00';
 
     try {
-      const session = (await supabase.auth.getSession()).data.session;
-      const accessToken = session?.access_token;
-      console.log('Access token:', accessToken);
-      if (!accessToken) {
-        setScheduleStatus({ type: 'error', msg: t('common.error') + ' (Not logged in)' });
-        setScheduling(false);
-        return;
-      }
-      const headers = {
-        Authorization: `Bearer ${accessToken}`,
-      };
-      console.log('Headers:', headers);
-
       const { error } = await supabase.functions.invoke('schedule-solo-adventure', {
         body: {
           cafeId: selectedCafe.id,
           date: adventureDate.toISOString().split('T')[0],
           time: specificTime,
         },
-        headers,
       });
 
       if (error) throw error;

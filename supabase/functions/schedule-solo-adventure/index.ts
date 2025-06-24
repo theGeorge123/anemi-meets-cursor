@@ -1,11 +1,13 @@
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { Database } from '../../src/types/supabase.ts';
 import { validateEnvVars } from '../utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'Authorization, authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 // Utility to escape HTML
@@ -37,46 +39,49 @@ async function handler(req: Request) {
   }
 
   try {
-    validateEnvVars(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'RESEND_API_KEY']);
+    validateEnvVars([
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
+      'RESEND_API_KEY',
+    ]);
     // Environment variables
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
+    const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY } =
+      Deno.env.toObject();
 
-    // Create Supabase admin client
-    const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    // user-scoped client for auth
+    const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
+    });
 
-    // Get user from Authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Missing or invalid authorization header' }), {
-        status: 401,
-        headers: corsHeaders,
-      });
-    }
     const {
       data: { user },
-    } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (!user) {
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: corsHeaders,
       });
     }
 
-    // Get request body
-    const { cafeId, date, time } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response('Invalid JSON', { status: 400, headers: corsHeaders });
+    }
+    const { cafeId, date, time } = body;
     if (!cafeId || !date || !time) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return new Response('Missing fields', { status: 400, headers: corsHeaders });
     }
 
-    // Combine date and time into a single ISO string
-    const adventureDate = new Date(`${date}T${time}`).toISOString();
+    // Combine date and time into a single ISO string with explicit offset
+    // TODO: Make offset dynamic based on user/cafe location if needed
+    const adventureDate = `${date}T${time}:00+02:00`;
 
-    // 1. Save adventure to the database
+    // admin client just for the insert
+    const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data: newAdventure, error: insertError } = await supabaseAdmin
       .from('solo_adventures')
       .insert({
@@ -89,7 +94,7 @@ async function handler(req: Request) {
 
     if (insertError) throw insertError;
 
-    // 2. Get cafe details
+    // 2. Get cafe details (no stray space in select)
     const { data: cafe, error: cafeError } = await supabaseAdmin
       .from('cafes')
       .select('name, address')
@@ -121,8 +126,12 @@ async function handler(req: Request) {
     });
 
     if (!resendResponse.ok) {
-      const errorBody = await resendResponse.json();
-      throw new Error(`Failed to send email: ${JSON.stringify(errorBody)}`);
+      const errorBody = await resendResponse.json().catch(() => ({}));
+      console.error('Failed to send email:', resendResponse.statusText, errorBody);
+      return new Response(JSON.stringify({ error: 'Failed to send confirmation email' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
     }
 
     return new Response(JSON.stringify(newAdventure), {

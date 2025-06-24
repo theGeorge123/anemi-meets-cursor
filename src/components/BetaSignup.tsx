@@ -37,28 +37,42 @@ const BetaSignup = () => {
   };
 
   return (
-    <section className="w-full bg-accent-50 border-b-2 border-accent-200 py-8 px-4 flex flex-col items-center justify-center text-center mb-8 mt-20">
+    <section className="relative w-full bg-gradient-to-br from-blue-50 via-green-50 to-white py-12 px-4 flex flex-col items-center justify-center text-center mb-8 overflow-hidden">
+      {/* Fun floating shapes */}
+      <span className="absolute left-10 top-8 animate-float-slow text-4xl opacity-20 select-none pointer-events-none">
+        ☕️
+      </span>
+      <span className="absolute right-16 top-20 animate-float-slower text-3xl opacity-10 select-none pointer-events-none">
+        🟠
+      </span>
+      <span className="absolute left-1/2 bottom-10 animate-float-slow text-5xl opacity-10 select-none pointer-events-none">
+        🟢
+      </span>
+      <span className="absolute right-1/4 bottom-24 animate-float-slower text-4xl opacity-10 select-none pointer-events-none">
+        🌈
+      </span>
+
       <h2
-        className="text-4xl sm:text-5xl font-extrabold text-primary-700 mb-4 drop-shadow-lg bg-white/80 px-6 py-2 rounded-2xl border-2 border-primary-200"
-        style={{
-          letterSpacing: '0.02em',
-          textShadow: '0 2px 12px rgba(0,0,0,0.08)',
-        }}
+        className="relative z-10 text-5xl sm:text-6xl font-extrabold text-primary-700 mb-4 drop-shadow-lg font-fun animate-bounce"
+        style={{ letterSpacing: '0.02em', textShadow: '0 2px 12px rgba(0,0,0,0.08)' }}
       >
-        {t('betaSignup.title')}
+        {t('betaSignup.title')}{' '}
+        <span role="img" aria-label="party">
+          🎉
+        </span>
       </h2>
-      <p className="text-lg text-primary-600 mb-4 max-w-xl mx-auto">
+      <p className="relative z-10 text-lg sm:text-xl text-primary-700 mb-4 max-w-2xl mx-auto font-lato">
         {t('betaSignup.description')}
         <br />
-        <span className="text-accent-500">{t('betaSignup.tagline')}</span>
+        <span className="italic text-accent-500">{t('betaSignup.tagline')}</span>
       </p>
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col sm:flex-row gap-2 items-center justify-center w-full max-w-md mx-auto"
+        className="relative z-10 flex flex-col sm:flex-row gap-2 items-center justify-center w-full max-w-md mx-auto"
       >
         <input
           type="email"
-          className="input-field flex-1 text-lg"
+          className="input-field flex-1 text-lg rounded-full shadow-lg"
           placeholder={t('betaSignup.emailPlaceholder')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -67,12 +81,22 @@ const BetaSignup = () => {
         />
         <button
           type="submit"
-          className="btn-primary px-6 py-3 text-lg font-bold"
+          className="btn-primary px-8 py-3 text-lg font-bold rounded-full shadow-lg flex items-center gap-2"
           disabled={loading}
         >
-          {loading ? t('betaSignup.sending') : t('betaSignup.cta')}
+          {loading ? (
+            t('betaSignup.sending')
+          ) : (
+            <>
+              {t('betaSignup.cta')} <span>☕️</span>
+            </>
+          )}
         </button>
       </form>
+      {/* Animated illustration (if you have one) */}
+      <div className="relative z-10 mt-12 animate-float-slow">
+        {/* Place your SVG or illustration here if desired */}
+      </div>
       {toast && (
         <Toast>
           <ToastTitle>{toast.message}</ToastTitle>

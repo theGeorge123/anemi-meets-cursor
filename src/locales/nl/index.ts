@@ -201,7 +201,15 @@ export const nl = {
     wantsNotificationsCheckbox: 'Ja, stuur meldingen in mijn browser!',
     isPrivate: 'Houd mijn profiel privé',
     isPrivateCheckbox: 'Ja, ik wil mijn profiel privé houden!',
-    dangerZone: 'Gevaarzone',
+    dangerZone: {
+      title: 'Gevaarzone',
+      description: 'Deze acties zijn permanent en kunnen niet ongedaan worden gemaakt.',
+      deleteAccountButton: 'Verwijder mijn account',
+      deleteAccountConfirm:
+        'Weet je zeker dat je je account wilt verwijderen? Dit kan niet ongedaan worden gemaakt.',
+      deleteAccountSuccess: 'Je account is verwijderd.',
+      deleteAccountError: 'Verwijderen van account mislukt. Probeer het opnieuw.',
+    },
     deleteAccount: 'Verwijder mijn account',
     deleteConfirm: 'Weet je het zeker? Dit kun je niet meer terugdraaien!',
     confirmDelete: 'Ja, alles verwijderen',
@@ -214,7 +222,6 @@ export const nl = {
     tagsTitle: 'Favoriete café vibes',
     priceBracketTitle: 'Voorkeur voor prijsklasse',
     savePreferences: 'Voorkeuren opslaan',
-    dangerZoneInfo: 'Deze acties zijn permanent en kunnen niet ongedaan worden gemaakt.',
     errorSession: 'Oeps, er ging iets mis. Log opnieuw in!',
     immortal: 'Onsterfelijk',
     priceBrackets: {
