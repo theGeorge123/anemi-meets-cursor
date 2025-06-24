@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 import SkeletonLoader from '../components/SkeletonLoader';
+import VerifiedCafePopup from '../features/meetups/components/VerifiedCafePopup';
 
 type InvitationWithCafe = {
   selected_date: string;
@@ -10,6 +11,11 @@ type InvitationWithCafe = {
   cafe_id?: string;
   cafe_name?: string;
   cafe_address?: string;
+  cafe_verified?: boolean | null;
+  cafe_story?: string | null;
+  cafe_specialty?: string | null;
+  cafe_mission?: string | null;
+  cafe_image_url?: string | null;
   date_time_options?: { date: string; times: string[] }[];
 };
 
@@ -23,6 +29,7 @@ const Invite = () => {
   const [error, setError] = useState<string | null>(null);
   const [canShare, setCanShare] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [showVerifiedPopup, setShowVerifiedPopup] = useState(false);
 
   useEffect(() => {
     // Check if Web Share API is available
@@ -58,12 +65,17 @@ const Invite = () => {
             if (inviteData.cafe_id) {
               const { data: cafeData, error: cafeError } = await supabase
                 .from('cafes')
-                .select('name, address')
+                .select('name, address, verified, story, specialty, mission, image_url')
                 .eq('id', inviteData.cafe_id)
                 .maybeSingle();
               if (!cafeError && cafeData) {
                 (inviteData as InvitationWithCafe).cafe_name = cafeData.name;
                 (inviteData as InvitationWithCafe).cafe_address = cafeData.address;
+                (inviteData as InvitationWithCafe).cafe_verified = cafeData.verified;
+                (inviteData as InvitationWithCafe).cafe_story = cafeData.story;
+                (inviteData as InvitationWithCafe).cafe_specialty = cafeData.specialty;
+                (inviteData as InvitationWithCafe).cafe_mission = cafeData.mission;
+                (inviteData as InvitationWithCafe).cafe_image_url = cafeData.image_url;
               }
             }
             setInvitation(inviteData as InvitationWithCafe);
@@ -158,6 +170,15 @@ const Invite = () => {
             <span className="font-bold text-xl">
               {invitation.cafe_name || t('invite.cafeInfoPending', 'Café will be revealed soon!')}
             </span>
+            {invitation.cafe_verified && (
+              <button
+                type="button"
+                onClick={() => setShowVerifiedPopup(true)}
+                className="text-green-600 text-xs underline"
+              >
+                ✓ Verified
+              </button>
+            )}
             {invitation.cafe_address && (
               <span className="text-gray-700">{invitation.cafe_address}</span>
             )}
@@ -261,6 +282,19 @@ const Invite = () => {
             <div className="text-red-600 mt-2">{t('invite.copyError')}</div>
           )}
         </>
+      )}
+      {invitation && invitation.cafe_verified && (
+        <VerifiedCafePopup
+          cafe={{
+            name: invitation.cafe_name || '',
+            story: invitation.cafe_story || undefined,
+            specialty: invitation.cafe_specialty || undefined,
+            mission: invitation.cafe_mission || undefined,
+            image_url: invitation.cafe_image_url || undefined,
+          }}
+          open={showVerifiedPopup}
+          onClose={() => setShowVerifiedPopup(false)}
+        />
       )}
     </div>
   );

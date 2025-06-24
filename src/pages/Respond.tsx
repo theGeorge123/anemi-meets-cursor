@@ -6,6 +6,7 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import FormStatus from '../components/FormStatus';
 import { Database } from '../types/supabase';
 import { isDateTimeOptions } from '../utils/typeGuards';
+import VerifiedCafePopup from '../features/meetups/components/VerifiedCafePopup';
 
 type Invitation = Database['public']['Tables']['invitations']['Row'];
 type Cafe = Database['public']['Tables']['cafes']['Row'];
@@ -32,6 +33,7 @@ const Respond = () => {
   const [submitted, setSubmitted] = useState(false);
   const [confirmationInfo, setConfirmationInfo] = useState<ConfirmationInfo | null>(null);
   const UPDATES_EMAIL_KEY = 'anemi-updates-email';
+  const [showVerifiedPopup, setShowVerifiedPopup] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -234,7 +236,18 @@ const Respond = () => {
         )}
         {cafe && cafe.name ? (
           <>
-            <p className="text-gray-700 font-medium">{cafe.name}</p>
+            <p className="text-gray-700 font-medium flex items-center gap-2">
+              {cafe.name}
+              {cafe.verified && (
+                <button
+                  type="button"
+                  onClick={() => setShowVerifiedPopup(true)}
+                  className="text-green-600 text-xs underline"
+                >
+                  ✓ Verified
+                </button>
+              )}
+            </p>
             {cafe.address && <p className="text-gray-500">{cafe.address}</p>}
           </>
         ) : invitation && invitation.cafe_id ? (
@@ -333,6 +346,19 @@ const Respond = () => {
           {t('respond.btn_confirm')}
         </button>
       </form>
+      {cafe && cafe.verified && (
+        <VerifiedCafePopup
+          cafe={{
+            name: cafe.name,
+            story: cafe.story || undefined,
+            specialty: cafe.specialty || undefined,
+            mission: cafe.mission || undefined,
+            image_url: cafe.image_url || undefined,
+          }}
+          open={showVerifiedPopup}
+          onClose={() => setShowVerifiedPopup(false)}
+        />
+      )}
     </main>
   );
 };
