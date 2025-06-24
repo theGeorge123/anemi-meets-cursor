@@ -18,10 +18,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../components/ui/alert-dialog';
-import { TablesUpdate } from '../types/supabase';
-import { Input } from '../components/ui/input';
 import { Switch } from '../components/ui/switch';
 import { Chip } from '../components/Chip';
+import { TablesUpdate } from '../types/supabase';
 
 function Account() {
   const { t } = useTranslation();
@@ -68,7 +67,7 @@ function Account() {
           fullname: data.fullname || '',
           email: data.email || '',
           emoji: data.emoji || '',
-          age: data.age !== null && data.age !== undefined ? String(data.age) : '',
+          age: typeof data.age === 'number' && isFinite(data.age) ? String(data.age) : '',
           bio: data.bio || '',
           preferred_language: data.preferred_language || '',
           isprivate: !!data.isprivate,
@@ -86,23 +85,41 @@ function Account() {
     };
   }, [toast]);
 
+  // Helper to safely update profile state with correct age type
+  function safeSetProfile(prev: typeof profile, updates: Partial<typeof profile>): typeof profile {
+    let newAge = prev.age;
+    if ('age' in updates && typeof updates.age === 'string') {
+      newAge = updates.age;
+    }
+    const { age, ...rest } = updates;
+    return { ...prev, ...rest, age: newAge };
+  }
+
   const updateProfile = async (updates: Partial<typeof profile>, successMessage: string) => {
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Not logged in');
-      const updatesToSend = { ...updates };
-      if ('age' in updatesToSend && updatesToSend.age !== undefined) {
-        updatesToSend.age = updatesToSend.age === '' ? null : Number(updatesToSend.age);
+      // Prepare updates for Supabase with correct types
+      const updatesCopy = { ...updates };
+      let ageToSend: number | null | undefined = undefined;
+      if ('age' in updatesCopy) {
+        if (updatesCopy.age === '' || updatesCopy.age === undefined) {
+          ageToSend = null;
+        } else if (typeof updatesCopy.age === 'string') {
+          const parsed = Number(updatesCopy.age);
+          ageToSend = isNaN(parsed) ? null : parsed;
+        }
+        delete updatesCopy.age;
       }
+      const updatesToSend: TablesUpdate<'profiles'> = {
+        ...updatesCopy,
+        ...(ageToSend !== undefined ? { age: ageToSend } : {}),
+      };
       const { error } = await supabase.from('profiles').update(updatesToSend).eq('id', user.id);
       if (error) throw error;
-      setProfile((prev) => ({
-        ...prev,
-        ...updates,
-        age: updates.age !== undefined && updates.age !== null ? String(updates.age) : prev.age,
-      }));
+      setProfile((prev) => safeSetProfile(prev, updates));
       toast({ title: 'Gelukt!', description: successMessage });
     } catch (error: unknown) {
       let message = 'De wijziging kon niet worden opgeslagen.';
