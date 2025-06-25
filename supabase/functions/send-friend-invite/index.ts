@@ -31,16 +31,15 @@ function getUUID() {
   );
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 export async function handleFriendInvite(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
-      },
-    });
+    return new Response('ok', { status: 200, headers: corsHeaders });
   }
 
   if (req.method !== 'POST') {
@@ -191,14 +190,13 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
 
     return new Response(JSON.stringify({ success: true, token }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
-      },
+      headers: corsHeaders,
     });
   } catch (error) {
-    return createErrorResponse(handleError(error));
+    return new Response(JSON.stringify({ error: error.message || 'Unknown error' }), {
+      status: 500,
+      headers: corsHeaders,
+    });
   }
 }
 

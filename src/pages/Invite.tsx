@@ -23,6 +23,13 @@ const Invite = () => {
   const [error, setError] = useState<string | null>(null);
   const [canShare, setCanShare] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     // Check if Web Share API is available
@@ -130,6 +137,48 @@ const Invite = () => {
         setCopyStatus('error');
         setTimeout(() => setCopyStatus('idle'), 2000);
       }
+    }
+  };
+
+  const handleAccept = async (becomeFriends: boolean) => {
+    setSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const res = await fetch(
+        'https://bijyercgpgaheeoeumtv.functions.supabase.co/accept-friend-invite',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({
+            token,
+            email,
+            selected_time: selectedTime,
+            becomeFriends,
+            password: becomeFriends && password ? password : undefined,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setErrorMsg(data.error || 'Something went wrong.');
+      } else {
+        setSuccessMsg(
+          becomeFriends
+            ? t('invite.successFriends', 'You are now friends! Check your email for details.')
+            : t(
+                'invite.successNoFriends',
+                'You have accepted the invite! Check your email for details.',
+              ),
+        );
+      }
+    } catch (err) {
+      setErrorMsg('Something went wrong.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -260,6 +309,85 @@ const Invite = () => {
           {copyStatus === 'error' && (
             <div className="text-red-600 mt-2">{t('invite.copyError')}</div>
           )}
+
+          {/* Accept Invite Form */}
+          <div className="mt-8 bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-xl font-bold mb-4">
+              {t('invite.acceptHeading', 'Accept this invite')}
+            </h3>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                // Default to becomeFriends
+                handleAccept(true);
+              }}
+              className="flex flex-col gap-4 items-center"
+            >
+              <input
+                type="email"
+                className="input-field w-full max-w-xs"
+                placeholder={t('invite.emailPlaceholder', 'Your email')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={submitting}
+              />
+              {/* Time picker if needed */}
+              {invitation.date_time_options && (
+                <select
+                  className="input-field w-full max-w-xs"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  required
+                  disabled={submitting}
+                >
+                  <option value="">{t('invite.selectTime', 'Select a time')}</option>
+                  {invitation.date_time_options.flatMap((opt) =>
+                    (opt.times || []).map((time) => (
+                      <option key={opt.date + time} value={`${opt.date}|${time}`}>
+                        {new Date(opt.date).toLocaleDateString(t('common.locale_code'))} -{' '}
+                        {t(`common.${time}`, time)}
+                      </option>
+                    )),
+                  )}
+                </select>
+              )}
+              {/* Password field, only if becoming friends */}
+              {showPassword && (
+                <input
+                  type="password"
+                  className="input-field w-full max-w-xs"
+                  placeholder={t('invite.passwordPlaceholder', 'Set a password (optional)')}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={submitting}
+                />
+              )}
+              <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                <button
+                  type="button"
+                  className="btn-primary px-6 py-2 rounded-lg"
+                  disabled={submitting || !email || !selectedTime}
+                  onClick={() => {
+                    setShowPassword(true);
+                    handleAccept(true);
+                  }}
+                >
+                  {t('invite.acceptAndFriend', 'Accept & Become Friends')}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary px-6 py-2 rounded-lg"
+                  disabled={submitting || !email || !selectedTime}
+                  onClick={() => handleAccept(false)}
+                >
+                  {t('invite.acceptNoFriend', 'Accept Without Becoming Friends')}
+                </button>
+              </div>
+              {successMsg && <div className="text-green-600 mt-2">{successMsg}</div>}
+              {errorMsg && <div className="text-red-600 mt-2">{errorMsg}</div>}
+            </form>
+          </div>
         </>
       )}
     </div>

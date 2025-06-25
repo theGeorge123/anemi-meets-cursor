@@ -232,7 +232,7 @@ const Meetups: React.FC = () => {
         };
 
         const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-meeting-confirmation`,
+          'https://bijyercgpgaheeoeumtv.functions.supabase.co/send-meeting-confirmation',
           {
             method: 'POST',
             headers: {

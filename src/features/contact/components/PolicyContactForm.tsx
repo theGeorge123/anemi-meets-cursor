@@ -15,7 +15,7 @@ const PolicyContactForm = () => {
     setLoading(true);
     setStatus('idle');
     try {
-      const res = await fetch('/functions/v1/contact', {
+      const res = await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

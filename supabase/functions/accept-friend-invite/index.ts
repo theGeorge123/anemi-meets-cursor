@@ -8,16 +8,15 @@ import {
   validateEnvVars,
 } from '../utils.ts';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 export async function handleAcceptFriendInvite(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization, x-client-info',
-      },
-    });
+    return new Response('ok', { status: 200, headers: corsHeaders });
   }
 
   try {
@@ -26,27 +25,12 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { token, email } = await req.json();
+    const { token, email, selected_time, becomeFriends, password } = await req.json();
     if (!token || !email) {
       throw new AppError('Missing invite token or email', ERROR_CODES.VALIDATION_ERROR, 400);
     }
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AppError('Missing authorization', ERROR_CODES.UNAUTHORIZED, 401);
-    }
-    const jwt = authHeader.replace('Bearer ', '');
-
-    const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
-    if (authError || !userData?.user) {
-      throw new AppError('Invalid token', ERROR_CODES.UNAUTHORIZED, 401);
-    }
-    const user = userData.user;
-
-    if (user.email !== email) {
-      throw new AppError('Email mismatch', ERROR_CODES.UNAUTHORIZED, 403);
-    }
-
+    // Find the invite
     const { data: invite, error: inviteError } = await supabase
       .from('friend_invites')
       .select('id, inviter_id, invitee_email, status, expires_at')
@@ -60,13 +44,10 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
       invite.status !== 'pending' ||
       (invite.expires_at && new Date(invite.expires_at) < new Date())
     ) {
-      throw new AppError(
-        'Invalid or expired invite token',
-        ERROR_CODES.NOT_FOUND,
-        404,
-      );
+      throw new AppError('Invalid or expired invite token', ERROR_CODES.NOT_FOUND, 404);
     }
 
+    // Mark invite as accepted
     const { error: updateError } = await supabase
       .from('friend_invites')
       .update({
@@ -74,45 +55,70 @@ export async function handleAcceptFriendInvite(req: Request): Promise<Response> 
         accepted_at: new Date().toISOString(),
       })
       .eq('id', invite.id);
-
     if (updateError) {
-      throw new AppError(
-        'Could not update invite',
-        ERROR_CODES.DATABASE_ERROR,
-        500,
-        updateError,
-      );
+      throw new AppError('Could not update invite', ERROR_CODES.DATABASE_ERROR, 500, updateError);
     }
 
-    const { error: friendshipError } = await supabase
-      .from('friendships')
-      .upsert(
+    if (becomeFriends) {
+      // Check if user exists
+      let userId: string | null = null;
+      let userEmail = email;
+      let userCreated = false;
+      const { data: existingUser, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+      if (existingUser && existingUser.id) {
+        userId = existingUser.id;
+      } else {
+        // Create user (sign up)
+        const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
+          email,
+          password: password || crypto.randomUUID(),
+          email_confirm: true,
+        });
+        if (signUpError || !signUpData?.user?.id) {
+          throw new AppError('Could not create user', ERROR_CODES.DATABASE_ERROR, 500, signUpError);
+        }
+        userId = signUpData.user.id;
+        userCreated = true;
+      }
+      // Create friendship (both directions)
+      const { error: friendshipError } = await supabase.from('friendships').upsert(
         [
-          { user_id: invite.inviter_id, friend_id: user.id, status: 'accepted' },
-          { user_id: user.id, friend_id: invite.inviter_id, status: 'accepted' },
+          { user_id: invite.inviter_id, friend_id: userId, status: 'accepted' },
+          { user_id: userId, friend_id: invite.inviter_id, status: 'accepted' },
         ],
         { onConflict: 'user_id,friend_id' },
       );
-
-    if (friendshipError) {
-      throw new AppError(
-        'Could not create friendship',
-        ERROR_CODES.DATABASE_ERROR,
-        500,
-        friendshipError,
-      );
+      if (friendshipError) {
+        throw new AppError(
+          'Could not create friendship',
+          ERROR_CODES.DATABASE_ERROR,
+          500,
+          friendshipError,
+        );
+      }
+      // Optionally: skip beta, send confirmation email, etc.
+      // ...
+      return new Response(JSON.stringify({ success: true, userCreated }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    } else {
+      // Just accept, no friendship, no user creation
+      // Optionally: send confirmation email, etc.
+      return new Response(JSON.stringify({ success: true, noFriend: true }), {
+        status: 200,
+        headers: corsHeaders,
+      });
     }
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization, x-client-info',
-      },
-    });
   } catch (error) {
-    return createErrorResponse(handleError(error));
+    return new Response(JSON.stringify({ error: error.message || 'Unknown error' }), {
+      status: 500,
+      headers: corsHeaders,
+    });
   }
 }
 

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../supabaseClient';
 import { ErrorService } from '../services/error/ErrorService';
 
 const BetaSignup = () => {
@@ -16,16 +15,31 @@ const BetaSignup = () => {
       setLoading(false);
       return;
     }
-    const { error } = await supabase.from('beta_signups').insert({ email });
-    if (error) {
-      if (error.code === '23505') {
-        ErrorService.toast(t('betaSignup.alreadyOnList'), 'info');
+    try {
+      const res = await fetch(
+        'https://bijyercgpgaheeoeumtv.functions.supabase.co/beta-accept-email',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ record: { email, status: 'pending' } }),
+        },
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data && data.error && data.error.code === '23505') {
+          ErrorService.toast(t('betaSignup.alreadyOnList'), 'info');
+        } else {
+          ErrorService.toast(t('betaSignup.error'), 'error');
+        }
       } else {
-        ErrorService.toast(t('betaSignup.error'), 'error');
+        ErrorService.toast(t('betaSignup.success'), 'success');
+        setEmail('');
       }
-    } else {
-      ErrorService.toast(t('betaSignup.success'), 'success');
-      setEmail('');
+    } catch (err) {
+      ErrorService.toast(t('betaSignup.error'), 'error');
     }
     setLoading(false);
   };

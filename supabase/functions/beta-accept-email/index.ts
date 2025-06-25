@@ -11,30 +11,44 @@ import {
   sendEmail,
 } from '../utils.ts';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 serve(async (req) => {
+  // Debug log for method
+  console.log('beta-accept-email called with method:', req.method);
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { status: 200, headers: corsHeaders });
+  }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Only POST requests allowed' }), {
+      status: 405,
+      headers: corsHeaders,
+    });
+  }
   try {
     // Validate required environment variables
     validateEnvVars(['RESEND_API_KEY', 'SUPABASE_URL', 'SUPABASE_ANON_KEY']);
-
-    if (req.method !== 'POST') {
-      throw new AppError('Only POST requests allowed', ERROR_CODES.INVALID_REQUEST, 405);
-    }
 
     const { record } = await req.json().catch(() => {
       throw new AppError('Invalid JSON payload', ERROR_CODES.INVALID_REQUEST, 400);
     });
 
     if (!record || !record.email) {
-      throw new AppError('Missing required fields: email', ERROR_CODES.VALIDATION_ERROR, 400);
+      return new Response(JSON.stringify({ error: 'Missing required fields: email' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
 
     // If not accepted, return early but don't throw error
     if (record.status !== 'accepted') {
       return new Response(JSON.stringify({ message: 'No action needed' }), {
         status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
       });
     }
 
@@ -48,7 +62,10 @@ serve(async (req) => {
       .eq('email', record.email);
 
     if (profileError) {
-      throw new AppError('Failed to update profile', ERROR_CODES.DATABASE_ERROR, 500, profileError);
+      return new Response(JSON.stringify({ error: 'Failed to update profile' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
     }
 
     const email = record.email;
@@ -90,16 +107,20 @@ The Anemi Meets team`;
         text: body,
       });
     } catch (emailError) {
-      throw new AppError('Failed to send welcome email', ERROR_CODES.EMAIL_ERROR, 500, emailError);
+      return new Response(JSON.stringify({ error: 'Failed to send welcome email' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
     }
 
     return new Response(JSON.stringify({ success: true, message: 'Welcome email sent' }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: corsHeaders,
     });
   } catch (error) {
-    return createErrorResponse(handleError(error));
+    return new Response(JSON.stringify({ error: error.message || 'Unknown error' }), {
+      status: 500,
+      headers: corsHeaders,
+    });
   }
 });

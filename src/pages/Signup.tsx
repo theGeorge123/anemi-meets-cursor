@@ -116,7 +116,7 @@ const Signup = () => {
 
         if (inviteToken) {
           try {
-            await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accept-friend-invite`, {
+            await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/accept-friend-invite', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
