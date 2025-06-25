@@ -6,7 +6,6 @@ import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
 import FormStatus from '../components/FormStatus';
 import ErrorBoundary from '../components/ErrorBoundary';
-import { ErrorService } from '../services/error/ErrorService';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
