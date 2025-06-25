@@ -9,11 +9,6 @@ import type { Database } from '@/types/supabase';
 type Invite = Database['public']['Tables']['friend_invites']['Row'];
 // type Profile = Database['public']['Tables']['profiles']['Row'];
 
-interface ToastState {
-  message: string;
-  type: 'success' | 'error';
-}
-
 type StatusType = 'success' | 'error' | 'loading' | 'idle';
 
 export default function InviteFriend(): JSX.Element {
