@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS username_length; 

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '../components/LoadingIndicator';
-import Toast from '../components/Toast';
 import { getFriends, removeFriend } from '../services/friendshipService';
 import { acceptFriendRequest, rejectFriendRequest } from '../services/friendRequestService';
 import type { Tables } from '../types/supabase';
@@ -309,14 +308,6 @@ const Friends = () => {
         <h2 className="text-lg font-semibold mb-2">🚫 {t('friends.block')}</h2>
         <div className="text-gray-400 italic">{t('friends.blockDesc')}</div>
       </section>
-      {toast && (
-        <Toast
-          title={toast.title}
-          type={toast.type}
-          onClose={() => setToast(null)}
-          position="bottom-right"
-        />
-      )}
     </main>
   );
 };

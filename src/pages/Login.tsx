@@ -6,7 +6,6 @@ import { supabase } from '../supabaseClient';
 import LoadingIndicator from '../components/LoadingIndicator';
 import FormStatus from '../components/FormStatus';
 import ErrorBoundary from '../components/ErrorBoundary';
-import Toast from '../components/Toast';
 
 const UPDATES_EMAIL_KEY = 'anemi-updates-email';
 
@@ -250,15 +249,6 @@ const Login = () => {
         <div className="text-red-600 text-sm mt-2" aria-live="assertive">
           {error}
         </div>
-      )}
-
-      {betaToast && (
-        <Toast
-          title={betaToast.message}
-          type={betaToast.type}
-          onClose={() => setBetaToast(null)}
-          position="top-right"
-        />
       )}
     </main>
   );

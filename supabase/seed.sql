@@ -1,3 +1,4 @@
+DELETE FROM public.badges;
 INSERT INTO public.badges (id, name, description, icon_name) VALUES
 ('account_created', 'Account Created', 'Awarded when you create your account and complete your profile.', '🎉'),
 ('first_friend', 'First Friend', 'Awarded when you make your first friend on the platform.', '🤝'),
@@ -7,6 +8,7 @@ INSERT INTO public.badges (id, name, description, icon_name) VALUES
 ('five_meetups_joined', 'Regular', 'Awarded for joining five meetups.', '☕'),
 ('verified_supporter', 'Verified Supporter', 'Awarded for visiting a verified café.', '✅');
 
+DELETE FROM public.cafes;
 INSERT INTO public.cafes (name, address, city, gmaps_url, verified) VALUES
 ('Heilige Boontjes', 'Eendrachtsplein 3, 3015 LA Rotterdam', 'Rotterdam', 'https://maps.app.goo.gl/5V9h6q2ZGLbL4Aew7', true),
 ('Man met Bril Koffie', 'Vijverhofstraat 70, 3032 SN Rotterdam', 'Rotterdam', 'https://maps.app.goo.gl/VpB2a2kGZ9sJ6qYy7', true),

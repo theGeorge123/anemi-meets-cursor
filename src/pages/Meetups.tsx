@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
-import Toast from '../components/Toast';
 import { getMeetupCount } from '../services/invitationService';
 import { Database } from '../types/supabase';
 import { hasBadge, awardBadge } from '../services/badgeService';
@@ -126,10 +125,6 @@ const Meetups: React.FC = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [usingCache, setUsingCache] = useState(false);
   const [joinLoadingId, setJoinLoadingId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
 
   // Detecteer online/offline status
   useEffect(() => {
@@ -250,33 +245,23 @@ const Meetups: React.FC = () => {
         if (!res.ok || !data.success) throw new Error(data.error || 'Join failed');
 
         setMeetups((prev) => prev.map((m) => (m.id === id ? { ...m, status: 'confirmed' } : m)));
-        setToast({
-          type: 'success',
-          message: t('meetups.joinSuccess', 'You have joined the meetup!'),
-        });
-
-        if (sessionData?.session?.user) {
-          const userId = sessionData.session.user.id;
-          if (!(await hasBadge(userId, 'first_meetup'))) {
-            await awardBadge(userId, 'first_meetup');
-            alert('🥤 First Sip! You just earned a badge for joining your first meetup!');
-          }
-          const meetupCount = await getMeetupCount(userId);
-          if (meetupCount >= 5 && !(await hasBadge(userId, 'five_meetups'))) {
-            await awardBadge(userId, 'five_meetups');
-            alert('🎉 Meetup Master! You attended 5 meetups and earned a badge!');
-          }
+        alert('🥤 First Sip! You just earned a badge for joining your first meetup!');
+        const userId = sessionData.session.user.id;
+        if (!(await hasBadge(userId, 'first_meetup'))) {
+          await awardBadge(userId, 'first_meetup');
+        }
+        const meetupCount = await getMeetupCount(userId);
+        if (meetupCount >= 5 && !(await hasBadge(userId, 'five_meetups'))) {
+          await awardBadge(userId, 'five_meetups');
+          alert('🎉 Meetup Master! You attended 5 meetups and earned a badge!');
         }
       } catch (err) {
-        setToast({
-          type: 'error',
-          message: t('meetups.joinError', 'Failed to join meetup. Please try again.'),
-        });
+        alert('Failed to join meetup. Please try again.');
       } finally {
         setJoinLoadingId(null);
       }
     },
-    [t, meetups],
+    [meetups],
   );
 
   return (
@@ -330,9 +315,6 @@ const Meetups: React.FC = () => {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             aria-label={t('meetups:listAriaLabel', 'Meetup list')}
           >
-            {toast && (
-              <Toast title={toast.message} type={toast.type} onClose={() => setToast(null)} />
-            )}
             {filteredMeetups.map((meetup) => (
               <MeetupListItem
                 key={meetup.id}

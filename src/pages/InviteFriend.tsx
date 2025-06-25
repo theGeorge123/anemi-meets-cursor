@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/supabaseClient';
 import FormStatus from '@/components/FormStatus';
-import Toast from '@/components/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import type { Database } from '@/types/supabase';
 
@@ -92,8 +91,6 @@ export default function InviteFriend(): JSX.Element {
       <button type="button" onClick={handleAccept}>
         {t('inviteFriend.accept')}
       </button>
-
-      {toast && <Toast title={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </ErrorBoundary>
   );
 }
