@@ -24,9 +24,6 @@ const Login = () => {
   const [resetMsg, setResetMsg] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [betaToast, setBetaToast] = useState<{ message: string; type: 'info' | 'error' } | null>(
-    null,
-  );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [status] = useState<StatusType>('idle');
 

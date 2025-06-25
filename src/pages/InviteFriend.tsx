@@ -24,7 +24,6 @@ export default function InviteFriend(): JSX.Element {
   const [invite, setInvite] = useState<Invite | null>(null);
   // const [inviterProfile, setInviterProfile] = useState<Profile | null>(null);
   const [status, setStatus] = useState<StatusType>('idle');
-  const [toast, setToast] = useState<ToastState | null>(null);
 
   useEffect(() => {
     const fetchInvite = async (): Promise<void> => {
@@ -64,12 +63,11 @@ export default function InviteFriend(): JSX.Element {
       const { error } = await supabase.rpc('accept_friend_invite' as any, { token });
 
       if (error) throw error;
-      setToast({ message: t('inviteFriend.success'), type: 'success' });
       navigate('/dashboard');
     } catch (err) {
       setStatus('error');
     }
-  }, [invite, token, t, navigate]);
+  }, [invite, token, navigate]);
 
   return (
     <ErrorBoundary>
