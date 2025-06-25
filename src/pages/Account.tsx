@@ -297,37 +297,29 @@ function Account() {
         )}
         variant="danger"
       >
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" className="flex items-center gap-2" disabled={isDeleting}>
-              <span className="text-2xl">🗑️</span>
-              {t('account.dangerZone.deleteAccountButton', 'Verwijder mijn account')}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {t(
-                  'account.dangerZone.deleteAccountConfirm',
-                  'Weet je zeker dat je je account wilt verwijderen? Dit kan niet ongedaan worden gemaakt.',
-                )}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {t(
-                  'account.dangerZone.description',
-                  'Deze acties zijn permanent en kunnen niet ongedaan worden gemaakt.',
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{t('common.cancel', 'Annuleren')}</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
-                {isDeleting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-                {t('account.dangerZone.deleteAccountButton', 'Verwijder mijn account')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="flex flex-col items-center gap-4 py-4">
+          <div className="text-3xl animate-bounce mb-2">🗑️</div>
+          <div className="text-lg font-bold text-red-700 mb-1">
+            {t('account.dangerZone.title', 'Danger Zone')}
+          </div>
+          <div className="text-red-600 text-center mb-2">
+            {t(
+              'account.dangerZone.description',
+              'These actions are permanent and cannot be undone.',
+            )}
+          </div>
+          <Button
+            variant="destructive"
+            className="flex items-center gap-2 text-lg px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-transform duration-150"
+            onClick={handleDeleteAccount}
+            disabled={isDeleting}
+          >
+            <span className="text-2xl">🗑️</span>
+            {isDeleting
+              ? t('common.loading', 'Bezig...')
+              : t('account.dangerZone.deleteAccountButton', 'Verwijder mijn account')}
+          </Button>
+        </div>
       </SectionCard>
     </div>
   );

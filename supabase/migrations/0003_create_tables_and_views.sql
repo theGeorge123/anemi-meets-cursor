@@ -105,6 +105,7 @@ CREATE TABLE public.invitations (
     id uuid DEFAULT extensions.uuid_generate_v4() NOT NULL,
     inviter_id uuid NOT NULL,
     invitee_id uuid,
+    email_b text,
     meetup_date timestamp with time zone NOT NULL,
     status public.invitation_status DEFAULT 'pending'::public.invitation_status NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
