@@ -4,8 +4,3 @@ export const Validators = {
   minLen: (n: number) => (v: string) => !v || v.length >= n || `Min ${n} characters`,
   maxLen: (n: number) => (v: string) => !v || v.length <= n || `Max ${n} characters`,
 };
-
-export function isValid(value: unknown): boolean {
-  // Implementation of isValid function
-  return true; // Placeholder return, actual implementation needed
-}

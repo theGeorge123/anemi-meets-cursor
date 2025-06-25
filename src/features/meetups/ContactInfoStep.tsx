@@ -26,10 +26,6 @@ export const ContactInfoStep = ({ formData, updateFormData, onNext }: Props) => 
     if (validate()) onNext();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Implementation of handleChange function
-  };
-
   return (
     <form onSubmit={handleNext} className="space-y-4">
       <div>

@@ -14,7 +14,7 @@ export class ErrorService {
     toast({ title: msg, variant });
   }
 
-  static logError(error: unknown, info: unknown) {
+  static logError(_error: unknown, _info: unknown) {
     // Implementation of the method
   }
 }

@@ -7,11 +7,8 @@ export const getCities = async (): Promise<{
 }> => supabase.from('cities').select('*');
 
 export const createMeetup = async (data: MeetupFormData) =>
-  supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (supabase as any)
     .from('meetups')
     .insert([{ ...data }])
     .single();
-
-export async function fetchMeetups(...args: unknown[]): Promise<unknown> {
-  // Implementation of fetchMeetups function
-}
