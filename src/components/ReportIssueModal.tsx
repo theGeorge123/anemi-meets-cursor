@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-// import { supabase } from '../supabaseClient';
+import { supabase } from '../supabaseClient';
 // import { awardBadge } from '../services/badgeService';
 
 interface Props {
@@ -51,17 +51,15 @@ const ReportIssueModal: React.FC<Props> = ({ open, onClose }) => {
       timestamp: new Date().toISOString(),
     };
     try {
-      const res = await fetch('/functions/v1/report-issue', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { error } = await supabase.functions.invoke('report-issue', {
+        body: {
           description,
           steps,
           screenshot: screenshotBase64,
           context,
-        }),
+        },
       });
-      if (!res.ok) throw new Error('Server error');
+      if (error) throw error;
       setSuccess(true);
       setDescription('');
       setSteps('');

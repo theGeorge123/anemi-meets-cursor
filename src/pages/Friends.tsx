@@ -6,6 +6,7 @@ import { getFriends, removeFriend } from '../services/friendshipService';
 import { acceptFriendRequest, rejectFriendRequest } from '../services/friendRequestService';
 import type { Tables } from '../types/supabase';
 import { TFunction } from 'i18next';
+import { ErrorService } from '../services/error/ErrorService';
 type Profile = Tables<'profiles'>;
 
 interface User {
@@ -33,10 +34,6 @@ const Friends = () => {
   const [receivedProfiles, setReceivedProfiles] = useState<Record<string, Profile>>({});
   const [friends, setFriends] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{
-    title: string;
-    type: 'success' | 'error' | 'info';
-  } | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -98,7 +95,7 @@ const Friends = () => {
     // Fetch friends (accepted requests)
     getFriends(user.id).then(setFriends);
     setLoading(false);
-  }, [user, sendStatus, toast]);
+  }, [user, sendStatus]);
 
   const handleSendRequest = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -114,10 +111,7 @@ const Friends = () => {
     if (error || !profile) {
       setSendStatus('error');
       setSendError(t('friends.errorNoUser', 'No user found with that email.'));
-      setToast({
-        title: t('friends.errorNoUser', 'No user found with that email.'),
-        type: 'error',
-      });
+      ErrorService.toast(t('friends.errorNoUser', 'No user found with that email.'), 'error');
       return;
     }
     // Send request
@@ -127,11 +121,11 @@ const Friends = () => {
     if (reqError) {
       setSendStatus('error');
       setSendError(reqError.message);
-      setToast({ title: reqError.message, type: 'error' });
+      ErrorService.toast(reqError.message, 'error');
     } else {
       setSendStatus('success');
       setEmail('');
-      setToast({ title: t('friends.requestSent'), type: 'success' });
+      ErrorService.toast(t('friends.requestSent'), 'success');
     }
   };
 
@@ -154,15 +148,15 @@ const Friends = () => {
     try {
       if (accept) {
         await acceptFriendRequest(id);
-        setToast({ title: t('friends.accepted', 'Friend request accepted!'), type: 'success' });
+        ErrorService.toast(t('friends.accepted', 'Friend request accepted!'), 'success');
       } else {
         await rejectFriendRequest(id);
-        setToast({ title: t('friends.rejected', 'Friend request rejected.'), type: 'info' });
+        ErrorService.toast(t('friends.rejected', 'Friend request rejected.'), 'info');
       }
       setSendStatus('idle');
     } catch (err: unknown) {
       console.error('Friend request action failed:', err);
-      setToast({ title: getFriendlyError(err, t), type: 'error' });
+      ErrorService.toast(getFriendlyError(err, t), 'error');
     }
   };
 
@@ -170,14 +164,13 @@ const Friends = () => {
     if (!user) return;
     try {
       await removeFriend(user.id, friendId);
-      setToast({ title: t('friends.removed', 'Friend removed.'), type: 'success' });
+      ErrorService.toast(t('friends.removed', 'Friend removed.'), 'success');
       setFriends(friends.filter((f) => f.id !== friendId));
     } catch (err: unknown) {
-      setToast({
-        title:
-          err instanceof Error ? err.message : t('friends.errorRemove', 'Could not remove friend.'),
-        type: 'error',
-      });
+      ErrorService.toast(
+        err instanceof Error ? err.message : t('friends.errorRemove', 'Could not remove friend.'),
+        'error',
+      );
     }
   };
 

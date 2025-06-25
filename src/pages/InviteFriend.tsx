@@ -5,6 +5,7 @@ import { supabase } from '@/supabaseClient';
 import FormStatus from '@/components/FormStatus';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import type { Database } from '@/types/supabase';
+import { ErrorService } from '../services/error/ErrorService';
 
 type Invite = Database['public']['Tables']['friend_invites']['Row'];
 // type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -59,6 +60,7 @@ export default function InviteFriend(): JSX.Element {
 
       if (error) throw error;
       navigate('/dashboard');
+      ErrorService.toast(t('inviteFriend.success'), 'success');
     } catch (err) {
       setStatus('error');
     }

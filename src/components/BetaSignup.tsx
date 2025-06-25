@@ -1,36 +1,30 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
-import { Toast } from './ui/toast';
-import { ToastTitle, ToastDescription } from './ui/toast';
+import { ErrorService } from '../services/error/ErrorService';
 
 const BetaSignup = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: 'success' | 'error' | 'info';
-  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setToast(null);
     if (!email || !email.includes('@')) {
-      setToast({ message: t('betaSignup.invalidEmail'), type: 'error' });
+      ErrorService.toast(t('betaSignup.invalidEmail'), 'error');
       setLoading(false);
       return;
     }
     const { error } = await supabase.from('beta_signups').insert({ email });
     if (error) {
       if (error.code === '23505') {
-        setToast({ message: t('betaSignup.alreadyOnList'), type: 'info' });
+        ErrorService.toast(t('betaSignup.alreadyOnList'), 'info');
       } else {
-        setToast({ message: t('betaSignup.error'), type: 'error' });
+        ErrorService.toast(t('betaSignup.error'), 'error');
       }
     } else {
-      setToast({ message: t('betaSignup.success'), type: 'success' });
+      ErrorService.toast(t('betaSignup.success'), 'success');
       setEmail('');
     }
     setLoading(false);
@@ -97,12 +91,6 @@ const BetaSignup = () => {
       <div className="relative z-10 mt-12 animate-float-slow">
         {/* Place your SVG or illustration here if desired */}
       </div>
-      {toast && (
-        <Toast>
-          <ToastTitle>{toast.message}</ToastTitle>
-          {toast.type && <ToastDescription>{toast.type}</ToastDescription>}
-        </Toast>
-      )}
     </section>
   );
 };

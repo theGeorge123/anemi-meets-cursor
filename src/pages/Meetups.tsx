@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getMeetupCount } from '../services/invitationService';
 import { Database } from '../types/supabase';
 import { hasBadge, awardBadge } from '../services/badgeService';
+import { ErrorService } from '../services/error/ErrorService';
 
 type MeetupRow = Database['public']['Tables']['invitations']['Row'];
 
@@ -245,7 +246,10 @@ const Meetups: React.FC = () => {
         if (!res.ok || !data.success) throw new Error(data.error || 'Join failed');
 
         setMeetups((prev) => prev.map((m) => (m.id === id ? { ...m, status: 'confirmed' } : m)));
-        alert('🥤 First Sip! You just earned a badge for joining your first meetup!');
+        ErrorService.toast(
+          '🥤 First Sip! You just earned a badge for joining your first meetup!',
+          'success',
+        );
         const userId = sessionData.session.user.id;
         if (!(await hasBadge(userId, 'first_meetup'))) {
           await awardBadge(userId, 'first_meetup');
@@ -253,10 +257,13 @@ const Meetups: React.FC = () => {
         const meetupCount = await getMeetupCount(userId);
         if (meetupCount >= 5 && !(await hasBadge(userId, 'five_meetups'))) {
           await awardBadge(userId, 'five_meetups');
-          alert('🎉 Meetup Master! You attended 5 meetups and earned a badge!');
+          ErrorService.toast(
+            '🎉 Meetup Master! You attended 5 meetups and earned a badge!',
+            'success',
+          );
         }
       } catch (err) {
-        alert('Failed to join meetup. Please try again.');
+        ErrorService.toast('Failed to join meetup. Please try again.', 'error');
       } finally {
         setJoinLoadingId(null);
       }
