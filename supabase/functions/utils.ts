@@ -12,7 +12,7 @@
 
 // deno-lint-ignore-file no-explicit-any
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
-import { Resend } from 'resend';
+import { Resend } from 'npm:resend@2.1.0';
 
 export function escapeHtml(unsafe: string): string {
   return unsafe

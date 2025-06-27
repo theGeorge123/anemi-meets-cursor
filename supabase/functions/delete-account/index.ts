@@ -8,6 +8,7 @@ import {
   createErrorResponse,
   validateEnvVars,
 } from '../utils.ts';
+import { serve } from 'https://deno.land/std@0.131.0/http/server.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,7 +24,10 @@ async function deleteAccount(req: Request): Promise<Response> {
 
   try {
     if (req.method !== 'POST') {
-      throw new AppError('Method not allowed', ERROR_CODES.INVALID_REQUEST, 405);
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+        status: 405,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     validateEnvVars(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']);
@@ -80,4 +84,4 @@ async function deleteAccount(req: Request): Promise<Response> {
   }
 }
 
-Deno.serve(deleteAccount);
+serve(deleteAccount);

@@ -1,16 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { supabase } from '../supabaseClient';
 import BetaSignup from './BetaSignup';
 
-// Mock the supabase client
-vi.mock('../supabaseClient', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      insert: vi.fn().mockResolvedValue({ data: null, error: null }),
-    })),
-  },
-}));
+// Mock fetch
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
@@ -35,17 +29,26 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+// Mock environment variables
+vi.mock('import.meta.env', () => ({
+  env: {
+    VITE_SUPABASE_ANON_KEY: 'test-anon-key',
+  },
+}));
+
 describe('BetaSignup', () => {
   beforeEach(() => {
-    render(<BetaSignup />);
+    mockFetch.mockClear();
   });
 
   it('renders the signup form', () => {
+    render(<BetaSignup />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
   it('validates email format', async () => {
+    render(<BetaSignup />);
     const input = screen.getByRole('textbox');
     const submitButton = screen.getByRole('button');
 
@@ -58,6 +61,12 @@ describe('BetaSignup', () => {
   });
 
   it('handles successful signup', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ message: 'Successfully added to beta list' }),
+    });
+
+    render(<BetaSignup />);
     const input = screen.getByRole('textbox');
     const submitButton = screen.getByRole('button');
 
@@ -65,6 +74,17 @@ describe('BetaSignup', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://bijyercgpgaheeoeumtv.functions.supabase.co/beta-signup',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: 'test-anon-key',
+          },
+          body: JSON.stringify({ email: 'test@example.com' }),
+        },
+      );
       expect(screen.getByRole('alert')).toHaveTextContent(
         "You're on the list! We'll let you know when you can join.",
       );
@@ -72,13 +92,12 @@ describe('BetaSignup', () => {
   });
 
   it('handles duplicate email error', async () => {
-    vi.mocked(supabase.from).mockReturnValue({
-      insert: vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: 'duplicate key value violates unique constraint' },
-      }),
-    } as unknown as ReturnType<typeof supabase.from>);
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ error: 'DUPLICATE_EMAIL' }),
+    });
 
+    render(<BetaSignup />);
     const input = screen.getByRole('textbox');
     const submitButton = screen.getByRole('button');
 
@@ -93,13 +112,29 @@ describe('BetaSignup', () => {
   });
 
   it('handles API error', async () => {
-    vi.mocked(supabase.from).mockReturnValue({
-      insert: vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: 'Internal server error' },
-      }),
-    } as unknown as ReturnType<typeof supabase.from>);
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ error: 'Internal server error' }),
+    });
 
+    render(<BetaSignup />);
+    const input = screen.getByRole('textbox');
+    const submitButton = screen.getByRole('button');
+
+    fireEvent.change(input, { target: { value: 'test@example.com' } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Oops! Something went wrong. Please try again.',
+      );
+    });
+  });
+
+  it('handles network error', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+    render(<BetaSignup />);
     const input = screen.getByRole('textbox');
     const submitButton = screen.getByRole('button');
 

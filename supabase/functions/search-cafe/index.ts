@@ -8,6 +8,7 @@ import {
   createErrorResponse,
   validateEnvVars,
 } from '../utils.ts';
+import { serve } from 'https://deno.land/std@0.131.0/http/server.ts';
 
 type CafeSearchPayload = {
   city: string;
@@ -16,22 +17,20 @@ type CafeSearchPayload = {
   price_bracket?: 'low' | 'mid' | 'high';
 };
 
-export async function handleSearchCafe(req: Request): Promise<Response> {
-  // Handle CORS preflight request
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    });
-  }
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
 
+export async function handleSearchCafe(req: Request): Promise<Response> {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
   if (req.method !== 'POST') {
-    return createErrorResponse({
-      error: new AppError('Method Not Allowed', ERROR_CODES.INVALID_REQUEST),
-      statusCode: 405,
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
@@ -70,7 +69,7 @@ export async function handleSearchCafe(req: Request): Promise<Response> {
     }
 
     return new Response(JSON.stringify({ cafes }), {
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
@@ -79,4 +78,4 @@ export async function handleSearchCafe(req: Request): Promise<Response> {
 }
 
 // @ts-expect-error Deno global is available in Edge Functions
-Deno.serve(handleSearchCafe);
+serve(handleSearchCafe);

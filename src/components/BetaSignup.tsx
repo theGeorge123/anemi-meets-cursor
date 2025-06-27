@@ -16,20 +16,17 @@ const BetaSignup = () => {
       return;
     }
     try {
-      const res = await fetch(
-        'https://bijyercgpgaheeoeumtv.functions.supabase.co/beta-accept-email',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({ record: { email, status: 'pending' } }),
+      const res = await fetch('https://bijyercgpgaheeoeumtv.functions.supabase.co/beta-signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
         },
-      );
+        body: JSON.stringify({ email }),
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        if (data && data.error && data.error.code === '23505') {
+        if (data && data.error === 'DUPLICATE_EMAIL') {
           ErrorService.toast(t('betaSignup.alreadyOnList'), 'info');
         } else {
           ErrorService.toast(t('betaSignup.error'), 'error');

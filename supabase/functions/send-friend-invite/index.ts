@@ -8,6 +8,7 @@ import {
   createErrorResponse,
   validateEnvVars,
 } from '../utils.ts';
+import { serve } from 'https://deno.land/std@0.131.0/http/server.ts';
 
 function getUUID() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -33,17 +34,19 @@ function getUUID() {
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, apikey, authorization',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-export async function handleFriendInvite(req: Request): Promise<Response> {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 200, headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
-
   if (req.method !== 'POST') {
-    throw new AppError('Only POST requests allowed.', ERROR_CODES.INVALID_REQUEST, 405);
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -198,6 +201,4 @@ export async function handleFriendInvite(req: Request): Promise<Response> {
       headers: corsHeaders,
     });
   }
-}
-
-Deno.serve(handleFriendInvite);
+});

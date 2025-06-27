@@ -1,9 +1,10 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { AppError, ERROR_CODES, handleError, createErrorResponse } from "../utils.ts";
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { AppError, ERROR_CODES, handleError, createErrorResponse } from '../utils.ts';
+import { serve } from 'https://deno.land/std@0.131.0/http/server.ts';
 
-interface ContactBody { 
-  name: string; 
-  email: string; 
+interface ContactBody {
+  name: string;
+  email: string;
   message: string;
 }
 
@@ -13,7 +14,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-Deno.serve(async (req: Request) => {
+serve(async (req: Request) => {
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -21,22 +22,17 @@ Deno.serve(async (req: Request) => {
 
   try {
     if (req.method !== 'POST') {
-      throw new AppError(
-        'Method not allowed',
-        ERROR_CODES.INVALID_REQUEST,
-        405
-      );
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+        status: 405,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     let body: ContactBody;
     try {
       body = await req.json();
     } catch {
-      throw new AppError(
-        'Invalid JSON payload',
-        ERROR_CODES.INVALID_REQUEST,
-        400
-      );
+      throw new AppError('Invalid JSON payload', ERROR_CODES.INVALID_REQUEST, 400);
     }
 
     const { name, email, message } = body;
@@ -44,17 +40,13 @@ Deno.serve(async (req: Request) => {
       throw new AppError(
         'Missing required fields: name, email, message',
         ERROR_CODES.VALIDATION_ERROR,
-        400
+        400,
       );
     }
 
     // TODO: Add email validation
     if (!email.includes('@') || !email.includes('.')) {
-      throw new AppError(
-        'Invalid email format',
-        ERROR_CODES.VALIDATION_ERROR,
-        400
-      );
+      throw new AppError('Invalid email format', ERROR_CODES.VALIDATION_ERROR, 400);
     }
 
     // TODO: Add message length validation
@@ -62,7 +54,7 @@ Deno.serve(async (req: Request) => {
       throw new AppError(
         'Message must be at least 10 characters long',
         ERROR_CODES.VALIDATION_ERROR,
-        400
+        400,
       );
     }
 
@@ -74,16 +66,16 @@ Deno.serve(async (req: Request) => {
           name,
           email,
           message,
-          receivedAt: new Date().toISOString()
-        }
+          receivedAt: new Date().toISOString(),
+        },
       }),
-      { 
+      {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          ...corsHeaders
-        }
-      }
+          ...corsHeaders,
+        },
+      },
     );
   } catch (error) {
     return createErrorResponse(handleError(error));
