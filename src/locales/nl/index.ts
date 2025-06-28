@@ -258,21 +258,6 @@ export const nl = {
     loginButton: "Laat me binnen!",
     googleButton: "Inloggen met Google",
   },
-  signup: {
-    title: "Registreren",
-    subtitle: "Maak gratis je account aan om te beginnen",
-    namePrompt: "Leuk dat je er bent! Hoe mogen we je noemen?",
-    namePlaceholder: "Jouw naam",
-    emailPrompt: "Op welk e-mailadres kunnen we je bereiken?",
-    emailPlaceholder: "Jouw e-mailadres",
-    passwordPrompt: "Welk wachtwoord wil je gebruiken voor dit account?",
-    passwordPlaceholder: "Jouw wachtwoord",
-    confirmPasswordPrompt: "Sorry, maar we moeten even checken of je je wachtwoord goed hebt getypt",
-    confirmPasswordPlaceholder: "Bevestig je wachtwoord",
-    overviewTitle: "Overzicht van je gegevens",
-    submit: "Registreren",
-    steps: ["Naam", "E-mail", "Wachtwoord", "Overzicht"],
-  },
   onboarding: {
     welcome: {
       title: "Welkom bij Anemi Meets!",

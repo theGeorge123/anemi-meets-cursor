@@ -279,19 +279,6 @@ const Respond = () => {
               <div className="text-gray-600">{_i18n.language === 'nl' ? 'Tijd' : 'Time'}: {confirmationInfo.selected_time}</div>
             </div>
           )}
-          <div className="w-full flex flex-col items-center mt-2">
-            <p className="mb-4 text-base text-primary-700 font-medium text-center">
-              {_i18n.language === 'nl'
-                ? 'Wil je zelf ook makkelijk afspraken maken, iemand weer eens zien of lokale tentjes supporten? Maak dan nu een account aan en zie je eigen meetings terug!'
-                : 'Want to easily plan your own meetups, reconnect with friends, or support local cafés? Create an account now and see all your meetings in one place!'}
-            </p>
-            <a href="/signup" className="btn-secondary w-full mb-2">
-              {_i18n.language === 'nl' ? 'Account aanmaken' : 'Create account'}
-            </a>
-            <button className="btn-primary w-full" onClick={() => window.location.href = "/"}>
-              {_i18n.language === 'nl' ? 'Terug naar home' : 'Back to home'}
-            </button>
-          </div>
         </div>
       </div>
     );

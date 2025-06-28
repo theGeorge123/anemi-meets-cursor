@@ -216,24 +216,15 @@ const Login = () => {
           {t('login.googleButton')}
         </button>
 
-        <div className="text-center mt-4">
-          <button
-            className="text-primary-600 underline hover:text-primary-800 text-sm"
-            onClick={() => navigate('/signup')}
-        >
-          {t('login.noAccountCta')}
-        </button>
-      </div>
+        {showSuccess && (
+          <Toast
+            message={t('toast.loginSuccess')}
+            type="success"
+            onClose={() => setShowSuccess(false)}
+          />
+        )}
 
-      {showSuccess && (
-        <Toast
-          message={t('toast.loginSuccess')}
-          type="success"
-          onClose={() => setShowSuccess(false)}
-        />
-      )}
-
-      {error && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{error}</div>}
+        {error && <div className="text-red-600 text-sm mt-2" aria-live="assertive">{error}</div>}
     </main>
   );
 };

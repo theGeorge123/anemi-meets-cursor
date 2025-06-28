@@ -237,21 +237,6 @@ export const en = {
     loginButton: "Let me in!",
     googleButton: "Continue with Google",
   },
-  signup: {
-    title: "Sign up",
-    subtitle: "Create your free account to get started",
-    namePrompt: "We're glad you're here! What should we call you?",
-    namePlaceholder: "Your name",
-    emailPrompt: "Which email address can we use to connect you?",
-    emailPlaceholder: "Your email address",
-    passwordPrompt: "Which password do you want to use for this account?",
-    passwordPlaceholder: "Your password",
-    confirmPasswordPrompt: "Sorry, but we need to check if you typed your password correctly",
-    confirmPasswordPlaceholder: "Confirm your password",
-    overviewTitle: "Overview of your details",
-    submit: "Sign up",
-    steps: ["Name", "Email", "Password", "Overview"],
-  },
   onboarding: {
     welcome: {
       title: "Welcome to Anemi Meets!",

@@ -32,15 +32,6 @@ export default function Success() {
       >
         {t("success.button")}
       </a>
-      <div className="mt-8 bg-white/80 rounded-xl p-6 shadow text-center flex flex-col items-center">
-        <p className="text-lg text-[#1a1a1a] mb-3">Wil jij ook terug naar echte connecties?<br />Registreer dan nu!</p>
-        <a
-          href="/signup"
-          className="bg-[#f7b267] text-[#1a1a1a] px-6 py-3 rounded-2xl font-medium hover:bg-[#f4a259] transition mt-2"
-        >
-          Account aanmaken
-        </a>
-      </div>
     </div>
   );
 } 
