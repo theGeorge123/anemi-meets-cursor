@@ -45,7 +45,7 @@ function App() {
       <NavigationProvider>
         <OnboardingProvider>
           <NavigationBar profileEmoji={profileEmoji} />
-          <main className="flex-grow pt-16">
+          <main className="flex-grow pt-16 overflow-x-hidden bg-gradient-to-b from-white to-primary-50">
             <AppRoutes />
           </main>
           <Footer />

@@ -144,8 +144,8 @@ function Account() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-      <header className="mb-4">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 min-h-[calc(100vh-4rem)]">
+      <header className="mb-4 sticky top-16 bg-gradient-to-b from-white via-white/95 to-white/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md py-4 px-2 -mx-2 sm:mx-0 sm:px-0 border-b border-primary-50">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
           <span role="img" aria-label="profile">
             👤
